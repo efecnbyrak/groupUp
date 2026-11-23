@@ -3,11 +3,11 @@
 > Her oturum bu dosyayı okur ve günceller. Bir maddeyi bitirince `[x]` yap. Oturum biterken **§Son durum**'u doldur.
 
 ## Son durum
-- **Aktif faz:** F2 — Kimlik ve üniversite (yarıda; dal `feat/f2-kimlik`, değişiklikler **commitlenmedi**, faz sonunda commit)
-- **Son tamamlanan:** F2 çekirdek: şema v1 + migration `f2_identity_university`, seed, `src/lib/{crypto,password,session,authz,rate-limit,audit}.ts`, şifre politikası + domain çözümleme (unit testli, toplam 35 test)
-- **Sıradaki adım:** `identity` modülü servis/action'ları: kayıt (domain çözümleme → User+Profile → OTP) → `/dogrula` → giriş/çıkış; mail şablonları; `proxy.ts`
+- **Aktif faz:** F3 — Tasarım sistemi, kabuklar, landing, i18n (başlanmadı)
+- **Son tamamlanan:** F2 tamamı (`main`'e merge edildi): university/identity/notification modülleri, kayıt → OTP → giriş/çıkış/tüm cihazlardan çık, şifremi unuttum/sıfırla, şifre + mail değiştir, mail şablonları TR/EN, `proxy.ts`, 26 entegrasyon + 2 e2e testi (toplam 66 vitest).
+- **Sıradaki adım:** F3.1 next-intl kurulumu — `src/i18n/messages.ts` + `src/i18n/server.ts` (`gu_locale` cookie) yerine next-intl; anahtarlar aynı kalır.
 - **Açık sorular / engeller:** yok.
-- **F2 notları:** `authz.ts`'de `requireClubPermission`/`requireClubMember` F5'te (kulüp tabloları yok). `AlumniVerification` modeli F4'e bırakıldı. Prisma 7'de `migrate dev` client üretmez → `npm run db:migrate` artık `&& prisma generate`. Lokal Süper Admin: `admin@groupup.local`, şifre `.env` → `SUPERADMIN_PASSWORD`. Fakülte/bölüm seed'i ÖRNEK veridir. `npm audit`: 3 high, yalnızca `prisma` CLI'nin geçişli `effect` bağımlılığı (dev); `--force` Prisma'yı düşürür → upstream bekleniyor. next-intl henüz yok (F3) → mail şablonları `messages/*.json`'u doğrudan okuyabilir.
+- **F2 notları:** Servisler request bağlamına dokunmaz (cookie/oturum yalnızca `actions.ts`). Hata akışı: servis `ServiceError(code)` / `RateLimitError` → action `actionError(err, t, ERROR_KEYS)` (`src/i18n/action-result.ts`); zod mesajları = mesaj anahtarı. Client formlar metinleri prop olarak alır (`labelsFor(t, *_KEYS)`), `useFormAction` formu sıfırlamaz. `/dogrula` adresi imzalı `gu_verify` cookie'sinden. Modüller Prisma tiplerini `@/lib/db-types` üzerinden alır. eslint boundaries `moduleEntry` seçicisi `src/modules/*/index.ts` olarak düzeltildi (önceki hali hiç eşleşmiyordu). Migration `email_token_code_hash` (`EmailToken.codeHash` indeksi). Entegrasyon testleri `groupup_test`'te: önce `npm run db:test:migrate`. e2e dev DB + Mailpit kullanır; lokal istekler IP'siz olduğundan tüm IP rate limitleri tek anahtarı paylaşır (kayıt 10/saat) — e2e'yi saatte ~10'dan fazla çalıştırırsan `RateLimit` tablosunu temizle. Manuel mezun yolu (belge) F4, `requireClubPermission` F5'te. Mail HTML'inde ham hex zorunlu (mail istemcileri CSS değişkeni desteklemez). `AlumniVerification` F4. `npm audit`: prisma CLI'nin geçişli `effect` bağımlılığı (dev), upstream bekleniyor. Lokal Süper Admin: `admin@groupup.local`, şifre `.env` → `SUPERADMIN_PASSWORD`.
 - **F1 notları:** Tailwind `@tailwindcss/postcss` (şablondaki `@tailwindcss/turbopack` onaysız). Prisma client `prisma/generated` (gitignore'da). Prisma `.env`'i `process.loadEnvFile` ile okur. tsx scriptleri `--conditions=react-server`. env şeması `src/lib/env-schema.ts`. npm 11 `allowScripts`.
 - **Teyit edilenler (2026-11-23):** Kent domainleri `ogr.kent.edu.tr` / `mezun.kent.edu.tr`; tek kulüpte başkanlık; mezun oy vermez; 8 ADR `Kabul edildi`; repo https://github.com/efecnbyrak/groupUp (`main`).
 
@@ -34,19 +34,19 @@ Okunacak: ARCHITECTURE.md, SETUP-LOCAL.md, DESIGN.md §1–3
 - [x] F1.9 Tasarım tokenları (`app/tokens.css`, Tailwind `@theme`), Inter, kontrast kontrolü
 - [x] F1.10 lint + type-check + test yeşil → commit
 
-## F2 — Kimlik ve üniversite (1–2 oturum)
+## F2 — Kimlik ve üniversite ✅
 Okunacak: AUTH-EMAIL.md, DATA-MODEL.md (§Kimlik), ROLES-PERMISSIONS.md §2
 - [x] Şema v1: University, UniversityDomain, Faculty, Department, UniversityAdmin, UniversityRequest, User, Profile, Session, EmailToken, RateLimit, AuditLog → migration
 - [x] Seed: Süper Admin, İstanbul Kent Üniversitesi + domainler + örnek fakülte/bölüm
 - [x] `src/lib/session.ts`, `src/lib/authz.ts` (kulüp kapıları F5), `src/lib/rate-limit.ts`, `src/lib/audit.ts`
 - [x] Şifre politikası (`identity/password-policy.ts`) + unit testler (zod'a bağlama kayıt şemasında)
-- [ ] Kayıt (domain çözümleme, üniversite talebi) → OTP → doğrulama
-- [ ] Giriş / çıkış / tüm cihazlardan çık
-- [ ] Şifremi unuttum / sıfırla
-- [ ] Şifre değiştir, mail değiştir
-- [ ] Mail şablonları (verify, reset, changed) TR/EN
-- [ ] `proxy.ts` yönlendirme
-- [ ] e2e: kayıt → Mailpit'ten kod → doğrula → giriş → çıkış → şifre sıfırla
+- [x] Kayıt (domain çözümleme, üniversite talebi) → OTP → doğrulama
+- [x] Giriş / çıkış / tüm cihazlardan çık
+- [x] Şifremi unuttum / sıfırla
+- [x] Şifre değiştir, mail değiştir
+- [x] Mail şablonları (verify, reset, changed) TR/EN
+- [x] `proxy.ts` yönlendirme
+- [x] e2e: kayıt → Mailpit'ten kod → doğrula → giriş → çıkış → şifre sıfırla
 
 ## F3 — Tasarım sistemi, kabuklar, landing, i18n (1 oturum)
 Okunacak: DESIGN.md (tamamı), skill: professional-design-system

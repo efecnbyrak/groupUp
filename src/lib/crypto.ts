@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 
 /** sha256 → hex. Token/OTP'ler DB'de yalnızca bu hash ile saklanır. */
 export function sha256(value: string): string {
@@ -20,4 +20,9 @@ export function safeEqualHex(a: string, b: string): boolean {
   const left = Buffer.from(a, "hex");
   const right = Buffer.from(b, "hex");
   return left.length === right.length && timingSafeEqual(left, right);
+}
+
+/** HMAC-SHA256 → hex (imzalı cookie değerleri için). */
+export function hmacSha256(key: string, value: string): string {
+  return createHmac("sha256", key).update(value).digest("hex");
 }

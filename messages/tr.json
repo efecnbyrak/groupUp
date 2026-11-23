@@ -1,1 +1,183 @@
-{}
+{
+  "common": {
+    "appName": "groupUp",
+    "submit": "Gönder",
+    "loading": "Gönderiliyor…",
+    "show": "Göster",
+    "hide": "Gizle",
+    "select": "Seçin",
+    "optional": "isteğe bağlı",
+    "backHome": "Ana sayfaya dön"
+  },
+  "errors": {
+    "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
+    "rateLimited": "Çok fazla deneme yaptınız. Lütfen {minutes} dakika sonra tekrar deneyin.",
+    "invalidForm": "Lütfen işaretli alanları düzeltin.",
+    "unauthorized": "Bu işlem için giriş yapmalısınız.",
+    "forbidden": "Bu işlem için yetkiniz yok.",
+    "mailFailed": "Doğrulama kodu gönderilemedi. Lütfen birkaç dakika sonra \"Kodu tekrar gönder\" ile deneyin."
+  },
+  "validation": {
+    "required": "Bu alan zorunludur.",
+    "email": "Geçerli bir e-posta adresi girin.",
+    "tooLong": "En fazla {max} karakter olabilir.",
+    "name": "Yalnızca harf, boşluk, kesme ve tire kullanılabilir.",
+    "studentNo": "Öğrenci numarası 4–20 karakter, harf ve rakamdan oluşmalı.",
+    "phone": "Telefonu ülke koduyla girin (ör. +905551234567).",
+    "birthDate": "Geçerli bir doğum tarihi girin (13–100 yaş).",
+    "classYear": "Sınıf seçin.",
+    "graduationYear": "Geçerli bir mezuniyet yılı girin.",
+    "passwordMismatch": "Şifreler eşleşmiyor.",
+    "passwordPolicy": "Şifre kurallara uymuyor.",
+    "kvkk": "Devam etmek için aydınlatma metnini onaylamalısınız.",
+    "otp": "Kod 6 haneli bir sayı olmalı.",
+    "department": "Seçilen bölüm bu fakülteye ait değil."
+  },
+  "password": {
+    "rulesTitle": "Şifre kuralları",
+    "rules": {
+      "length": "6–64 karakter",
+      "letter": "En az bir harf",
+      "symbol": "En az bir sembol (! @ # $ % ^ & * ( ) - _ = + . , ? : [ ] { } ~)",
+      "allowedChars": "Boşluk, < > \" ' ` / \\ ; ve emoji içermez",
+      "noPersonalInfo": "Adınızı, soyadınızı veya öğrenci numaranızı içermez"
+    }
+  },
+  "auth": {
+    "fields": {
+      "email": "Üniversite e-posta adresi",
+      "emailPlain": "E-posta adresi",
+      "password": "Şifre",
+      "passwordConfirm": "Şifre (tekrar)",
+      "currentPassword": "Mevcut şifre",
+      "newPassword": "Yeni şifre",
+      "firstName": "Ad",
+      "lastName": "Soyad",
+      "studentNo": "Öğrenci numarası",
+      "faculty": "Fakülte",
+      "department": "Bölüm",
+      "classYear": "Sınıf",
+      "graduationYear": "Mezuniyet yılı",
+      "phone": "Telefon",
+      "gender": "Cinsiyet",
+      "birthDate": "Doğum tarihi",
+      "code": "Doğrulama kodu",
+      "kvkk": "KVKK aydınlatma metnini okudum ve kişisel verilerimin işlenmesini kabul ediyorum.",
+      "universityName": "Üniversite adı",
+      "note": "Not"
+    },
+    "classYears": {
+      "0": "Hazırlık",
+      "1": "1. sınıf",
+      "2": "2. sınıf",
+      "3": "3. sınıf",
+      "4": "4. sınıf",
+      "5": "5. sınıf",
+      "6": "6. sınıf"
+    },
+    "genders": {
+      "FEMALE": "Kadın",
+      "MALE": "Erkek",
+      "OTHER": "Diğer",
+      "PREFER_NOT_TO_SAY": "Belirtmek istemiyorum"
+    },
+    "register": {
+      "title": "Kayıt ol",
+      "subtitle": "Üniversite e-posta adresinle başla.",
+      "continue": "Devam et",
+      "submit": "Hesap oluştur",
+      "detected": "{university} — {type}",
+      "typeStudent": "Öğrenci",
+      "typeAlumni": "Mezun",
+      "changeEmail": "E-postayı değiştir",
+      "haveAccount": "Zaten hesabın var mı?",
+      "login": "Giriş yap",
+      "notFoundTitle": "Üniversiteniz henüz groupUp'ta değil",
+      "notFoundBody": "Üniversitenizin eklenmesini talep edebilirsiniz. Eklendiğinde size haber vereceğiz.",
+      "requestSubmit": "Talep gönder",
+      "requestSent": "Talebiniz alındı. Teşekkürler!",
+      "emailTaken": "Bu e-posta ile kayıt olunamıyor. Giriş yapmayı deneyin."
+    },
+    "verify": {
+      "title": "E-postanı doğrula",
+      "subtitle": "{email} adresine 6 haneli bir kod gönderdik. Kod 10 dakika geçerlidir.",
+      "submit": "Doğrula",
+      "resend": "Kodu tekrar gönder",
+      "resent": "Yeni kod gönderildi.",
+      "invalid": "Kod hatalı.",
+      "expired": "Kodun süresi doldu. Yeni kod isteyin.",
+      "tooMany": "Çok fazla hatalı deneme. Yeni kod isteyin.",
+      "noPending": "Doğrulanacak bir kayıt bulunamadı. Lütfen giriş yapın veya kayıt olun."
+    },
+    "login": {
+      "title": "Giriş yap",
+      "submit": "Giriş yap",
+      "invalid": "E-posta veya şifre hatalı.",
+      "suspended": "Hesabınız askıya alındı.",
+      "forgot": "Şifremi unuttum",
+      "noAccount": "Hesabın yok mu?",
+      "register": "Kayıt ol"
+    },
+    "forgot": {
+      "title": "Şifremi unuttum",
+      "subtitle": "E-posta adresini gir; hesabın varsa sıfırlama bağlantısı gönderelim.",
+      "submit": "Bağlantı gönder",
+      "sent": "Bu adrese kayıtlı bir hesap varsa bir sıfırlama bağlantısı gönderdik. Bağlantı 30 dakika geçerlidir.",
+      "backToLogin": "Girişe dön"
+    },
+    "reset": {
+      "title": "Yeni şifre belirle",
+      "submit": "Şifreyi güncelle",
+      "invalidToken": "Bağlantı geçersiz veya süresi dolmuş. Yeniden şifre sıfırlama isteyin.",
+      "done": "Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz."
+    },
+    "account": {
+      "title": "Hesabım",
+      "signedInAs": "{email} olarak giriş yaptın.",
+      "security": "Güvenlik ayarları",
+      "logout": "Çıkış yap",
+      "logoutAll": "Tüm cihazlardan çık"
+    },
+    "security": {
+      "title": "Güvenlik",
+      "changePassword": "Şifre değiştir",
+      "changePasswordSubmit": "Şifreyi değiştir",
+      "passwordChanged": "Şifreniz değiştirildi. Diğer cihazlardaki oturumlar kapatıldı.",
+      "wrongPassword": "Mevcut şifre hatalı.",
+      "changeEmail": "E-posta değiştir",
+      "changeEmailHint": "Yeni adres aynı üniversitenin bir alan adında olmalı.",
+      "newEmail": "Yeni e-posta adresi",
+      "sendCode": "Kod gönder",
+      "codeSent": "{email} adresine bir doğrulama kodu gönderdik.",
+      "confirmEmail": "E-postayı güncelle",
+      "emailChanged": "E-posta adresiniz güncellendi.",
+      "emailNotAllowed": "Bu adres kullanılamıyor. Aynı üniversitenin bir alan adını kullanın.",
+      "back": "Hesabıma dön"
+    }
+  },
+  "email": {
+    "footer": "Bu e-postayı groupUp hesabınızla ilgili bir işlem nedeniyle aldınız. Siz yapmadıysanız bu e-postayı yok sayabilirsiniz.",
+    "greeting": "Merhaba {name},",
+    "verify": {
+      "subject": "groupUp doğrulama kodun: {code}",
+      "intro": "groupUp hesabını doğrulamak için aşağıdaki kodu kullan:",
+      "expires": "Kod 10 dakika geçerlidir. Kimseyle paylaşma."
+    },
+    "passwordReset": {
+      "subject": "groupUp şifre sıfırlama",
+      "intro": "Şifreni sıfırlamak için aşağıdaki bağlantıya tıkla:",
+      "button": "Şifreyi sıfırla",
+      "expires": "Bağlantı 30 dakika geçerlidir ve yalnızca bir kez kullanılabilir. Bu isteği sen yapmadıysan bu e-postayı yok say."
+    },
+    "passwordChanged": {
+      "subject": "groupUp şifren değiştirildi",
+      "intro": "Hesabının şifresi az önce değiştirildi.",
+      "warning": "Bu işlemi sen yapmadıysan hemen şifre sıfırlama isteği gönder ve bizimle iletişime geç."
+    },
+    "emailChanged": {
+      "subject": "groupUp e-posta adresin değiştirildi",
+      "intro": "Hesabının giriş e-postası {email} olarak değiştirildi.",
+      "warning": "Bu işlemi sen yapmadıysan bizimle hemen iletişime geç."
+    }
+  }
+}

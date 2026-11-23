@@ -24,7 +24,8 @@ const elements = [
 ];
 
 const sameModule = { captured: { mod: "{{ from.element.captured.mod }}" } };
-const moduleEntry = { type: "module", fileInternalPath: "index.ts" };
+// Element deseni dosyanın tamamını eşlediğinden fileInternalPath proje köküne göre tam yoldur.
+const moduleEntry = { type: "module", fileInternalPath: "src/modules/*/index.ts" };
 
 const boundaryRules = defineConfig({
   files: ["**/*.{ts,tsx,mts}"],

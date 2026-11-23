@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "./db";
+import { RateLimitError } from "./errors";
 
 export interface RateLimitResult {
   ok: boolean;
@@ -38,4 +39,10 @@ export async function consumeRateLimits(
     if (!last.ok) return last;
   }
   return last;
+}
+
+/** Kurallardan biri aşılmışsa `RateLimitError` fırlatır. */
+export async function enforceRateLimits(rules: { key: string; limit: number; windowSec: number }[]): Promise<void> {
+  const result = await consumeRateLimits(rules);
+  if (!result.ok) throw new RateLimitError(result.retryAfterSec);
 }

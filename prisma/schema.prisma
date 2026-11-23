@@ -221,6 +221,7 @@ model EmailToken {
   createdAt DateTime          @default(now())
 
   @@index([email, purpose])
+  @@index([codeHash])
   @@index([userId])
   @@index([expiresAt])
 }
