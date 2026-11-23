@@ -56,7 +56,8 @@
     "domain": "Geçerli bir domain girin (ör. ogr.ornek.edu.tr).",
     "slug": "Yalnızca küçük harf, rakam ve tire kullanılabilir.",
     "icon": "İkon adı küçük harf, rakam ve tireden oluşmalı (ör. trophy).",
-    "number": "Geçerli bir sayı girin."
+    "number": "Geçerli bir sayı girin.",
+    "instagram": "Instagram kullanıcı adı en fazla 30 karakter; harf, rakam, nokta ve alt çizgi."
   },
   "password": {
     "rulesTitle": "Şifre kuralları",
@@ -213,6 +214,32 @@
       "intro": "Hesabını silmek için bir istek aldık. Onaylamak için aşağıdaki bağlantıya tıkla; açılan sayfada son bir kez onaylaman istenecek.",
       "button": "Hesap silmeyi onayla",
       "expires": "Bağlantı 30 dakika geçerlidir ve yalnızca bir kez kullanılabilir. Bu isteği sen yapmadıysan bu e-postayı yok say ve şifreni değiştir."
+    },
+    "requestDecided": {
+      "subject": {
+        "approved": "Talebin onaylandı: {type}",
+        "rejected": "Talebin reddedildi: {type}"
+      },
+      "intro": {
+        "approved": "{club} için gönderdiğin \"{type}\" talebi Üniversite Admini tarafından onaylandı ve uygulandı.",
+        "rejected": "{club} için gönderdiğin \"{type}\" talebi Üniversite Admini tarafından reddedildi."
+      },
+      "reason": "Gerekçe: {reason}",
+      "footer": "Talep durumlarını kulüp panelindeki Talepler sayfasından takip edebilirsin."
+    },
+    "alumniResult": {
+      "subject": {
+        "approved": "Mezun hesabın onaylandı",
+        "rejected": "Mezun belgen onaylanmadı"
+      },
+      "intro": {
+        "approved": "Belgen incelendi ve mezun hesabın açıldı. Artık giriş yapabilirsin.",
+        "rejected": "Yüklediğin belge onaylanmadı. Gerekçeyi aşağıda bulabilir, yeni bir belge yükleyebilirsin."
+      },
+      "button": {
+        "approved": "Giriş yap",
+        "rejected": "Yeni belge yükle"
+      }
     }
   },
   "meta": {
@@ -250,7 +277,8 @@
       "staff": "Görevli",
       "admin": "Üniversite Admini",
       "platform": "Süper Admin"
-    }
+    },
+    "clubPanelOf": "Kulüp Paneli · {club}"
   },
   "public": {
     "howItWorks": "Nasıl çalışır",
@@ -530,7 +558,10 @@
       "students": "Aktif öğrenci",
       "alumni": "Aktif mezun",
       "pendingAlumni": "Bekleyen mezun doğrulama",
-      "faculties": "Fakülte"
+      "faculties": "Fakülte",
+      "clubs": "Kulüpler",
+      "openTickets": "Açık destek talepleri",
+      "pendingApprovals": "Bekleyen onaylar"
     },
     "userTypes": {
       "STUDENT": "Öğrenci",
@@ -570,11 +601,11 @@
     },
     "alumni": {
       "body": "Belge yükleyerek mezun doğrulaması bekleyen kullanıcılar.",
-      "decisionLater": "Onay ve ret, onay motoruyla birlikte gelecek (F5). Şimdilik bekleyen başvuruları görebilirsiniz.",
       "graduationYear": "Mezuniyet yılı",
       "document": "Belge",
       "submittedAt": "Gönderim",
-      "empty": "Bekleyen mezun doğrulaması yok."
+      "empty": "Bekleyen mezun doğrulaması yok.",
+      "review": "İncele ve karar ver"
     }
   },
   "profile": {
@@ -633,7 +664,8 @@
       "confirmSubmit": "Hesabımı kalıcı olarak sil",
       "keep": "Vazgeç, hesabıma dön",
       "invalidToken": "Bu bağlantı geçersiz veya süresi dolmuş. Hesap sayfandan yeni bir bağlantı isteyebilirsin.",
-      "done": "Hesabın silindi. groupUp'ı kullandığın için teşekkürler."
+      "done": "Hesabın silindi. groupUp'ı kullandığın için teşekkürler.",
+      "presidentMustTransfer": "Bir kulübün başkanısın. Hesabını silmeden önce başkanlığı devretmen gerekir — üniversitenin Admini ile iletişime geç (Kulüp paneli → Destek)."
     }
   },
   "alumni": {
@@ -649,6 +681,416 @@
     "submittedFile": "Gönderilen: {file} · {date}",
     "replace": "Yanlış belge mi yükledin? Değiştir",
     "rejectedTitle": "Belgen onaylanmadı",
-    "rejectedBody": "Lütfen geçerli bir mezuniyet belgesi yükle."
+    "rejectedBody": "Lütfen geçerli bir mezuniyet belgesi yükle.",
+    "rejectedReason": "Gerekçe: {reason}",
+    "rejectedRetry": "Belgeni düzeltip yeniden yükleyebilirsin; yeni yükleme tekrar incelemeye girer."
+  },
+  "approval": {
+    "types": {
+      "CLUB_UPDATE": "Kulüp bilgisi değişikliği",
+      "EVENT_PUBLISH": "Etkinlik yayını",
+      "EVENT_UPDATE": "Etkinlik düzenleme",
+      "EVENT_CANCEL": "Etkinlik iptali",
+      "MEMBER_REMOVE": "Üye çıkarma",
+      "MEMBER_BAN": "Üye engelleme",
+      "STAFF_ASSIGN": "Görevli atama",
+      "STAFF_REMOVE": "Görevli çıkarma",
+      "ALUMNI_VERIFY": "Mezun doğrulama",
+      "ELECTION_RESULT": "Seçim sonucu"
+    },
+    "status": {
+      "PENDING": "Bekliyor",
+      "APPROVED": "Onaylandı",
+      "REJECTED": "Reddedildi",
+      "CANCELLED": "Geri çekildi"
+    },
+    "validation": {
+      "reasonTooShort": "Gerekçe en az 10 karakter olmalı.",
+      "date": "Geçerli bir tarih seçin."
+    },
+    "errors": {
+      "alreadyDecided": "Bu talep için zaten karar verilmiş.",
+      "reasonRequired": "Gerekçe zorunludur.",
+      "attachmentRequired": "Bu talep için en az bir kanıt dosyası gerekli.",
+      "noChanges": "Değişiklik yok — gönderilecek bir fark bulunamadı.",
+      "fileType": "Yalnızca PDF, JPG, PNG veya WEBP yükleyebilirsiniz.",
+      "tooManyFiles": "En fazla 5 dosya yükleyebilirsiniz."
+    },
+    "approve": "Onayla",
+    "approveTitle": "Talebi onayla",
+    "approveBody": "Değişiklik hemen uygulanır ve talep sahibine e-posta gider.",
+    "reject": "Reddet",
+    "rejectTitle": "Talebi reddet",
+    "rejectBody": "Gerekçe ({min}–{max} karakter) talep sahibine e-postayla gönderilir.",
+    "reason": "Ret gerekçesi",
+    "attachments": "Ekler",
+    "attachmentsHint": "PDF, JPG, PNG veya WEBP; dosya başına en fazla 10 MB, en fazla {max} dosya.",
+    "cancelled": "Talep geri çekildi.",
+    "submitted": "Talebin Admin onayına gönderildi.",
+    "sendForApproval": "Onaya gönder",
+    "pendingCount": "{count} bekleyen talep",
+    "decision": {
+      "approved": "Talep onaylandı ve uygulandı.",
+      "rejected": "Talep reddedildi; gerekçe gönderildi."
+    },
+    "queue": {
+      "body": "Kulüplerden ve kullanıcılardan gelen onay talepleri — en eski önce. Her karar tek tek verilir.",
+      "type": "Talep türü",
+      "club": "Kulüp",
+      "requestedBy": "Talep eden",
+      "date": "Tarih",
+      "empty": "Bekleyen talep yok",
+      "emptyBody": "Yeni talepler geldiğinde burada görünür."
+    },
+    "detail": {
+      "title": "Talep detayı",
+      "changes": "Değişiklikler",
+      "reason": "Talep gerekçesi",
+      "noAttachments": "Ek yok.",
+      "signedHint": "Bağlantılar güvenlik için 5 dakika geçerlidir; süre dolarsa sayfayı yenileyin.",
+      "target": "İlgili kişi",
+      "noClub": "Kulüp dışı talep",
+      "decision": "Karar",
+      "decisionBody": "Onay değişikliği uygular; ret için gerekçe zorunlu.",
+      "decided": {
+        "APPROVED": "{date} tarihinde onaylandı",
+        "REJECTED": "{date} tarihinde reddedildi",
+        "CANCELLED": "{date} tarihinde talep sahibi geri çekti"
+      }
+    },
+    "diff": {
+      "before": "Mevcut",
+      "after": "Talep edilen",
+      "empty": "(boş)",
+      "none": "Yetki yok",
+      "noRows": "Gösterilecek fark yok.",
+      "permanent": "Süresiz",
+      "fields": {
+        "shortDescTr": "Kısa açıklama",
+        "description": "Açıklama",
+        "contactEmail": "İletişim e-postası",
+        "instagram": "Instagram",
+        "logoKey": "Logo",
+        "coverKey": "Kapak görseli",
+        "title": "Unvan",
+        "permissions": "Yetkiler",
+        "membership": "Üyelik",
+        "bannedUntil": "Engel bitişi",
+        "accountStatus": "Hesap durumu"
+      },
+      "values": {
+        "ACTIVE": "Aktif",
+        "REMOVED": "Çıkarıldı",
+        "BANNED": "Engellendi",
+        "PENDING_ALUMNI_REVIEW": "Mezun onayı bekliyor"
+      }
+    }
+  },
+  "audit": {
+    "body": "Üniversitenizdeki kritik işlemlerin kaydı (yalnızca okuma).",
+    "area": "Alan",
+    "date": "Tarih",
+    "action": "İşlem",
+    "actor": "Yapan",
+    "target": "Hedef",
+    "empty": "Kayıt yok.",
+    "system": "Sistem",
+    "areas": {
+      "approval": "Onaylar",
+      "club": "Kulüpler",
+      "ticket": "Destek",
+      "university": "Üniversite",
+      "identity": "Hesaplar",
+      "profile": "Profiller"
+    },
+    "actions": {
+      "approval_request_created": "Onay talebi oluşturuldu",
+      "approval_request_updated": "Onay talebi güncellendi",
+      "approval_request_approved": "Talep onaylandı",
+      "approval_request_rejected": "Talep reddedildi",
+      "approval_request_cancelled": "Talep geri çekildi",
+      "club_club_created": "Kulüp açıldı",
+      "club_president_assigned": "Başkan atandı",
+      "club_club_updatedDirect": "Kulüp bilgisi (Admin) güncellendi",
+      "club_member_joined": "Kulübe katılım",
+      "club_member_left": "Kulüpten ayrılma",
+      "club_member_removedDirect": "Üye çıkarıldı (Admin)",
+      "club_staff_removedDirect": "Görevli çıkarıldı (Admin)",
+      "club_invite_created": "Davet kodu oluşturuldu",
+      "club_invite_revoked": "Davet kodu iptal edildi",
+      "ticket_ticket_opened": "Destek talebi açıldı",
+      "ticket_ticket_closed": "Destek talebi kapatıldı",
+      "ticket_ticket_reopened": "Destek talebi yeniden açıldı"
+    }
+  },
+  "club": {
+    "roles": {
+      "PRESIDENT": "Başkan",
+      "STAFF": "Görevli",
+      "MEMBER": "Üye"
+    },
+    "status": {
+      "ACTIVE": "Aktif",
+      "SUSPENDED": "Askıda",
+      "ARCHIVED": "Arşivde"
+    },
+    "permissions": {
+      "EVENT_MANAGE": "Etkinlik yönetimi",
+      "REGISTRATION_VIEW": "Başvuruları görme",
+      "REGISTRATION_MANAGE": "Başvuru yönetimi",
+      "TOURNAMENT_MANAGE": "Turnuva yönetimi",
+      "MEMBER_INVITE": "Davet kodları",
+      "ANNOUNCEMENT_POST": "Duyuru",
+      "TICKET_OPEN": "Destek talebi"
+    },
+    "permissionHints": {
+      "EVENT_MANAGE": "Etkinlik taslağı oluşturur, düzenler, onaya gönderir.",
+      "REGISTRATION_VIEW": "Etkinlik başvurularını görüntüler.",
+      "REGISTRATION_MANAGE": "Başvuruları kabul/ret eder, Excel indirir.",
+      "TOURNAMENT_MANAGE": "Turnuva oluşturur, skor girer, maç planlar.",
+      "MEMBER_INVITE": "Davet kodu/linki oluşturur ve iptal eder.",
+      "ANNOUNCEMENT_POST": "Kulüp duyurusu yayınlar.",
+      "TICKET_OPEN": "Kulüp adına Admin'e ticket açar."
+    },
+    "memberCount": "{count} üye",
+    "presidentName": "Başkan: {name}",
+    "noPresident": "Başkan atanmadı",
+    "nav": {
+      "members": "Üyeler",
+      "staff": "Ekip",
+      "invites": "Davet kodları",
+      "requests": "Talepler",
+      "info": "Kulüp bilgileri"
+    },
+    "panel": {
+      "title": "Kulüp paneli",
+      "overviewBody": "{club} kulübünün özeti."
+    },
+    "stats": {
+      "members": "Aktif üye",
+      "joined30": "Son 30 günde katılan",
+      "staff": "Ekip (görevli)",
+      "pendingRequests": "Bekleyen talepler",
+      "invites": "Aktif davet kodları"
+    },
+    "fields": {
+      "name": "Kulüp adı",
+      "category": "Kategori",
+      "shortDesc": "Kısa açıklama",
+      "description": "Açıklama",
+      "descriptionHint": "Paragrafları boş satırla ayırın. Zengin metin editörü etkinliklerle birlikte gelecek.",
+      "contactEmail": "İletişim e-postası",
+      "instagram": "Instagram",
+      "logo": "Logo",
+      "cover": "Kapak görseli",
+      "imageHint": "JPG, PNG veya WEBP, en fazla 10 MB. Logo kare, kapak 8:3 kırpılır.",
+      "president": "Başkan",
+      "presidentEmail": "Başkanın e-postası",
+      "presidentEmailHint": "Üniversitenizde kayıtlı, aktif bir öğrenci olmalı.",
+      "members": "Üye"
+    },
+    "admin": {
+      "body": "Üniversitenizin kulüpleri. Kulüp açabilir, başkan atayabilir, bilgileri doğrudan düzenleyebilirsiniz.",
+      "create": "Kulüp aç",
+      "createBody": "Başkan kulübün ilk üyesi olur; ekibini ve davet kodlarını kendisi yönetir.",
+      "createSubmit": "Kulübü aç",
+      "created": "Kulüp açıldı.",
+      "empty": "Henüz kulüp yok",
+      "emptyBody": "İlk kulübü açıp başkanını atayın.",
+      "changePresident": "Başkanı değiştir",
+      "changePresidentBody": "Eski başkan üye olarak kalır. Yeni başkan bu üniversitenin aktif öğrencisi olmalı ve başka kulüpte başkan olmamalı.",
+      "presidentAssigned": "Başkan atandı.",
+      "updated": "Kulüp bilgileri güncellendi.",
+      "directEditBody": "Admin olarak değişiklikler onaysız uygulanır ve denetim kaydına yazılır.",
+      "directBody": "Admin olarak bu işlem onaysız uygulanır ve denetim kaydına yazılır.",
+      "viewPage": "Kulüp sayfası"
+    },
+    "info": {
+      "title": "Kulüp bilgileri",
+      "body": "Değişiklikler Üniversite Admininin onayından sonra yayına girer. Kulüp adı değiştirilemez.",
+      "pending": "Onay bekleyen bir bilgi değişikliği talebin var. Yeni gönderim o talebi günceller."
+    },
+    "members": {
+      "title": "Üyeler",
+      "body": "Kulübün aktif üyeleri.",
+      "presidentBody": "Üye çıkarma ve engelleme gerekçe + kanıtla Admin onayına gider.",
+      "joined": "Katılım",
+      "empty": "Henüz üye yok.",
+      "pending": "Talep bekliyor",
+      "remove": "Çıkar",
+      "removeTitle": "{name} kulüpten çıkarılsın mı?",
+      "removeBody": "Talep Admin onayına gider. Çıkarılan kişi davet koduyla tekrar katılabilir.",
+      "removed": "Üye çıkarıldı.",
+      "ban": "Engelle",
+      "banTitle": "{name} engellensin mi?",
+      "banBody": "Engellenen kişi süre dolana kadar (süresizse hiç) davet koduyla katılamaz. Talep Admin onayına gider.",
+      "banUntil": "Engel bitiş tarihi",
+      "banUntilHint": "Boş bırakırsanız süresiz.",
+      "reason": "Gerekçe",
+      "reasonHint": "En az 10 karakter. Admin bu metni görür.",
+      "evidence": "Kanıt dosyaları"
+    },
+    "staff": {
+      "title": "Ekip",
+      "body": "Başkan + en fazla 9 görevli. Kullanılan: {used}/{max}. Değişiklikler Admin onayıyla uygulanır.",
+      "add": "Görevli ekle",
+      "addBody": "Görevli kulübün aktif üyesi olmalı. Unvan serbest, yetkiler işaretlediklerin kadar.",
+      "member": "Üye",
+      "titleField": "Unvan",
+      "titleHint": "Ör. Turnuva Sorumlusu",
+      "permissions": "Yetkiler",
+      "noPermissions": "Yetki yok",
+      "editTitle": "{name} — unvan ve yetkiler",
+      "removeTitle": "{name} ekipten çıkarılsın mı?",
+      "removeBody": "Kişi kulüp üyesi olarak kalır. Talep Admin onayına gider.",
+      "reasonOptional": "Gerekçe (isteğe bağlı)",
+      "removed": "Görevli çıkarıldı.",
+      "empty": "Henüz görevli yok.",
+      "emptyBody": "Üyelerinden birini unvan ve yetkiyle ekibe ekleyebilirsin.",
+      "pendingInfo": "{count} görevli atama talebi onay bekliyor (ekip sınırına sayılır)."
+    },
+    "invites": {
+      "body": "Kod veya link ile katılım onaysızdır. Paylaştığın kişiler tek adımda üye olur.",
+      "create": "Yeni davet kodu",
+      "createSubmit": "Kod oluştur",
+      "created": "Davet kodu oluşturuldu.",
+      "revoked": "Davet kodu iptal edildi.",
+      "expiresIn": "Geçerlilik",
+      "maxUses": "Kullanım limiti",
+      "maxUsesHint": "Boş = sınırsız",
+      "code": "Kod",
+      "usage": "Kullanım",
+      "usageUnlimited": "{count} / sınırsız",
+      "expires": "Bitiş",
+      "copyLink": "Linki kopyala",
+      "copied": "Kopyalandı",
+      "revoke": "İptal et",
+      "revokeTitle": "{code} iptal edilsin mi?",
+      "revokeBody": "Bu kodla artık katılım yapılamaz. Mevcut üyeler etkilenmez.",
+      "empty": "Henüz davet kodu yok.",
+      "expiry": {
+        "7": "7 gün",
+        "30": "30 gün",
+        "never": "Süresiz"
+      },
+      "state": {
+        "VALID": "Geçerli",
+        "EXPIRED": "Süresi doldu",
+        "REVOKED": "İptal",
+        "USED_UP": "Limit doldu"
+      },
+      "stateLong": {
+        "VALID": "Davet geçerli.",
+        "EXPIRED": "Bu davetin süresi dolmuş. Kulüpten yeni bir link iste.",
+        "REVOKED": "Bu davet iptal edilmiş. Kulüpten yeni bir link iste.",
+        "USED_UP": "Bu davetin kullanım limiti dolmuş. Kulüpten yeni bir link iste."
+      }
+    },
+    "join": {
+      "title": "Kulübe katıl",
+      "button": "Kulübe katıl",
+      "code": "Davet kodu",
+      "goToClub": "Kulüp sayfasına git",
+      "invalidBody": "Link hatalı ya da kod artık yok. Kulüpten yeni bir davet linki iste.",
+      "loginFirst": "Katılmak için önce okul hesabınla giriş yap.",
+      "welcome": "{club} kulübüne hoş geldin!"
+    },
+    "leave": {
+      "button": "Kulüpten ayrıl",
+      "title": "{club} kulübünden ayrılmak istiyor musun?",
+      "body": "Ayrıldıktan sonra yeniden katılmak için davet kodu gerekir. Görevliysen görevin de sona erer.",
+      "done": "Kulüpten ayrıldın."
+    },
+    "page": {
+      "about": "Hakkında",
+      "noDescription": "Kulüp henüz açıklama eklemedi.",
+      "membership": "Üyelik",
+      "loginToJoin": "Üyeleri görmek ve katılmak için giriş yap.",
+      "youAreMember": "Bu kulübün üyesisin",
+      "joinWithCode": "Kulübe katılmak için kulüp ekibinden aldığın davet kodunu gir.",
+      "moreMembers": "İlk 30 üye gösteriliyor."
+    },
+    "requests": {
+      "body": "Onaya gönderdiğin taleplerin durumu. Bekleyen talebi geri çekebilirsin.",
+      "empty": "Henüz talep yok.",
+      "meta": "{name} · {date}",
+      "reason": "Gerekçe: {reason}",
+      "rejectReason": "Ret gerekçesi: {reason}",
+      "cancel": "Geri çek",
+      "cancelTitle": "Talep geri çekilsin mi?",
+      "cancelBody": "Talep kuyruktan kaldırılır; istersen yeniden gönderebilirsin."
+    },
+    "directory": {
+      "title": "Kulüpler",
+      "exploreBody": "Üniversitendeki kulüpleri keşfet. Etkinlikler yakında burada.",
+      "search": "Kulüp ara",
+      "searchPlaceholder": "Ad veya açıklama",
+      "categories": "Kategoriler",
+      "all": "Tümü",
+      "empty": "Kulüp bulunamadı",
+      "emptyBody": "Aramayı veya kategori filtresini değiştir."
+    },
+    "errors": {
+      "presidentInvalid": "Bu e-postayla üniversitenizde aktif bir öğrenci bulunamadı.",
+      "alreadyPresident": "Bu kişi zaten başka bir kulübün başkanı.",
+      "inviteInvalid": "Davet kodu geçersiz veya süresi dolmuş.",
+      "alreadyMember": "Zaten bu kulübün üyesisin.",
+      "banned": "Bu kulüpten engellendin; katılamazsın.",
+      "otherUniversity": "Bu kulüp başka bir üniversiteye ait; yalnızca kendi üniversitenin kulüplerine katılabilirsin.",
+      "presidentCannotLeave": "Başkan kulüpten ayrılamaz; önce başkanlığı devretmelisin.",
+      "notMember": "Bu kişi kulübün aktif üyesi değil.",
+      "isPresident": "Bu işlem başkana uygulanamaz.",
+      "notStaff": "Bu kişi ekipte değil.",
+      "staffLimit": "Ekip dolu: Başkan + 9 görevli sınırına ulaşıldı (bekleyen atama talepleri dahil).",
+      "inactive": "Kulüp aktif değil."
+    }
+  },
+  "ticket": {
+    "title": "Destek talepleri",
+    "subject": "Konu",
+    "category": "Kategori",
+    "message": "Mesaj",
+    "statusLabel": "Durum",
+    "updated": "Son güncelleme",
+    "messageCount": "{count} mesaj",
+    "empty": "Henüz destek talebi yok.",
+    "categories": {
+      "EVENT": "Etkinlik",
+      "APPROVAL": "Onay talebi",
+      "MEMBERSHIP": "Üyelik",
+      "TOURNAMENT": "Turnuva",
+      "TECHNICAL": "Teknik sorun",
+      "OTHER": "Diğer"
+    },
+    "status": {
+      "OPEN": "Açık",
+      "ANSWERED": "Yanıtlandı",
+      "CLOSED": "Kapalı"
+    },
+    "open": "Talebi gönder",
+    "openToAdmin": "Admin'e yaz",
+    "openToPlatform": "Platform ekibine yaz",
+    "clubBody": "Takıldığın bir konuda üniversitenin Admin ekibine yaz.",
+    "adminBody": "Kulüplerden gelen talepler ve platform ekibine açtıklarınız.",
+    "platformBody": "Üniversite Adminlerinin açtığı talepler.",
+    "fromClubs": "Kulüplerden gelenler",
+    "toPlatform": "Platform ekibine açtıklarım",
+    "reply": "Yanıt yaz",
+    "send": "Gönder",
+    "sent": "Mesaj gönderildi.",
+    "close": "Talebi kapat",
+    "closeTitle": "Talep kapatılsın mı?",
+    "closeBody": "Kapalı talep 7 gün içinde yeniden açılabilir.",
+    "closedDone": "Talep kapatıldı.",
+    "reopen": "Yeniden aç",
+    "reopened": "Talep yeniden açıldı.",
+    "closedReopenable": "Bu talep kapalı. 7 gün içinde yeniden açabilirsiniz.",
+    "closedFinal": "Bu talep kapalı. Yeni bir konu için yeni talep açın.",
+    "openCount": "{count} açık talep",
+    "errors": {
+      "closed": "Talep kapalı; önce yeniden açın.",
+      "reopenExpired": "Kapatıldıktan sonra 7 gün geçti; yeni talep açın.",
+      "notClosed": "Talep zaten açık."
+    }
   }
 }

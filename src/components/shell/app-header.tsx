@@ -10,22 +10,40 @@ import { NavLink } from "./nav-link";
 
 export type AppHeaderUser = { name: string; email: string; roleLabel: string; avatarUrl?: string | null };
 export type PanelLink = { href: string; label: string };
+/** Header "Kulüpler ▾" — Kulüplerim (DESIGN §4). */
+export type HeaderClub = { href: string; name: string; logoUrl: string | null; roleLabel: string; presidentLabel: string };
 
 const icon = "size-(--icon-size-md)";
 
 /**
  * Giriş yapmış header (Productive, 64px, sticky) — DESIGN §4.
- * Kulüpler ve bildirim içerikleri F5/F10'da dolar; şimdilik boş durum.
+ * Kulüpler menüsü app katmanından `clubs` ile dolar; bildirimler F10'da.
  * `logoutAction` app katmanından gelir (shell modül import edemez).
  */
-export async function AppHeader({ user, panels, logoutAction }: { user: AppHeaderUser; panels: PanelLink[]; logoutAction: () => Promise<void> }) {
+export async function AppHeader({ user, panels, clubs = [], logoutAction }: { user: AppHeaderUser; panels: PanelLink[]; clubs?: HeaderClub[]; logoutAction: () => Promise<void> }) {
   const [t, locale] = await Promise.all([getT(), getLocale()]);
 
   const clubsEmpty = (
     <div className="flex flex-col gap-(--space-2) p-(--space-2)">
       <DropdownLabel>{t("nav.myClubs")}</DropdownLabel>
-      <p className="px-(--space-3) text-(length:--type-body-sm) text-fg">{t("nav.noClubs")}</p>
-      <p className="px-(--space-3) text-(length:--type-caption) text-fg-secondary">{t("nav.noClubsHint")}</p>
+      {clubs.length === 0 ? (
+        <>
+          <p className="px-(--space-3) text-(length:--type-body-sm) text-fg">{t("nav.noClubs")}</p>
+          <p className="px-(--space-3) text-(length:--type-caption) text-fg-secondary">{t("nav.noClubsHint")}</p>
+        </>
+      ) : (
+        clubs.map((c) => (
+          <DropdownLink key={c.href} href={c.href}>
+            <Avatar name={c.name} src={c.logoUrl} size="sm" shape="square" />
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate font-semibold text-fg">{c.name}</span>
+              <span className="truncate text-(length:--type-caption) text-fg-secondary">
+                {c.roleLabel} · {c.presidentLabel}
+              </span>
+            </span>
+          </DropdownLink>
+        ))
+      )}
       <DropdownSeparator />
       <DropdownLink href="/kulupler">
         <Compass aria-hidden="true" className={icon} />
@@ -49,6 +67,7 @@ export async function AppHeader({ user, panels, logoutAction }: { user: AppHeade
             <Dropdown
               label={t("nav.clubsMenu")}
               align="start"
+              width="lg"
               triggerClassName="min-h-(--touch-target-min) px-(--space-2) text-(length:--type-body-sm) font-semibold text-fg-secondary hover:text-fg"
               trigger={
                 <>

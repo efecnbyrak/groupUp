@@ -1,0 +1,11 @@
+{
+  "//": "tsx ile çalışan scriptler (seed-demo): modül index'leri Next client kodu da içerdiğinden react-server koşulu kullanılmaz; server-only vitest'teki gibi boş stub'a eşlenir.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/app/*": ["./app/*"],
+      "@/*": ["./src/*"],
+      "server-only": ["./tests/stubs/server-only.ts"]
+    }
+  }
+}

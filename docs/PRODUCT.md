@@ -43,6 +43,13 @@ Tek platform: doğrulanmış okul maili ile kayıt → kulübe kod/link ile kat�
 - İstanbul Kent Üniversitesi domainleri: `ogr.kent.edu.tr` (öğrenci), `mezun.kent.edu.tr` (mezun).
 - Mezun yapısı: domain yolu + domaini olmayan okullar için belge + Admin onayı yolu.
 
+**Kararlar (2026-11-23, F5):**
+- Davet kodu/linki: oluşturan kişi süre (7 gün / 30 gün / süresiz) ve kullanım limiti (sınırsız / N kişi) seçer; varsayılan **30 gün + sınırsız**. Kod istenince iptal edilebilir.
+- Kulüpten çıkarılan (`REMOVED`) üye davet koduyla tekrar katılabilir. Engellenen (`BANNED`) üye engel süresi dolana kadar (süresiz engelde hiç) katılamaz.
+- Kulüp sayfası `/kulupler/[slug]` herkese açıktır (ad, logo, kategori, açıklama, başkan adı, üye sayısı). Üye listesi ve "Katıl" yalnızca aynı üniversitenin giriş yapmış kullanıcılarına görünür.
+- Onay motorundaki her ret (mezun belgesi dahil) gerekçe ister (10–500 karakter); gerekçe talep sahibine e-postayla gider.
+- Öğrenci aynı anda sınırsız kulübe üye olabilir; Başkan başka kulüplerde üye/görevli olabilir (yalnızca tek kulüpte Başkan).
+
 **Varsayımlar (kullanıcı aksini söyleyene kadar geçerli):**
 - Görevli aynı kulübün üyesi olmak zorundadır.
 - Bir üniversitenin birden fazla Admini olabilir.

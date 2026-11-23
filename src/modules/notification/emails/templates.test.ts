@@ -31,4 +31,22 @@ describe("mail şablonları", () => {
     expect(tr.text).toContain("30 dakika");
     expect(renderTemplate("delete-account", "en", { name: "A", url }).subject).toMatch(/delet/i);
   });
+
+  it("request-decided: tip etiketi, kulüp ve ret gerekçesi (escape)", () => {
+    const mail = renderTemplate("request-decided", "tr", { name: "A", type: "STAFF_ASSIGN", clubName: "Satranç <Kulübü>", approved: false, reason: "Gerekçe <b>metni</b>" });
+    expect(mail.subject).toMatch(/reddedildi/i);
+    expect(mail.text).toContain("Görevli atama");
+    expect(mail.text).toContain("Gerekçe <b>metni</b>");
+    expect(mail.html).toContain("&lt;b&gt;");
+    expect(mail.html).toContain("Satranç &lt;Kulübü&gt;");
+    const ok = renderTemplate("request-decided", "en", { name: "A", type: "CLUB_UPDATE", clubName: "C", approved: true, reason: null });
+    expect(ok.subject).toMatch(/approved/i);
+  });
+
+  it("alumni-result: onay/ret ve bağlantı", () => {
+    const rej = renderTemplate("alumni-result", "tr", { name: "A", approved: false, reason: "Belge okunaklı değil, lütfen tekrar yükleyin.", url: "http://x/mezun-dogrulama" });
+    expect(rej.text).toContain("okunaklı");
+    expect(rej.html).toContain('href="http://x/mezun-dogrulama"');
+    expect(renderTemplate("alumni-result", "en", { name: "A", approved: true, reason: null, url: "http://x/giris" }).subject).toMatch(/approved|verified/i);
+  });
 });

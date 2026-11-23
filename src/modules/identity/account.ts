@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 import { enforceRateLimits } from "@/lib/rate-limit";
 import { getStorage } from "@/lib/storage";
 import { sendEmailSafe } from "@/modules/notification";
+import { detachUserFromClubs, isClubPresident } from "@/modules/club";
 import { anonymizeProfileForDeletion } from "@/modules/profile";
 import { revokeAdminRolesForUser } from "@/modules/university";
 
@@ -47,7 +48,7 @@ const DELETE_TTL_MS = 30 * 60 * 1000;
 
 /**
  * Adım 1: şifre doğrulanır → 30 dk'lık tek kullanımlık link (DELETE_ACCOUNT) maile gider.
- * Son Süper Admin hesabı silinemez. (Kulüp başkanı kontrolü F5'te kulüp modülüyle eklenecek.)
+ * Son Süper Admin hesabı silinemez. Kulüp başkanı önce başkanlığı devretmelidir (Admin'e başvurur).
  */
 export async function requestAccountDeletion(actor: { id: string }, password: string): Promise<void> {
   await enforceRateLimits(limits.accountUser(actor.id));
@@ -60,6 +61,7 @@ export async function requestAccountDeletion(actor: { id: string }, password: st
     const others = await db.user.count({ where: { platformRole: "SUPER_ADMIN", status: "ACTIVE", id: { not: actor.id } } });
     if (others === 0) throw fail("LAST_SUPER_ADMIN");
   }
+  if (await isClubPresident(actor.id)) throw fail("PRESIDENT_MUST_TRANSFER");
   const token = randomToken();
   const now = new Date();
   await db.$transaction(async (tx) => {
@@ -104,7 +106,9 @@ export async function confirmAccountDeletion(token: string): Promise<void> {
       where: { id: userId },
       data: { email: `deleted+${userId}@deleted.invalid`, passwordHash, status: "DELETED", deletedAt: new Date(), platformRole: "USER" },
     });
+    if (await isClubPresident(userId, tx)) throw fail("PRESIDENT_MUST_TRANSFER");
     const removed = await anonymizeProfileForDeletion(tx, userId);
+    await detachUserFromClubs(tx, userId);
     await revokeAdminRolesForUser(tx, userId);
     await tx.session.deleteMany({ where: { userId } });
     await tx.emailToken.deleteMany({ where: { userId } });

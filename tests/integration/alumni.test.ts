@@ -3,15 +3,17 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { getStorage } from "@/lib/storage";
 import { register, verifyEmail } from "@/modules/identity";
-import { getAlumniVerification, submitAlumniDocument } from "@/modules/profile";
+import { decideRequest, getRequestDetail, listQueue, submitRequest } from "@/modules/approval";
+import { getAlumniVerification } from "@/modules/profile";
 import { listPendingAlumni } from "@/modules/university";
 
-import { codeFrom, createActiveUser, errorCode, registerInput, resetDatabase } from "./helpers";
+import { codeFrom, createActiveUser, errorCode, lastMailTo, mailbox, registerInput, resetDatabase } from "./helpers";
 
 type Fixture = Awaited<ReturnType<typeof resetDatabase>>;
 let fx: Fixture;
 const PERSONAL = "ayse.mezun@kisisel.com";
 const PDF = Buffer.from("%PDF-1.7\n1 0 obj << >> endobj\ntrailer << >>\n%%EOF");
+const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]);
 
 beforeEach(async () => {
   fx = await resetDatabase();
@@ -51,34 +53,71 @@ describe("manuel mezun kaydı", () => {
   });
 });
 
-describe("belge yükleme", () => {
-  it("PDF'i private storage'a yazar, Admin listesinde görünür; yenisi eskisini siler", async () => {
+const upload = (user: { id: string; universityId: string | null }, body: Buffer, name: string) =>
+  submitRequest(user, { type: "ALUMNI_VERIFY", universityId: user.universityId!, clubId: null, payload: {}, files: [{ name, body }] });
+const REASON = "Belge okunaklı değil, lütfen net bir kopya yükleyin.";
+
+describe("belge yükleme + karar (onay motoru, ALUMNI_VERIFY)", () => {
+  it("PDF private depoya, talep Admin kuyruğuna; yeniden yükleme aynı talebi günceller ve eski dosyayı siler", async () => {
     const user = await manualAlumni();
-    await submitAlumniDocument(user, PDF, "../../diploma.pdf");
-    const first = await db.alumniVerification.findUniqueOrThrow({ where: { userId: user.id } });
-    expect(first).toMatchObject({ status: "PENDING", fileName: "diploma.pdf", mimeType: "application/pdf", universityId: fx.university.id });
+    const { id } = await upload(user, PDF, "../../diploma.pdf");
+    const first = await db.attachment.findFirstOrThrow({ where: { changeRequestId: id } });
+    expect(first).toMatchObject({ fileName: "diploma.pdf", mimeType: "application/pdf", isPrivate: true });
     expect(await getStorage().get(first.storageKey, "private")).not.toBeNull();
     expect(await getStorage().get(first.storageKey, "public")).toBeNull();
+    expect(await getAlumniVerification(user.id)).toMatchObject({ status: "PENDING", changeRequestId: id });
     expect((await listPendingAlumni(fx.university.id)).map((p) => p.user.email)).toEqual([PERSONAL]);
     expect(await listPendingAlumni(fx.other.id)).toHaveLength(0);
+    expect((await listQueue(fx.university.id, { type: "ALUMNI_VERIFY" })).items).toHaveLength(1);
 
-    await db.alumniVerification.update({ where: { userId: user.id }, data: { status: "REJECTED", rejectReason: "Okunmuyor" } });
-    await submitAlumniDocument(user, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0]), "yeni.png");
-    const second = await getAlumniVerification(user.id);
-    expect(second).toMatchObject({ status: "PENDING", rejectReason: null, fileName: "yeni.png" });
+    const again = await upload(user, PNG, "yeni.png");
+    expect(again).toEqual({ id, updated: true });
     expect(await getStorage().get(first.storageKey, "private")).toBeNull();
+    expect((await db.attachment.findMany({ where: { changeRequestId: id } })).map((a) => a.fileName)).toEqual(["yeni.png"]);
   });
 
-  it("sahte uzantılı, desteklenmeyen ve büyük dosyaları reddeder", async () => {
+  it("ret: gerekçe zorunlu, maille gider; kullanıcı yeniden yükler → onay → hesap ACTIVE + mail", async () => {
     const user = await manualAlumni();
-    expect(await errorCode(submitAlumniDocument(user, Buffer.from("<html>diploma</html>"), "diploma.pdf"))).toBe("FILE_TYPE");
-    expect(await errorCode(submitAlumniDocument(user, Buffer.from([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]), "a.webp"))).toBe("FILE_TYPE");
-    expect(await errorCode(submitAlumniDocument(user, Buffer.concat([PDF, Buffer.alloc(10 * 1024 * 1024)]), "b.pdf"))).toBe("FILE_TOO_LARGE");
+    const admin = await createActiveUser(fx.university.id, "admin@ogr.test.edu.tr");
+    await db.universityAdmin.create({ data: { universityId: fx.university.id, userId: admin.id } });
+    const { id } = await upload(user, PDF, "diploma.pdf");
+
+    expect(await errorCode(decideRequest(admin, fx.university.id, id, "REJECT", "  "))).toBe("REASON_REQUIRED");
+    mailbox().length = 0;
+    await decideRequest(admin, fx.university.id, id, "REJECT", REASON);
+    expect(await getAlumniVerification(user.id)).toMatchObject({ status: "REJECTED", rejectReason: REASON });
+    expect((await db.user.findUniqueOrThrow({ where: { id: user.id } })).status).toBe("PENDING_ALUMNI_REVIEW");
+    expect(lastMailTo(PERSONAL)?.text).toContain(REASON);
+    expect(await errorCode(decideRequest(admin, fx.university.id, id, "APPROVE", null))).toBe("ALREADY_DECIDED");
+
+    const second = await upload(user, PDF, "diploma-net.pdf");
+    expect(second.id).not.toBe(id);
+    await decideRequest(admin, fx.university.id, second.id, "APPROVE", null);
+    expect(await db.user.findUniqueOrThrow({ where: { id: user.id } })).toMatchObject({ status: "ACTIVE", type: "ALUMNI" });
+    expect(await getAlumniVerification(user.id)).toMatchObject({ status: "APPROVED", rejectReason: null });
+    expect(lastMailTo(PERSONAL)?.subject).toMatch(/onaylandı/);
+    expect(await db.auditLog.count({ where: { action: "approval.request.approved", targetId: second.id } })).toBe(1);
+  });
+
+  it("başka üniversitenin Admini karar veremez ve detayı göremez", async () => {
+    const user = await manualAlumni();
+    const { id } = await upload(user, PDF, "diploma.pdf");
+    const outsider = await createActiveUser(fx.other.id, "admin@ogr.baska.edu.tr");
+    expect(await errorCode(decideRequest(outsider, fx.other.id, id, "APPROVE", null))).toBe("NOT_FOUND");
+    expect(await getRequestDetail(fx.other.id, id)).toBeNull();
+    expect(await getRequestDetail(fx.university.id, id)).not.toBeNull();
+  });
+
+  it("sahte uzantılı ve büyük dosyaları reddeder; belgesiz talep olmaz", async () => {
+    const user = await manualAlumni();
+    expect(await errorCode(upload(user, Buffer.from("<html>diploma</html>"), "diploma.pdf"))).toBe("FILE_TYPE");
+    expect(await errorCode(upload(user, Buffer.concat([PDF, Buffer.alloc(10 * 1024 * 1024)]), "b.pdf"))).toBe("FILE_TOO_LARGE");
+    expect(await errorCode(submitRequest(user, { type: "ALUMNI_VERIFY", universityId: fx.university.id, clubId: null, payload: {} }))).toBe("ATTACHMENT_REQUIRED");
     expect(await getAlumniVerification(user.id)).toBeNull();
   });
 
   it("ACTIVE kullanıcı belge yükleyemez", async () => {
     const active = await createActiveUser(fx.university.id, "a@ogr.test.edu.tr", { type: "ALUMNI" });
-    expect(await errorCode(submitAlumniDocument(active, PDF, "d.pdf"))).toBe("NOT_FOUND");
+    expect(await errorCode(upload(active, PDF, "d.pdf"))).toBe("NOT_FOUND");
   });
 });

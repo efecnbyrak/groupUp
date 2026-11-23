@@ -7,7 +7,7 @@ import { getStorage } from "@/lib/storage";
 import { confirmAccountDeletion, isDeleteTokenValid, listSessions, login, requestAccountDeletion, revokeSession } from "@/modules/identity";
 import { setAvatar } from "@/modules/profile";
 
-import { createActiveUser, errorCode, lastMailTo, resetDatabase } from "./helpers";
+import { clubFixture, createActiveUser, errorCode, lastMailTo, resetDatabase } from "./helpers";
 
 type Fixture = Awaited<ReturnType<typeof resetDatabase>>;
 let fx: Fixture;
@@ -107,5 +107,19 @@ describe("hesap silme", () => {
     expect(await errorCode(requestAccountDeletion(sa, PASSWORD))).toBe("LAST_SUPER_ADMIN");
     await userWithPassword("sa2@groupup.local", "SUPER_ADMIN");
     expect(await errorCode(requestAccountDeletion(sa, PASSWORD))).toBe("NO_ERROR");
+  });
+
+  it("kulüp başkanı önce devretmeli; üye silinince üyelik LEFT, görevlilik silinir", async () => {
+    const { club, president, members } = await clubFixture(fx.university.id, { members: 1 });
+    await db.user.update({ where: { id: president.id }, data: { passwordHash: await hashPassword(PASSWORD) } });
+    expect(await errorCode(requestAccountDeletion(president, PASSWORD))).toBe("PRESIDENT_MUST_TRANSFER");
+
+    const member = members[0]!;
+    await db.user.update({ where: { id: member.id }, data: { passwordHash: await hashPassword(PASSWORD) } });
+    await db.staffAssignment.create({ data: { clubId: club.id, userId: member.id, title: "Sayman", permissions: [] } });
+    await requestAccountDeletion(member, PASSWORD);
+    await confirmAccountDeletion(deleteTokenFor(member.email));
+    expect((await db.membership.findFirstOrThrow({ where: { clubId: club.id, userId: member.id } })).status).toBe("LEFT");
+    expect(await db.staffAssignment.count({ where: { userId: member.id } })).toBe(0);
   });
 });

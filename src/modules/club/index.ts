@@ -1,4 +1,81 @@
-// club modülünün public API'si (F4: yalnızca kategoriler; kulüp/üyelik F5).
-export { createClubCategoryAction, deleteClubCategoryAction, updateClubCategoryAction } from "./actions";
-export { clubCategorySchema, type ClubCategoryInput } from "./schemas";
-export { createClubCategory, deleteClubCategory, listClubCategories, updateClubCategory, type ClubErrorCode } from "./service";
+// club modülünün public API'si. approval handler'ları buradaki `tx` alan fonksiyonları çağırır
+// (bağımlılık yönü approval → club; club approval'ı import etmez — ADR-0007 ek notu).
+export {
+  adminRemoveMemberAction,
+  adminRemoveStaffAction,
+  assignPresidentAction,
+  createClubAction,
+  createClubCategoryAction,
+  createInviteAction,
+  deleteClubCategoryAction,
+  joinClubAction,
+  leaveClubAction,
+  revokeInviteAction,
+  updateClubCategoryAction,
+  updateClubDirectAction,
+} from "./actions";
+export {
+  applyClubUpdate,
+  assignPresident,
+  CLUB_IMAGE_MAX_BYTES,
+  CLUB_INFO_FIELDS,
+  createClub,
+  getClubInfo,
+  isClubPresident,
+  storeClubImage,
+  updateClubDirect,
+  type ClubInfo,
+  type ClubInfoField,
+} from "./clubs";
+export { DESCRIPTION_MAX, docParagraphs, docToText, textToDoc } from "./description";
+export { CLUB_ERROR_KEYS } from "./errors";
+export {
+  adminRemoveMember,
+  adminRemoveStaff,
+  assertActiveNonPresidentMember,
+  assignStaff,
+  banMember,
+  createInvite,
+  detachUserFromClubs,
+  getStaffAssignment,
+  inviteState,
+  isBanActive,
+  joinWithInvite,
+  leaveClub,
+  listStaffUserIds,
+  lockClub,
+  previewInvite,
+  removeMember,
+  removeStaff,
+  revokeInvite,
+  type InviteState,
+} from "./membership";
+export {
+  CLUB_PAGE_SIZE,
+  clubOverview,
+  findClubBySlug,
+  getClubForAdmin,
+  getClubPublic,
+  getMembership,
+  listCategoriesWithCounts,
+  listClubs,
+  listClubsForAdmin,
+  listInvites,
+  listMembers,
+  listMyClubs,
+  listStaff,
+  listStaffCandidates,
+  MEMBER_PAGE_SIZE,
+  personName,
+  type ClubCardData,
+} from "./queries";
+export {
+  clubCategorySchema,
+  clubInfoSchema,
+  INVITE_EXPIRY_OPTIONS,
+  type ClubCategoryInput,
+  type ClubInfoInput,
+  type CreateClubInput,
+  type InviteCreateInput,
+} from "./schemas";
+export { createClubCategory, deleteClubCategory, fail as clubError, listClubCategories, updateClubCategory, type ClubErrorCode } from "./service";

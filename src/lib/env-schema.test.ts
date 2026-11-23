@@ -28,6 +28,8 @@ describe("parseEnv", () => {
   it("boş string'i tanımsız sayar", () => {
     const env = parseEnv(valid);
     expect(env.SUPERADMIN_EMAIL).toBeUndefined();
+    expect(env.DEMO_PASSWORD).toBeUndefined();
+    expect(parseEnv({ ...valid, DEMO_PASSWORD: "Demo!1234" }).DEMO_PASSWORD).toBe("Demo!1234");
     expect(env.AWS_ACCESS_KEY_ID).toBeUndefined();
   });
 

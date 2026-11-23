@@ -63,6 +63,62 @@ enum ChangeRequestStatus {
   CANCELLED
 }
 
+enum MembershipStatus {
+  ACTIVE
+  LEFT
+  REMOVED
+  BANNED
+}
+
+enum ClubStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum StaffPermission {
+  EVENT_MANAGE
+  REGISTRATION_VIEW
+  REGISTRATION_MANAGE
+  TOURNAMENT_MANAGE
+  MEMBER_INVITE
+  ANNOUNCEMENT_POST
+  TICKET_OPEN
+}
+
+enum ChangeRequestType {
+  CLUB_UPDATE
+  EVENT_PUBLISH
+  EVENT_UPDATE
+  EVENT_CANCEL
+  MEMBER_REMOVE
+  MEMBER_BAN
+  STAFF_ASSIGN
+  STAFF_REMOVE
+  ALUMNI_VERIFY
+  ELECTION_RESULT
+}
+
+enum TicketStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+enum TicketScope {
+  CLUB_TO_ADMIN
+  ADMIN_TO_PLATFORM
+}
+
+enum TicketCategory {
+  EVENT
+  APPROVAL
+  MEMBERSHIP
+  TOURNAMENT
+  TECHNICAL
+  OTHER
+}
+
 // ============================================================
 // Kimlik ve üniversite (F2) — sahip: university, identity, profile modülleri
 // ============================================================
@@ -81,6 +137,7 @@ model University {
   faculties Faculty[]
   admins    UniversityAdmin[]
   users     User[]
+  clubs     Club[]
 }
 
 model UniversityDomain {
@@ -147,14 +204,11 @@ model UniversityRequest {
 }
 
 model AlumniVerification {
-  // Manuel mezun yolu (AUTH-EMAIL §6). Belge alanları F5'te Attachment'a taşınır; karar ChangeRequest ile.
+  // Manuel mezun yolu (AUTH-EMAIL §6) — profile modülünün durum kaydı.
+  // Belge: Attachment (approval), karar: ChangeRequest(ALUMNI_VERIFY) → changeRequestId son talebi gösterir.
   id              String              @id @default(cuid())
   userId          String              @unique
   universityId    String
-  storageKey      String // private storage
-  fileName        String
-  mimeType        String
-  sizeBytes       Int
   status          ChangeRequestStatus @default(PENDING)
   rejectReason    String?
   changeRequestId String?             @unique
@@ -181,11 +235,15 @@ model User {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  university      University?       @relation(fields: [universityId], references: [id])
-  profile         Profile?
-  sessions        Session[]
-  universityAdmin UniversityAdmin[]
+  university         University?         @relation(fields: [universityId], references: [id])
+  profile            Profile?
+  sessions           Session[]
+  universityAdmin    UniversityAdmin[]
   alumniVerification AlumniVerification?
+  presidentOf        Club?               @relation("ClubPresident")
+  memberships        Membership[]
+  staffRoles         StaffAssignment[]
+  changeRequests     ChangeRequest[]     @relation("ChangeRequestRequester")
 
   @@index([universityId, type])
 }
@@ -281,6 +339,8 @@ model ClubCategory {
   icon   String? // lucide ikon adı
   order  Int     @default(0)
 
+  clubs Club[]
+
   @@index([order])
 }
 
@@ -296,4 +356,194 @@ model EventCategory {
   children EventCategory[] @relation("EventCategoryTree")
 
   @@index([parentId, order])
+}
+
+// ============================================================
+// Kulüp, onay, ticket (F5) — sahip: club (Club..Announcement), approval (ChangeRequest, Attachment), ticket
+// ============================================================
+model Club {
+  id              String     @id @default(cuid())
+  universityId    String
+  categoryId      String
+  slug            String     @unique // genel benzersiz: public /kulupler/[slug] üniversitesiz çözülür
+  name            String
+  shortDescTr     String     @db.VarChar(200)
+  shortDescEn     String?    @db.VarChar(200)
+  descriptionTr   Json? // Tiptap uyumlu doc (F5: yalnızca paragraflar)
+  descriptionEn   Json?
+  translationHash String?
+  logoKey         String?
+  coverKey        String?
+  contactEmail    String?
+  instagram       String?
+  presidentId     String?    @unique // bir kişi tek kulüpte başkan
+  status          ClubStatus @default(ACTIVE)
+  deletedAt       DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  university     University        @relation(fields: [universityId], references: [id])
+  category       ClubCategory      @relation(fields: [categoryId], references: [id])
+  president      User?             @relation("ClubPresident", fields: [presidentId], references: [id])
+  memberships    Membership[]
+  invites        ClubInvite[]
+  staff          StaffAssignment[]
+  announcements  Announcement[]
+  changeRequests ChangeRequest[]
+  tickets        Ticket[]
+
+  @@index([universityId, categoryId])
+  @@index([universityId, status, name])
+  @@index([categoryId])
+}
+
+model Membership {
+  id          String           @id @default(cuid())
+  clubId      String
+  userId      String
+  status      MembershipStatus @default(ACTIVE)
+  joinedAt    DateTime         @default(now())
+  leftAt      DateTime?
+  bannedUntil DateTime? // BANNED + null = süresiz
+  joinedVia   String? // "code" | "link" | "admin" | "president"
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+  @@index([userId, status])
+  @@index([clubId, status, joinedAt])
+}
+
+model ClubInvite {
+  id          String    @id @default(cuid())
+  clubId      String
+  code        String    @unique // 8 karakter, karışmayan alfabe
+  createdById String
+  maxUses     Int?
+  usedCount   Int       @default(0)
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, createdAt])
+  @@index([createdById])
+}
+
+model StaffAssignment {
+  id          String            @id @default(cuid())
+  clubId      String
+  userId      String
+  title       String            @db.VarChar(60)
+  permissions StaffPermission[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([clubId, userId])
+  @@index([userId])
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  clubId    String
+  authorId  String
+  titleTr   String
+  titleEn   String?
+  bodyTr    Json
+  bodyEn    Json?
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([clubId, createdAt])
+  @@index([authorId])
+}
+
+model ChangeRequest {
+  id            String              @id @default(cuid())
+  universityId  String
+  clubId        String?
+  type          ChangeRequestType
+  targetId      String // clubId / eventId / userId ...
+  payload       Json // tipine göre zod şeması
+  reason        String?             @db.Text
+  status        ChangeRequestStatus @default(PENDING)
+  requestedById String
+  reviewedById  String?
+  decisionNote  String?             @db.Text
+  decidedAt     DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  club        Club?        @relation(fields: [clubId], references: [id])
+  requestedBy User         @relation("ChangeRequestRequester", fields: [requestedById], references: [id])
+  attachments Attachment[]
+
+  // + migration'da elle: aynı (type, targetId, clubId) için tek PENDING (kısmi unique index)
+  @@index([universityId, status, createdAt])
+  @@index([targetId, type, status])
+  @@index([clubId, createdAt])
+  @@index([requestedById])
+}
+
+model Attachment {
+  id              String   @id @default(cuid())
+  storageKey      String   @unique
+  fileName        String
+  mimeType        String
+  sizeBytes       Int
+  isPrivate       Boolean  @default(true)
+  uploadedById    String
+  changeRequestId String?
+  ticketMessageId String?
+  createdAt       DateTime @default(now())
+
+  changeRequest ChangeRequest? @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
+  ticketMessage TicketMessage? @relation(fields: [ticketMessageId], references: [id], onDelete: Cascade)
+
+  @@index([changeRequestId])
+  @@index([ticketMessageId])
+  @@index([uploadedById])
+}
+
+model Ticket {
+  id              String         @id @default(cuid())
+  universityId    String
+  clubId          String?
+  scope           TicketScope
+  category        TicketCategory @default(OTHER)
+  subject         String         @db.VarChar(160)
+  status          TicketStatus   @default(OPEN)
+  openedById      String
+  changeRequestId String?
+  closedAt        DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  club     Club?           @relation(fields: [clubId], references: [id])
+  messages TicketMessage[]
+
+  @@index([universityId, scope, status, updatedAt])
+  @@index([clubId, updatedAt])
+  @@index([openedById])
+  @@index([scope, status, updatedAt])
+}
+
+model TicketMessage {
+  id          String       @id @default(cuid())
+  ticketId    String
+  authorId    String
+  body        String       @db.Text
+  createdAt   DateTime     @default(now())
+  ticket      Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+
+  @@index([ticketId, createdAt])
+  @@index([authorId])
 }

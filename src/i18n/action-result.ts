@@ -69,7 +69,7 @@ export async function runAction<S extends z.ZodType, U>(
     authorize: () => Promise<U>;
     schema: S;
     errors?: Partial<Record<string, MessageKey>>;
-    run: (user: U, data: z.output<S>, t: Translate) => Promise<ActionResult | void>;
+    run: (user: U, data: z.output<S>, t: Translate, formData: FormData) => Promise<ActionResult | void>;
   },
 ): Promise<ActionResult> {
   const t = await getT();
@@ -77,7 +77,7 @@ export async function runAction<S extends z.ZodType, U>(
     const user = await opts.authorize();
     const parsed = opts.schema.safeParse(formToObject(formData));
     if (!parsed.success) return invalidForm(parsed.error, t);
-    return (await opts.run(user, parsed.data, t)) ?? { ok: true };
+    return (await opts.run(user, parsed.data, t, formData)) ?? { ok: true };
   } catch (err) {
     unstable_rethrow(err);
     return actionError(err, t, opts.errors);

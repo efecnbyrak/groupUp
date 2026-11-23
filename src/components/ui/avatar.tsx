@@ -10,12 +10,14 @@ export function initials(name: string): string {
 }
 
 /** Profil görseli; yoksa baş harfler. Görsel her zaman sabit boyutlu (CLS yok). */
-export function Avatar({ name, src, size = "md", className }: { name: string; src?: string | null; size?: keyof typeof sizes; className?: string }) {
+/** `shape="square"`: kulüp logosu (köşeli). */
+export function Avatar({ name, src, size = "md", shape = "circle", className }: { name: string; src?: string | null; size?: keyof typeof sizes; shape?: "circle" | "square"; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-subtle font-semibold text-brand-active",
+        "inline-flex shrink-0 items-center justify-center overflow-hidden bg-brand-subtle font-semibold text-brand-active",
         sizes[size],
+        shape === "circle" ? "rounded-full" : "rounded-control",
         className,
       )}
     >

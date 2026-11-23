@@ -35,7 +35,8 @@ export type IdentityErrorCode =
   | "EMAIL_NOT_ALLOWED"
   | "NOT_FOUND"
   | "DELETE_TOKEN_INVALID"
-  | "LAST_SUPER_ADMIN";
+  | "LAST_SUPER_ADMIN"
+  | "PRESIDENT_MUST_TRANSFER";
 
 export const fail = (code: IdentityErrorCode, fields?: Record<string, string>) => new ServiceError<IdentityErrorCode>(code, fields);
 

@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { ToastProvider } from "@/components/ui";
 import { getT } from "@/i18n/server";
 
 import { Logo } from "./logo";
@@ -9,7 +10,8 @@ import { NavLink } from "./nav-link";
 import { PanelMobileNav } from "./panel-mobile-nav";
 
 export type PanelName = "student" | "alumni" | "president" | "staff" | "admin" | "platform";
-export type PanelNavItem = { href: string; label: string; icon: ReactNode; exact?: boolean };
+/** `badge`: sayaç (onay kuyruğu, açık ticket) — 0 ise gösterilmez; `badgeLabel` ekran okuyucu metni. */
+export type PanelNavItem = { href: string; label: string; icon: ReactNode; exact?: boolean; badge?: number; badgeLabel?: string };
 
 /**
  * Panel kabuğu (DESIGN §8, templates/dashboard): üstte 4px rol şeridi, solda sidebar
@@ -21,7 +23,21 @@ export async function PanelShell({ panel, title, roleLabel, items, children }: {
   const nav = (
     <nav aria-label={t("nav.panelMenu")} className="flex flex-col gap-(--space-0-5)">
       {items.map((item) => (
-        <NavLink key={item.href} href={item.href} icon={item.icon} variant="sidebar" exact={item.exact}>
+        <NavLink
+          key={item.href}
+          href={item.href}
+          icon={item.icon}
+          variant="sidebar"
+          exact={item.exact}
+          trailing={
+            item.badge ? (
+              <span className="ml-auto inline-flex min-w-(--space-6) items-center justify-center rounded-badge bg-brand px-(--space-1-5) text-(length:--type-caption) font-semibold text-on-brand">
+                <span aria-hidden="true">{item.badge > 99 ? "99+" : item.badge}</span>
+                <span className="sr-only">{item.badgeLabel ?? item.badge}</span>
+              </span>
+            ) : null
+          }
+        >
           {item.label}
         </NavLink>
       ))}
@@ -62,7 +78,9 @@ export async function PanelShell({ panel, title, roleLabel, items, children }: {
           </aside>
         </div>
         <main id="icerik" className="min-w-0 flex-1 px-(--gutter) py-(--space-6)">
-          <div className="mx-auto flex w-full max-w-(--content-width-2xl) flex-col gap-(--space-6)">{children}</div>
+          <ToastProvider closeLabel={t("common.close")}>
+            <div className="mx-auto flex w-full max-w-(--content-width-2xl) flex-col gap-(--space-6)">{children}</div>
+          </ToastProvider>
         </main>
       </div>
     </div>

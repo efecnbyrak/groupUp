@@ -60,6 +60,11 @@ export function ToastProvider({ closeLabel, children }: { closeLabel: string; ch
   );
 }
 
+/** Sağlayıcı yoksa null (ör. auth sayfaları) — çağıran sessizce atlar. */
+export function useOptionalToast(): ToastApi | null {
+  return useContext(ToastContext);
+}
+
 export function useToast(): ToastApi {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast: ToastProvider gerekli");

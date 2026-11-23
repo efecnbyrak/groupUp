@@ -7,21 +7,22 @@ import { ActionForm, Alert, Button } from "@/components/ui";
 import { getLocale, getT } from "@/i18n/server";
 import { getSessionUser } from "@/lib/authz";
 import { formatDateTime } from "@/lib/dates";
+import { getAlumniRequestFiles, uploadAlumniDocumentAction } from "@/modules/approval";
 import { logoutAction } from "@/modules/identity";
-import { getAlumniVerification, uploadAlumniDocumentAction } from "@/modules/profile";
+import { getAlumniVerification } from "@/modules/profile";
 
 import { AuthCard } from "../_components/auth-card";
 
 export const generateMetadata = titled("alumni.title");
 
-/** Manuel mezun yolu: belge yükleme + bekleme ekranı. Karar F5'te (onay motoru). */
+/** Manuel mezun yolu: belge yükleme + bekleme ekranı; karar onay motorunda (ALUMNI_VERIFY), ret gerekçesi gösterilir. */
 async function Content() {
   const [t, locale, user] = await Promise.all([getT(), getLocale(), getSessionUser()]);
   if (!user) redirect("/giris?next=%2Fmezun-dogrulama");
   if (!user.emailVerified) redirect("/dogrula");
   if (user.status === "ACTIVE") redirect("/akis");
   if (user.status !== "PENDING_ALUMNI_REVIEW") redirect("/giris");
-  const verification = await getAlumniVerification(user.id);
+  const [verification, files] = await Promise.all([getAlumniVerification(user.id), getAlumniRequestFiles(user.id)]);
 
   const form = (submitLabel: string) => (
     <ActionForm
@@ -52,8 +53,9 @@ async function Content() {
         ) : verification.status === "REJECTED" ? (
           <>
             <Alert tone="danger" title={t("alumni.rejectedTitle")}>
-              {verification.rejectReason ?? t("alumni.rejectedBody")}
+              {verification.rejectReason ? t("alumni.rejectedReason", { reason: verification.rejectReason }) : t("alumni.rejectedBody")}
             </Alert>
+            <p className="text-(length:--type-body-sm) text-fg-secondary">{t("alumni.rejectedRetry")}</p>
             {form(t("alumni.resubmit"))}
           </>
         ) : (
@@ -64,7 +66,7 @@ async function Content() {
                 <p className="font-semibold text-fg">{t("alumni.pendingTitle")}</p>
                 <p className="text-(length:--type-body-sm) text-fg-secondary">{t("alumni.pendingBody")}</p>
                 <p className="text-(length:--type-caption) text-fg-secondary">
-                  {t("alumni.submittedFile", { file: verification.fileName, date: formatDateTime(verification.submittedAt, locale) })}
+                  {t("alumni.submittedFile", { file: files?.fileNames.join(", ") || "—", date: formatDateTime(verification.submittedAt, locale) })}
                 </p>
               </div>
             </div>
