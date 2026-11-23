@@ -146,6 +146,26 @@ model UniversityRequest {
   @@index([status, createdAt])
 }
 
+model AlumniVerification {
+  // Manuel mezun yolu (AUTH-EMAIL §6). Belge alanları F5'te Attachment'a taşınır; karar ChangeRequest ile.
+  id              String              @id @default(cuid())
+  userId          String              @unique
+  universityId    String
+  storageKey      String // private storage
+  fileName        String
+  mimeType        String
+  sizeBytes       Int
+  status          ChangeRequestStatus @default(PENDING)
+  rejectReason    String?
+  changeRequestId String?             @unique
+  submittedAt     DateTime            @default(now())
+  decidedAt       DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([universityId, status, submittedAt])
+}
+
 model User {
   id              String       @id @default(cuid())
   email           String       @unique // giriş maili, küçük harf
@@ -165,6 +185,7 @@ model User {
   profile         Profile?
   sessions        Session[]
   universityAdmin UniversityAdmin[]
+  alumniVerification AlumniVerification?
 
   @@index([universityId, type])
 }
@@ -247,4 +268,32 @@ model AuditLog {
   @@index([universityId, createdAt])
   @@index([targetType, targetId])
   @@index([actorId])
+}
+
+// ============================================================
+// Kategoriler (F4'te öne çekildi) — sahip: club (ClubCategory), event (EventCategory)
+// ============================================================
+model ClubCategory {
+  id     String  @id @default(cuid())
+  slug   String  @unique
+  nameTr String
+  nameEn String
+  icon   String? // lucide ikon adı
+  order  Int     @default(0)
+
+  @@index([order])
+}
+
+model EventCategory {
+  id       String  @id @default(cuid())
+  parentId String?
+  slug     String  @unique
+  nameTr   String
+  nameEn   String
+  order    Int     @default(0)
+
+  parent   EventCategory?  @relation("EventCategoryTree", fields: [parentId], references: [id])
+  children EventCategory[] @relation("EventCategoryTree")
+
+  @@index([parentId, order])
 }

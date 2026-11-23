@@ -5,8 +5,8 @@ import type { ConsoleMailProvider } from "@/lib/mail/console";
 /** Her testten önce: kimlik tablolarını boşaltır, örnek üniversite kurar. */
 export async function resetDatabase() {
   await db.$executeRawUnsafe(
-    `TRUNCATE "AuditLog", "RateLimit", "EmailToken", "Session", "Profile", "UniversityAdmin", "User",
-      "Department", "Faculty", "UniversityDomain", "UniversityRequest", "University" CASCADE`,
+    `TRUNCATE "AuditLog", "RateLimit", "EmailToken", "Session", "AlumniVerification", "Profile", "UniversityAdmin", "User",
+      "Department", "Faculty", "UniversityDomain", "UniversityRequest", "University", "ClubCategory", "EventCategory" CASCADE`,
   );
   mailbox().length = 0;
   const university = await db.university.create({
@@ -70,4 +70,32 @@ export function registerInput(fixture: { facultyId: string; departmentId: string
 /** Rate limit pencerelerini sıfırlar (zamanı ilerletmek yerine). */
 export async function expireRateLimits(prefix: string) {
   await db.rateLimit.updateMany({ where: { key: { startsWith: prefix } }, data: { windowEnd: new Date(Date.now() - 1000) } });
+}
+
+/** Doğrudan ACTIVE kullanıcı oluşturur (kayıt akışını test etmeyen testler için). */
+export async function createActiveUser(universityId: string | null, email: string, extra: { firstName?: string; platformRole?: "USER" | "SUPER_ADMIN"; type?: "STUDENT" | "ALUMNI" } = {}) {
+  const now = new Date();
+  return db.user.create({
+    data: {
+      email,
+      passwordHash: "x",
+      status: "ACTIVE",
+      emailVerifiedAt: now,
+      universityId,
+      platformRole: extra.platformRole ?? "USER",
+      type: extra.type ?? "STUDENT",
+      profile: { create: { firstName: extra.firstName ?? "Test", lastName: "Kullanıcı", kvkkConsentAt: now } },
+    },
+  });
+}
+
+/** Servis hata kodunu döndürür (başarılıysa "NO_ERROR"). */
+export async function errorCode(promise: Promise<unknown>): Promise<string> {
+  try {
+    await promise;
+    return "NO_ERROR";
+  } catch (err) {
+    if (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string") return (err as { code: string }).code;
+    return String(err);
+  }
 }

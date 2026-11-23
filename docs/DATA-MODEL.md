@@ -144,11 +144,20 @@ model Profile {
   user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model AlumniVerification {          // manuel mezun yolu (belge)
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  changeRequestId String?  @unique
-  createdAt       DateTime @default(now())
+model AlumniVerification {          // manuel mezun yolu (belge) — F4
+  id              String              @id @default(cuid())
+  userId          String              @unique
+  universityId    String
+  storageKey      String              // private storage; F5'te Attachment'a taşınabilir
+  fileName        String
+  mimeType        String
+  sizeBytes       Int
+  status          ChangeRequestStatus @default(PENDING)
+  rejectReason    String?
+  changeRequestId String?             @unique   // F5: ALUMNI_VERIFY talebi
+  submittedAt     DateTime            @default(now())
+  decidedAt       DateTime?
+  @@index([universityId, status, submittedAt])
 }
 
 model Session {
@@ -201,6 +210,7 @@ model AuditLog {
 ```
 
 ## Kulüp, onay, ticket (F5)
+> `ClubCategory` ve `EventCategory` F4'te (Platform paneli kategorileri) eklendi; `EventCategory.parentId` iki seviyeli ağaç (`@@index([parentId, order])`).
 ```prisma
 model ClubCategory {                // Spor, Kültür-Sanat, Bilim-Teknoloji, ...
   id     String @id @default(cuid())

@@ -11,6 +11,16 @@ function leaves(obj: object, prefix = ""): string[] {
   );
 }
 
+/** Mesajdaki ICU değişken adları ('{' kaçışlı literal parantezler hariç). */
+function varsOf(message: string): Record<string, string> {
+  const unescaped = message.replace(/'[^']*'/g, "");
+  return Object.fromEntries([...unescaped.matchAll(/\{\s*(\w+)/g)].map(([, name]) => [name!, "1"]));
+}
+
+function valueAt(obj: object, key: string): string {
+  return key.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)[k], obj) as string;
+}
+
 describe("i18n", () => {
   it("tr ve en aynı anahtarlara sahip", () => {
     expect(leaves(en).sort()).toEqual(leaves(tr).sort());
@@ -25,8 +35,9 @@ describe("i18n", () => {
   it("tüm mesajlar ICU olarak hatasız biçimlenir (kesme işareti, < >)", () => {
     for (const locale of ["tr", "en"] as const) {
       const t = createT(locale);
-      for (const key of leaves(locale === "tr" ? tr : en)) {
-        const out = t(key as MessageKey, { email: "x", minutes: 1, max: 1, code: "1", name: "x", type: "x", university: "x" });
+      const catalog = locale === "tr" ? tr : en;
+      for (const key of leaves(catalog)) {
+        const out = t(key as MessageKey, varsOf(valueAt(catalog, key)));
         expect(out, key).not.toBe(key);
       }
     }

@@ -83,3 +83,16 @@ export async function createUniversityRequest(input: UniversityRequestInput): Pr
     );
   });
 }
+
+/** Manuel (belge) mezun yolu açık aktif üniversiteler — AUTH-EMAIL §6. */
+export function listManualAlumniUniversities(): Promise<{ id: string; name: string }[]> {
+  return db.university.findMany({
+    where: { isActive: true, alumniVerifyMode: { in: ["MANUAL", "BOTH"] } },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
+}
+
+export function getManualAlumniUniversity(id: string): Promise<{ id: string; name: string } | null> {
+  return db.university.findFirst({ where: { id, isActive: true, alumniVerifyMode: { in: ["MANUAL", "BOTH"] } }, select: { id: true, name: true } });
+}

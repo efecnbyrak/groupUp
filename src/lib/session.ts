@@ -26,6 +26,7 @@ export interface SessionUser {
   locale: string;
   firstName: string | null;
   lastName: string | null;
+  avatarKey: string | null;
 }
 
 function cookieOptions(expires: Date) {
@@ -75,7 +76,7 @@ export const getCurrentSession = cache(async (): Promise<SessionUser | null> => 
 
   const session = await db.session.findUnique({
     where: { tokenHash: sha256(token) },
-    include: { user: { include: { profile: { select: { firstName: true, lastName: true } } } } },
+    include: { user: { include: { profile: { select: { firstName: true, lastName: true, avatarKey: true } } } } },
   });
   if (!session) return null;
 
@@ -114,6 +115,7 @@ export const getCurrentSession = cache(async (): Promise<SessionUser | null> => 
     locale: user.locale,
     firstName: user.profile?.firstName ?? null,
     lastName: user.profile?.lastName ?? null,
+    avatarKey: user.profile?.avatarKey ?? null,
   };
 });
 

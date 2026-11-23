@@ -9,12 +9,13 @@ import { getSessionUser, requireUser } from "@/lib/authz";
 import { ServiceError, type ActionResult } from "@/lib/errors";
 import { enforceRateLimits } from "@/lib/rate-limit";
 import { createSession, currentIpKey, destroyCurrentSession, destroyUserSessions } from "@/lib/session";
-import { listFacultiesWithDepartments, type FacultyOption } from "@/modules/university";
+import { getManualAlumniUniversity, listFacultiesWithDepartments, listManualAlumniUniversities, type FacultyOption } from "@/modules/university";
 
 import {
   changeEmailSchema,
   changePasswordSchema,
   checkEmailSchema,
+  chooseAlumniUniversitySchema,
   forgotPasswordSchema,
   loginSchema,
   otpSchema,
@@ -67,8 +68,16 @@ function safeNext(next: string | undefined): string {
 // ---------------------------------------------------------------- Kayıt
 
 export type CheckEmailData =
-  | { status: "found"; email: string; universityName: string; type: "STUDENT" | "ALUMNI"; faculties: FacultyOption[] }
-  | { status: "notFound"; email: string };
+  | {
+      status: "found";
+      email: string;
+      universityName: string;
+      type: "STUDENT" | "ALUMNI";
+      faculties: FacultyOption[];
+      /** Manuel mezun yolu: seçilen üniversite (kayıt formunda gizli alan). */
+      manualUniversityId?: string;
+    }
+  | { status: "notFound"; email: string; alumniUniversities: { id: string; name: string }[] };
 
 /** Kayıt adım 1: domain çözümle → fakülte/bölüm listesi veya üniversite talebi. */
 export async function checkEmailAction(
@@ -82,9 +91,31 @@ export async function checkEmailAction(
     if (!parsed.success) return invalidForm(parsed.error, t);
     const { email } = parsed.data;
     const ctx = await resolveRegistration(email);
-    if (!ctx) return { ok: true, data: { status: "notFound", email } };
+    if (!ctx) return { ok: true, data: { status: "notFound", email, alumniUniversities: await listManualAlumniUniversities() } };
     const faculties = await listFacultiesWithDepartments(ctx.universityId);
     return { ok: true, data: { status: "found", email, universityName: ctx.universityName, type: ctx.type, faculties } };
+  } catch (err) {
+    return actionError(err, t, ERROR_KEYS);
+  }
+}
+
+/** Domain bulunamadı → "Mezunum, üniversitemi seçiyorum" (belge ile doğrulama, AUTH-EMAIL §6). */
+export async function chooseAlumniUniversityAction(
+  _prev: ActionResult<CheckEmailData> | null,
+  formData: FormData,
+): Promise<ActionResult<CheckEmailData>> {
+  const t = await getT();
+  try {
+    await enforceRateLimits(limits.checkEmailIp(await currentIpKey()));
+    const parsed = chooseAlumniUniversitySchema.safeParse(formToObject(formData));
+    if (!parsed.success) return invalidForm(parsed.error, t);
+    const { email, universityId } = parsed.data;
+    // Domain'i olan bir mail manuel yola giremez (domain yolu önceliklidir).
+    if (await resolveRegistration(email)) return { ok: false, error: t("errors.invalidForm") };
+    const university = await getManualAlumniUniversity(universityId);
+    if (!university) return { ok: false, error: t("errors.invalidForm"), fieldErrors: { universityId: t("validation.required") } };
+    const faculties = await listFacultiesWithDepartments(university.id);
+    return { ok: true, data: { status: "found", email, universityName: university.name, type: "ALUMNI", faculties, manualUniversityId: university.id } };
   } catch (err) {
     return actionError(err, t, ERROR_KEYS);
   }

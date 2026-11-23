@@ -1,4 +1,5 @@
 // Paylaşılan UI bileşenleri (DESIGN §6 temel set). Yalnızca token sınıfları kullanılır.
+export { ActionDialog, ActionForm, ConfirmAction, type ActionFormProps, type FormField } from "./action-form";
 export { Alert, FormMessage, type AlertTone } from "./alert";
 export { Avatar, initials } from "./avatar";
 export { Badge, CountBadge, type BadgeTone } from "./badge";
@@ -14,10 +15,12 @@ export { Input, Textarea } from "./input";
 export { LocaleSwitcher } from "./locale-switcher";
 export { Drawer, Modal } from "./modal";
 export { OtpInput } from "./otp-input";
+export { Pagination } from "./pagination";
 export { normalizeOtp } from "./otp";
 export { PasswordInput, type PasswordRuleState } from "./password-input";
 export { Select, type SelectOption } from "./select";
 export { Skeleton, SkeletonText } from "./skeleton";
+export { StatCard } from "./stat-card";
 export { Table, type TableColumn, type TableRow } from "./table";
 export { sortRows } from "./table-sort";
 export { Tabs, type TabItem } from "./tabs";

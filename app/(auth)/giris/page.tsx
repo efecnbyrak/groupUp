@@ -12,7 +12,7 @@ import { AuthCard, linkClass } from "../_components/auth-card";
 
 export const generateMetadata = titled("auth.login.title");
 
-type Params = { next?: string; sifirlandi?: string };
+type Params = { next?: string; sifirlandi?: string; silindi?: string };
 
 async function LoginContent({ searchParams }: { searchParams: Promise<Params> }) {
   const [t, user, params] = await Promise.all([getT(), getSessionUser(), searchParams]);
@@ -37,6 +37,11 @@ async function LoginContent({ searchParams }: { searchParams: Promise<Params> })
       {params.sifirlandi ? (
         <Alert tone="success" className="mb-(--space-4)">
           {t("auth.reset.done")}
+        </Alert>
+      ) : null}
+      {params.silindi ? (
+        <Alert tone="success" className="mb-(--space-4)">
+          {t("account.delete.done")}
         </Alert>
       ) : null}
       <LoginForm labels={labelsFor(t, LOGIN_KEYS)} next={typeof params.next === "string" ? params.next : undefined} />

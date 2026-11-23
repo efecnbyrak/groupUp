@@ -17,7 +17,18 @@
       "en": "English"
     },
     "comingSoon": "Coming soon",
-    "comingSoonBody": "This section is under construction. It will be here shortly."
+    "comingSoonBody": "This section is under construction. It will be here shortly.",
+    "actions": "Actions",
+    "add": "Add",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "remove": "Remove",
+    "save": "Save",
+    "pagination": "Pages",
+    "firstPage": "First page",
+    "nextPage": "Next"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -41,7 +52,11 @@
     "passwordPolicy": "Password does not meet the rules.",
     "kvkk": "You must accept the privacy notice to continue.",
     "otp": "The code must be a 6-digit number.",
-    "department": "The selected department does not belong to this faculty."
+    "department": "The selected department does not belong to this faculty.",
+    "domain": "Enter a valid domain (e.g. ogr.example.edu.tr).",
+    "slug": "Only lowercase letters, digits and hyphens.",
+    "icon": "Icon name must use lowercase letters, digits and hyphens (e.g. trophy).",
+    "number": "Enter a valid number."
   },
   "password": {
     "rulesTitle": "Password rules",
@@ -106,7 +121,11 @@
       "notFoundBody": "You can request that your university be added. We'll let you know when it is.",
       "requestSubmit": "Send request",
       "requestSent": "Your request has been received. Thank you!",
-      "emailTaken": "You can't sign up with this email. Try signing in."
+      "emailTaken": "You can't sign up with this email. Try signing in.",
+      "alumniManualTitle": "I'm an alumnus without a school email",
+      "alumniManualBody": "Sign up with your personal email, then upload your graduation document. Your account opens once a University Admin approves it.",
+      "alumniUniversity": "University you graduated from",
+      "alumniContinue": "Continue as alumni"
     },
     "verify": {
       "title": "Verify your email",
@@ -188,6 +207,12 @@
       "subject": "Your groupUp email address was changed",
       "intro": "Your sign-in email was changed to {email}.",
       "warning": "If you didn't do this, contact us right away."
+    },
+    "deleteAccount": {
+      "subject": "Confirm deleting your groupUp account",
+      "intro": "We received a request to delete your account. Click the link below to confirm; you will be asked to confirm one last time.",
+      "button": "Confirm account deletion",
+      "expires": "The link is valid for 30 minutes and can be used once. If you didn't request this, ignore this email and change your password."
     }
   },
   "meta": {
@@ -368,5 +393,262 @@
       "body": "Create your account with your school email in two minutes.",
       "button": "Sign up now"
     }
+  },
+  "university": {
+    "errors": {
+      "notFound": "Record not found. Refresh the page and try again.",
+      "slugTaken": "This short name (slug) is already in use.",
+      "domainTaken": "This domain belongs to another university.",
+      "userNotFound": "No active user found with this email.",
+      "userOtherUniversity": "This user belongs to another university. An Admin must be a user of that university.",
+      "alreadyAdmin": "This user is already an Admin of this university.",
+      "requestResolved": "This request has already been resolved.",
+      "nameTaken": "This name is already in use.",
+      "inUse": "Cannot be deleted because it is in use."
+    }
+  },
+  "platform": {
+    "overviewBody": "Universities, Admins and pending requests on the platform.",
+    "saved": "Changes saved.",
+    "stats": {
+      "universities": "Active universities",
+      "users": "Active users",
+      "admins": "University Admins",
+      "pendingRequests": "Pending requests"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Closed"
+    },
+    "alumniModes": {
+      "BOTH": "Domain + document",
+      "DOMAIN": "Alumni domain only",
+      "MANUAL": "Document only"
+    },
+    "domainTypes": {
+      "STUDENT": "Student",
+      "ALUMNI": "Alumni"
+    },
+    "requestStatus": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "fields": {
+      "name": "Name",
+      "slug": "Short name (slug)",
+      "slugHint": "Generated from the name if left empty.",
+      "city": "City",
+      "alumniVerifyMode": "Alumni verification",
+      "alumniVerifyModeHint": "Are alumni verified by alumni email domain or by uploading a document?",
+      "users": "Users",
+      "status": "Status",
+      "domain": "Domain",
+      "domainType": "Type",
+      "university": "University",
+      "adminEmail": "User's email",
+      "person": "Person",
+      "since": "Assigned",
+      "date": "Date",
+      "nameTr": "Name (Turkish)",
+      "nameEn": "Name (English)",
+      "order": "Order",
+      "icon": "Icon",
+      "iconHint": "lucide icon name, e.g. trophy",
+      "parent": "Parent category"
+    },
+    "universities": {
+      "body": "Universities on the platform. Domains and Admins are managed on each university's page.",
+      "add": "Add university",
+      "addBody": "After creating the university, add its domains and assign an Admin.",
+      "create": "Create university",
+      "empty": "No universities yet.",
+      "info": "University details",
+      "detailBody": "{users} users · {faculties} faculties",
+      "deactivate": "Close",
+      "deactivateBody": "A closed university accepts no new sign-ups and its domains are not resolved. Existing users are not affected.",
+      "activate": "Activate",
+      "activateBody": "The university opens again for sign-ups and domain resolution."
+    },
+    "domains": {
+      "body": "At sign-up, the email domain is matched against this list (subdomains included).",
+      "added": "Domain added.",
+      "empty": "No domains yet.",
+      "removeTitle": "Remove {domain}?",
+      "removeBody": "New sign-ups with this domain will not be possible. Existing users are not affected."
+    },
+    "admins": {
+      "body": "An Admin must be an active user registered at that university.",
+      "assign": "Assign Admin",
+      "assigned": "Admin assigned.",
+      "empty": "No Admins assigned yet.",
+      "removeTitle": "Remove {name} as Admin?",
+      "removeBody": "The user loses access to the Admin panel; the account is not deleted."
+    },
+    "requests": {
+      "body": "Requests from people who said \"My university isn't listed\" at sign-up.",
+      "empty": "No pending requests.",
+      "createUniversity": "Create university",
+      "reject": "Reject",
+      "rejectTitle": "Reject the \"{name}\" request?",
+      "rejectBody": "The request is closed; notifying the requester comes in F10.",
+      "resolved": "Resolved requests",
+      "fromRequest": "Creating from a request",
+      "fromRequestBody": "Requested by: {email} · domain: {domain}. After creating, add the domain on the university page."
+    },
+    "categories": {
+      "body": "Club and event categories are shared by all universities.",
+      "club": "Club categories",
+      "clubBody": "Chosen when a club is created.",
+      "event": "Event categories",
+      "eventBody": "Parent category → subcategory (two levels).",
+      "addClub": "Add club category",
+      "addEvent": "Add event category",
+      "edit": "Edit {name}",
+      "deleteTitle": "Delete {name}?",
+      "created": "Category added.",
+      "topLevel": "None (top level)",
+      "noChildren": "No subcategories",
+      "hasChildren": "A category with subcategories cannot be deleted.",
+      "parentInvalid": "A subcategory can only be added under a top-level category."
+    }
+  },
+  "admin": {
+    "title": "Admin panel",
+    "overviewBody": "Users, faculties and pending work for {university}.",
+    "nav": {
+      "approvals": "Approval queue",
+      "clubs": "Clubs",
+      "users": "Users",
+      "alumni": "Alumni verification",
+      "elections": "Elections",
+      "faculties": "Faculties / Departments",
+      "audit": "Audit log"
+    },
+    "stats": {
+      "students": "Active students",
+      "alumni": "Active alumni",
+      "pendingAlumni": "Pending alumni verifications",
+      "faculties": "Faculties"
+    },
+    "userTypes": {
+      "STUDENT": "Student",
+      "ALUMNI": "Alumni"
+    },
+    "userStatus": {
+      "ACTIVE": "Active",
+      "PENDING_VERIFICATION": "Awaiting verification",
+      "PENDING_ALUMNI_REVIEW": "Alumni review",
+      "SUSPENDED": "Suspended",
+      "DELETED": "Deleted"
+    },
+    "users": {
+      "body": "Users registered at your university.",
+      "search": "Search",
+      "searchPlaceholder": "Name, email or student no",
+      "type": "Type",
+      "status": "Status",
+      "all": "All",
+      "filter": "Filter",
+      "person": "Person",
+      "studentNo": "Student no",
+      "department": "Department",
+      "joined": "Joined",
+      "empty": "No users match these filters."
+    },
+    "faculties": {
+      "body": "The faculty/department list used in sign-up and profile forms. Records in use cannot be deleted.",
+      "add": "Add faculty",
+      "created": "Faculty added.",
+      "empty": "No faculties yet.",
+      "members": "{count, plural, =0 {no people} one {# person} other {# people}}",
+      "deleteBody": "Only records not used by any profile (and faculties without departments) can be deleted.",
+      "addDepartment": "Add department",
+      "departmentTr": "Department name (Turkish)",
+      "departmentEn": "Department name (English)"
+    },
+    "alumni": {
+      "body": "Users waiting for alumni verification by document.",
+      "decisionLater": "Approve and reject arrive with the approval engine (F5). For now you can see pending submissions.",
+      "graduationYear": "Graduation year",
+      "document": "Document",
+      "submittedAt": "Submitted",
+      "empty": "No pending alumni verifications."
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "edit": "Edit profile",
+    "saved": "Your profile has been updated.",
+    "university": "University",
+    "facultyDepartment": "Faculty / department",
+    "bio": "About me",
+    "bioHint": "Up to 300 characters. Club managers can see it.",
+    "details": "Personal details",
+    "detailsBody": "These details are added automatically to your event applications.",
+    "privacyNote": "Your phone and date of birth are visible only to managers of events you apply to, when needed.",
+    "avatar": {
+      "title": "Profile photo",
+      "choose": "Choose photo",
+      "upload": "Upload",
+      "remove": "Remove photo",
+      "hint": "JPG, PNG or WebP, up to 5 MB. Cropped to a square.",
+      "updated": "Your profile photo has been updated.",
+      "removed": "Your profile photo has been removed."
+    },
+    "errors": {
+      "fileTooLarge": "The file is too large.",
+      "fileType": "This file type is not supported.",
+      "fileInvalid": "The file could not be read. Try another file."
+    }
+  },
+  "account": {
+    "sessions": {
+      "title": "Active sessions",
+      "body": "Devices signed in to your account. Sign out any session you don't recognise and change your password.",
+      "current": "This device",
+      "unknownDevice": "Unknown device",
+      "lastSeen": "Last active {date}",
+      "started": "Signed in {date}",
+      "revoke": "Sign out",
+      "revokeTitle": "Sign out {device}?",
+      "revokeBody": "That device will need to sign in again.",
+      "revoked": "Session signed out.",
+      "revokeOthers": "Sign out all other sessions",
+      "othersRevoked": "{count, plural, =0 {There were no other sessions.} one {# session signed out.} other {# sessions signed out.}}"
+    },
+    "delete": {
+      "title": "Delete account",
+      "teaser": "You can permanently delete your account and personal data.",
+      "warningTitle": "This cannot be undone",
+      "warningBody": "Your name, contact details, profile photo and documents are deleted and you can no longer sign in. If you are a club president, hand over the presidency first.",
+      "confirmLabel": "I understand my account will be permanently deleted.",
+      "confirmRequired": "Tick the box to continue.",
+      "submit": "Send deletion link",
+      "mailSent": "We sent a confirmation link to your email. It is valid for 30 minutes.",
+      "lastSuperAdmin": "The last Super Admin account cannot be deleted. Add another Super Admin first.",
+      "confirmTitle": "Confirm account deletion",
+      "confirmBody": "Once you confirm, your account is deleted immediately and you are signed out.",
+      "confirmSubmit": "Permanently delete my account",
+      "keep": "Cancel, back to my account",
+      "invalidToken": "This link is invalid or has expired. You can request a new one from your account page.",
+      "done": "Your account has been deleted. Thanks for using groupUp."
+    }
+  },
+  "alumni": {
+    "title": "Alumni verification",
+    "intro": "Upload a document showing you graduated so we can open your account: graduation certificate, e-Devlet graduate document or diploma.",
+    "document": "Document",
+    "documentHint": "PDF, JPG or PNG, up to 10 MB. Only the university's Admins can see it.",
+    "submit": "Send document",
+    "resubmit": "Send a new document",
+    "submitted": "Document received. We will email you the review result.",
+    "pendingTitle": "Your document is under review",
+    "pendingBody": "Your account opens after the university Admin reviews your document; we'll email you.",
+    "submittedFile": "Submitted: {file} · {date}",
+    "replace": "Uploaded the wrong document? Replace it",
+    "rejectedTitle": "Your document was not approved",
+    "rejectedBody": "Please upload a valid graduation document."
   }
 }

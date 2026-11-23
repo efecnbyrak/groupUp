@@ -1,4 +1,4 @@
-import { Bell, CalendarCheck, ChevronDown, Compass, House, LayoutDashboard, LogOut, Search, Shield, User, Users } from "lucide-react";
+import { Bell, CalendarCheck, ChevronDown, Compass, House, LayoutDashboard, LogOut, Search, Shield, User, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -8,7 +8,7 @@ import { getLocale, getT } from "@/i18n/server";
 import { Logo } from "./logo";
 import { NavLink } from "./nav-link";
 
-export type AppHeaderUser = { name: string; email: string; roleLabel: string };
+export type AppHeaderUser = { name: string; email: string; roleLabel: string; avatarUrl?: string | null };
 export type PanelLink = { href: string; label: string };
 
 const icon = "size-(--icon-size-md)";
@@ -79,7 +79,7 @@ export async function AppHeader({ user, panels, logoutAction }: { user: AppHeade
           <div className="hidden lg:block">
             <LocaleSwitcher current={locale} label={t("common.language")} names={{ tr: t("common.languages.tr"), en: t("common.languages.en") }} />
           </div>
-          <Dropdown label={t("nav.accountMenu")} triggerClassName="p-(--space-0-5)" trigger={<Avatar name={user.name} size="sm" />}>
+          <Dropdown label={t("nav.accountMenu")} triggerClassName="p-(--space-0-5)" trigger={<Avatar name={user.name} src={user.avatarUrl} size="sm" />}>
             <div className="flex flex-col gap-(--space-1) px-(--space-3) py-(--space-2)">
               <p className="truncate font-semibold text-fg">{user.name}</p>
               <p className="truncate text-(length:--type-caption) text-fg-secondary">{user.email}</p>
@@ -88,6 +88,10 @@ export async function AppHeader({ user, panels, logoutAction }: { user: AppHeade
               </Badge>
             </div>
             <DropdownSeparator />
+            <DropdownLink href="/profil">
+              <UserRound aria-hidden="true" className={icon} />
+              {t("nav.profile")}
+            </DropdownLink>
             <DropdownLink href="/hesap">
               <User aria-hidden="true" className={icon} />
               {t("nav.account")}
