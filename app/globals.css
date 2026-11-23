@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* Semantik tokenlar → Tailwind yardımcı sınıfları (skill: references/tokens.md §Tailwind v4).
+   `inline`: [data-panel] / [data-archetype] geçersiz kılmaları çalışmaya devam eder. */
+@theme inline {
+  --color-canvas: var(--color-bg);
+  --color-canvas-subtle: var(--color-bg-subtle);
+  --color-card: var(--color-surface);
+  --color-muted: var(--color-surface-muted);
+  --color-inverse: var(--color-surface-inverse);
+  --color-line: var(--color-border);
+  --color-line-strong: var(--color-border-strong);
+  --color-line-input: var(--color-border-input);
+  --color-fg: var(--color-text);
+  --color-fg-secondary: var(--color-text-secondary);
+  --color-fg-tertiary: var(--color-text-tertiary);
+  --color-brand: var(--color-primary);
+  --color-brand-hover: var(--color-primary-hover);
+  --color-brand-active: var(--color-primary-active);
+  --color-brand-subtle: var(--color-primary-subtle);
+  --color-on-brand: var(--color-on-primary);
+  --color-positive: var(--color-success);
+  --color-caution: var(--color-warning);
+  --color-negative: var(--color-danger);
+  --color-negative-fill: var(--color-danger-fill);
+
+  --font-sans: var(--font-family-base);
+  --font-display: var(--font-family-display);
+
+  --text-display-xl: var(--type-display-xl);
+  --text-display-xl--line-height: var(--line-height-tight);
+  --text-display-xl--letter-spacing: var(--letter-spacing-tighter);
+  --text-display-lg: var(--type-display-lg);
+  --text-display-lg--line-height: var(--line-height-tight);
+  --text-heading-xl: var(--type-heading-xl);
+  --text-heading-xl--line-height: var(--line-height-snug);
+  --text-heading-lg: var(--type-heading-lg);
+  --text-heading-lg--line-height: var(--line-height-snug);
+}
+
+@theme {
+  --radius-control: var(--corner-md);
+  --radius-field: var(--corner-md);
+  --radius-card: var(--corner-lg);
+  --radius-overlay: var(--corner-xl);
+  --radius-badge: var(--corner-full);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--type-body);
+  line-height: var(--line-height-relaxed);
+}

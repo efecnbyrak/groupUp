@@ -28,17 +28,18 @@ Ayrıntı: [docs/PRODUCT.md](docs/PRODUCT.md)
 
 Mimari: **modüler monolit** — [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), kararlar [docs/adr/](docs/adr/).
 
-## 3. Komutlar (F1'de oluşturulacak)
+## 3. Komutlar
 ```bash
 npm run dev            # next dev --turbopack
 npm run build          # prisma generate && next build
 npm run lint           # eslint (boundaries kuralları dahil)
-npm run type-check     # tsc --noEmit
+npm run type-check     # next typegen && tsc --noEmit
 npm test               # vitest run
 npm run test:e2e       # playwright test
 npm run db:migrate     # prisma migrate dev
 npm run db:seed        # tsx prisma/seed.ts
 npm run db:studio      # prisma studio
+npm run mail:test      # Mailpit'e test maili
 docker compose up -d   # Mailpit
 ```
 Kurulum: [docs/SETUP-LOCAL.md](docs/SETUP-LOCAL.md)

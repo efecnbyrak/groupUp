@@ -1,0 +1,8 @@
+services:
+  mailpit:
+    image: axllent/mailpit:v1.29
+    container_name: groupup-mailpit
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web arayüzü
+    restart: unless-stopped

@@ -3,10 +3,11 @@
 > Her oturum bu dosyayı okur ve günceller. Bir maddeyi bitirince `[x]` yap. Oturum biterken **§Son durum**'u doldur.
 
 ## Son durum
-- **Aktif faz:** F1 — İskelet
-- **Son tamamlanan:** F0 — planlama dokümanları, ADR'ler, git init
-- **Sıradaki adım:** F1.1 `create-next-app`
-- **Açık sorular / engeller:** yok.
+- **Aktif faz:** F2 — Kimlik ve üniversite
+- **Son tamamlanan:** F1 — İskelet (2026-11-23, `feat/f1-iskelet` → `main`)
+- **Sıradaki adım:** F2 şema v1 (DATA-MODEL §Kimlik) → ilk migration
+- **Açık sorular / engeller:** ⚠️ Lokal DB henüz oluşturulmadı — `groupup` rolü + `groupup`/`groupup_test` DB'leri sudo ister, kullanıcı çalıştıracak (SETUP-LOCAL §2). Doğrulama: `npm run db:seed` → "veritabanı bağlantısı tamam". F2 migration'ından önce şart.
+- **F1 notları:** Tailwind `@tailwindcss/postcss` ile (Next 16.4 şablonundaki `@tailwindcss/turbopack` onaylı listede olmadığı için kullanılmadı). Prisma client `prisma/generated` (gitignore'da, `postinstall` üretir). Prisma `.env`'i `process.loadEnvFile` ile okur (dotenv yok). tsx scriptleri `--conditions=react-server` ile çalışır (`server-only` için). env şeması saf `src/lib/env-schema.ts`, çalışma zamanı `src/lib/env.ts`. npm 11 `allowScripts`: prisma, @prisma/engines, esbuild.
 - **Teyit edilenler (2026-11-23):** Kent domainleri `ogr.kent.edu.tr` / `mezun.kent.edu.tr`; tek kulüpte başkanlık; mezun oy vermez; 8 ADR `Kabul edildi`; repo https://github.com/efecnbyrak/groupUp (`main`).
 
 ---
@@ -18,18 +19,19 @@
 - [x] İlk commit
 - [x] GitHub remote + push
 
-## F1 — İskelet (1 oturum)
+## F1 — İskelet ✅ (yalnız F1.4b DB kurulumu açık)
 Okunacak: ARCHITECTURE.md, SETUP-LOCAL.md, DESIGN.md §1–3
-- [ ] F1.1 `npx create-next-app@latest` (TS, ESLint, Tailwind, App Router, `src/` YOK — `app/` kökte, `@/*` alias → `./src/*` ve `@/app/*`), mevcut dosyaları ezmeden
-- [ ] F1.2 Klasörler: `src/modules`, `src/lib`, `src/components/ui`, `src/i18n`, `messages/`
-- [ ] F1.3 `eslint-plugin-boundaries` kuralları + `server-only`
-- [ ] F1.4 Prisma 7 init (`prisma.config.ts`, adapter-pg), `src/lib/db.ts` singleton, lokal DB oluştur (SETUP-LOCAL §2)
-- [ ] F1.5 `src/lib/env.ts` (zod) + `.env` (kullanıcı oluşturur)
-- [ ] F1.6 `docker-compose.yml` (Mailpit) + `src/lib/mail/` (smtp/console provider) + test maili
-- [ ] F1.7 vitest + playwright kurulumu, örnek test
-- [ ] F1.8 package.json scriptleri (CLAUDE.md §3)
-- [ ] F1.9 Tasarım tokenları (`app/tokens.css`, Tailwind `@theme`), Inter, kontrast kontrolü
-- [ ] F1.10 lint + type-check + test yeşil → commit
+- [x] F1.1 `npx create-next-app@latest` (TS, ESLint, Tailwind, App Router, `src/` YOK — `app/` kökte, `@/*` alias → `./src/*` ve `@/app/*`), mevcut dosyaları ezmeden
+- [x] F1.2 Klasörler: `src/modules`, `src/lib`, `src/components/ui`, `src/i18n`, `messages/`
+- [x] F1.3 `eslint-plugin-boundaries` kuralları + `server-only`
+- [x] F1.4 Prisma 7 init (`prisma.config.ts`, adapter-pg), `src/lib/db.ts` singleton
+- [ ] F1.4b Lokal DB oluştur (SETUP-LOCAL §2) — **kullanıcı, sudo gerekli**
+- [x] F1.5 `src/lib/env.ts` (zod) + `.env` (kullanıcı oluşturur)
+- [x] F1.6 `docker-compose.yml` (Mailpit) + `src/lib/mail/` (smtp/console provider) + test maili
+- [x] F1.7 vitest + playwright kurulumu, örnek test
+- [x] F1.8 package.json scriptleri (CLAUDE.md §3)
+- [x] F1.9 Tasarım tokenları (`app/tokens.css`, Tailwind `@theme`), Inter, kontrast kontrolü
+- [x] F1.10 lint + type-check + test yeşil → commit
 
 ## F2 — Kimlik ve üniversite (1–2 oturum)
 Okunacak: AUTH-EMAIL.md, DATA-MODEL.md (§Kimlik), ROLES-PERMISSIONS.md §2

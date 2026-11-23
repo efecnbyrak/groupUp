@@ -1,0 +1,11 @@
+// groupUp veri modeli — taslak: docs/DATA-MODEL.md
+// Modeller F2'den itibaren faz faz eklenir.
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
