@@ -11,6 +11,7 @@ export interface EmailTemplates {
   "delete-account": { name: string; url: string };
   "request-decided": { name: string; type: string; clubName: string; approved: boolean; reason: string | null };
   "alumni-result": { name: string; approved: boolean; reason: string | null; url: string };
+  "registration-decided": { name: string; eventTitle: string; clubName: string; outcome: "accepted" | "waitlisted" | "rejected"; url: string };
 }
 
 export type EmailTemplate = keyof EmailTemplates;
@@ -88,6 +89,15 @@ const alumniResult: Renderer<"alumni-result"> = (locale, { name, approved, reaso
   ]);
 };
 
+const registrationDecided: Renderer<"registration-decided"> = (locale, { name, eventTitle, clubName, outcome, url }) => {
+  const t = translatorFor(locale);
+  return renderEmail(locale, t(`email.registrationDecided.subject.${outcome}`, { event: eventTitle }), [
+    { kind: "p", text: t("email.greeting", { name }) },
+    { kind: "p", text: t(`email.registrationDecided.intro.${outcome}`, { event: eventTitle, club: clubName }) },
+    { kind: "button", text: t("email.registrationDecided.button"), href: url },
+  ]);
+};
+
 const renderers: { [K in EmailTemplate]: Renderer<K> } = {
   "verify-email": verifyEmail,
   "password-reset": passwordReset,
@@ -96,6 +106,7 @@ const renderers: { [K in EmailTemplate]: Renderer<K> } = {
   "delete-account": deleteAccount,
   "request-decided": requestDecided,
   "alumni-result": alumniResult,
+  "registration-decided": registrationDecided,
 };
 
 export function renderTemplate<K extends EmailTemplate>(template: K, locale: Locale, data: EmailTemplates[K]): RenderedEmail {

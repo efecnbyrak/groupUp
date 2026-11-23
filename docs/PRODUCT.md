@@ -59,6 +59,13 @@ Tek platform: doğrulanmış okul maili ile kayıt → kulübe kod/link ile kat�
 - Duyurular onaysız yayınlanır (`ANNOUNCEMENT_POST`), düz metin (boş satır = paragraf); üyelerin akışında ve kulüp sayfasında (yalnızca üyelere) görünür.
 - Arama `ILIKE` (pg_trgm indeksi MVP sonrası).
 
+**Varsayım (Claude, 2026-11-24, F7):**
+- Başvuru kabul/ret ve form alanı yönetimi Admin onayından geçmez — doğrudan `EVENT_MANAGE`/`REGISTRATION_MANAGE` yetkisiyle uygulanır (ChangeRequest listesinde yok, operasyonel bir iş olarak ele alındı).
+- Otomatik eklenen profil alanları (export/snapshot) sabit: ad soyad, e-posta, öğrenci no, fakülte, bölüm, sınıf/mezuniyet yılı, telefon. Cinsiyet ve doğum tarihi hiçbir zaman aktarılmaz (KVKK güvenli varsayılan); "yönetici hangi alanlar görünsün seçsin" özelleştirmesi MVP'de yok.
+- Form oluşturucuda koşullu gösterim (`showIf`) motoru çalışır ve test edilmiştir, ama arayüzden "referans alan / değer" seçimi MVP'de yoktur — ileride eklenebilir.
+- Dosya tipi form alanı cevapları `Attachment` tablosuna değil doğrudan private depoya yazılır (mezun belgesi/onay motoru akışından ayrı, daha basit).
+- Takımda kaptanın "Başvuruyu tamamla" demesi roster'ı kilitler (yeni üye giremez) ve kontenjan kararını (kabul/yedek) o anda verir; tamamlanmamış (eksik üyeli) takımlar deadline'da otomatik reddedilmez, yönetici ekranında görünür kalır.
+
 **Varsayımlar (kullanıcı aksini söyleyene kadar geçerli):**
 - Görevli aynı kulübün üyesi olmak zorundadır.
 - Bir üniversitenin birden fazla Admini olabilir.

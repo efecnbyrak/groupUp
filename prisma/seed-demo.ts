@@ -2,7 +2,8 @@
 // kayıtlar doğal anahtarla bulunur, yoksa oluşturulur; demo sırasında yapılan işlemler (onay, katılım)
 // tekrar çalıştırmada geri alınmaz. Tüm demo.* hesaplarının şifresi .env → DEMO_PASSWORD.
 // Her faz kendi demo verisini buraya ekler (F5: kulüpler, üyeler, ekip, talepler, ticket, bekleyen mezun;
-// F6: etkinlikler — taslak, onay bekleyen, yayında, geçmiş — ve duyurular).
+// F6: etkinlikler — taslak, onay bekleyen, yayında, geçmiş — ve duyurular;
+// F7: başvuru formu alanları, bireysel başvurular, takımlar (tamamlanmış + eksik üyeli)).
 import sharp from "sharp";
 
 import type { SessionUser } from "../src/lib/authz";
@@ -12,6 +13,7 @@ import { hashPassword } from "../src/lib/password";
 import { decideRequest, submitRequest } from "../src/modules/approval";
 import { createClub, storeClubImage, textToDoc } from "../src/modules/club";
 import { createAnnouncement, createEventDraft, saveEventDraft, storeEventImage, type EventContent } from "../src/modules/event";
+import { applyToEvent, completeTeam, createField, createTeam, joinTeam } from "../src/modules/registration";
 import { openAdminTicket, openClubTicket, replyTicket } from "../src/modules/ticket";
 
 const KENT_SLUG = "istanbul-kent-universitesi";
@@ -124,10 +126,11 @@ async function main() {
     console.info(`[seed-demo] ${ids.length} e2e kulübü temizlendi`);
   }
 
-  const e2eEvents = await db.event.deleteMany({ where: { slug: { startsWith: "e2e-etkinlik-" } } });
+  const e2eEvents = await db.event.deleteMany({ where: { OR: [{ slug: { startsWith: "e2e-etkinlik-" } }, { slug: { startsWith: "e2e-bireysel-" } }, { slug: { startsWith: "e2e-takim-" } }] } });
   if (e2eEvents.count) {
+    // Registration/Team/EventFormField Event'e cascade bağlı; yalnızca onay talepleri ayrıca temizlenir.
     await db.changeRequest.deleteMany({ where: { type: { in: ["EVENT_PUBLISH", "EVENT_UPDATE", "EVENT_CANCEL"] }, targetId: { notIn: (await db.event.findMany({ select: { id: true } })).map((e) => e.id) } } });
-    console.info(`[seed-demo] ${e2eEvents.count} e2e etkinliği temizlendi`);
+    console.info(`[seed-demo] ${e2eEvents.count} e2e etkinliği (başvuru/takım dahil) temizlendi`);
   }
 
   // ------------------------------------------------------------ Hesaplar
@@ -287,6 +290,55 @@ async function main() {
     if (ev.target === "PUBLISHED") await decideRequest(admin, university.id, req.id, "APPROVE", null);
   }
 
+  // ------------------------------------------------------------ Başvurular ve takımlar (F7)
+  const masaTenisi = await db.event.findUnique({ where: { clubId_slug: { clubId: spor.id, slug: "masa-tenisi-turnuvasi" } }, select: { id: true } });
+  if (masaTenisi && (await db.eventFormField.count({ where: { eventId: masaTenisi.id } })) === 0) {
+    await createField(baskan, spor.id, masaTenisi.id, {
+      type: "SHORT_TEXT",
+      labelTr: "Deneyim (yıl)",
+      helpTr: null,
+      required: false,
+      teamLevel: false,
+      optionsText: [],
+      integer: false,
+      acceptPdf: false,
+      acceptImage: false,
+      showIfFieldId: null,
+      showIfValue: null,
+    });
+    await createField(baskan, spor.id, masaTenisi.id, {
+      type: "CONSENT",
+      labelTr: "Sağlık durumumun turnuvaya katılıma uygun olduğunu beyan ederim",
+      helpTr: null,
+      required: true,
+      teamLevel: false,
+      optionsText: [],
+      integer: false,
+      acceptPdf: false,
+      acceptImage: false,
+      showIfFieldId: null,
+      showIfValue: null,
+    });
+    const fields = await db.eventFormField.findMany({ where: { eventId: masaTenisi.id } });
+    const consent = fields.find((f) => f.type === "CONSENT")!;
+    const deneyim = fields.find((f) => f.type === "SHORT_TEXT")!;
+    for (const email of ["demo.uye", "demo.ogrenci04", "demo.ogrenci05", "demo.ogrenci06"]) {
+      await applyToEvent(u(email), masaTenisi.id, { [deneyim.id]: "3 yıl", [consent.id]: true });
+    }
+  }
+
+  const baharFutbol = await db.event.findUnique({ where: { clubId_slug: { clubId: spor.id, slug: "bahar-futbol-turnuvasi" } }, select: { id: true } });
+  if (baharFutbol && (await db.team.count({ where: { eventId: baharFutbol.id } })) === 0) {
+    const kaleciler = await createTeam(u("demo.gorevli"), baharFutbol.id, "Kaleciler FC", {}, {});
+    for (const email of ["demo.uye", "demo.ogrenci04", "demo.ogrenci09", "demo.ogrenci10", "demo.ogrenci13"]) {
+      await joinTeam(u(email), baharFutbol.id, kaleciler.code, {});
+    }
+    await completeTeam(u("demo.gorevli"), baharFutbol.id, kaleciler.id);
+
+    const yildizlar = await createTeam(u("demo.ogrenci05"), baharFutbol.id, "Yıldızlar", {}, {});
+    await joinTeam(u("demo.ogrenci06"), baharFutbol.id, yildizlar.code, {});
+  }
+
   // ------------------------------------------------------------ Duyurular (F6)
   if ((await db.announcement.count({ where: { clubId: spor.id } })) === 0) {
     await createAnnouncement(baskan, spor.id, { titleTr: "Antrenman saatleri değişti", body: "Bu dönem antrenmanlar salı ve perşembe 18.00'de.\n\nYeni üyeler için tanışma antrenmanı bu perşembe!", pinned: true });
@@ -295,8 +347,15 @@ async function main() {
     await createAnnouncement(yzBaskan, yazilim.id, { titleTr: "Mentorluk programı başvuruları açıldı", body: "Mezun mentorlarımızla birebir eşleşmek için kulüp panosundaki formu doldurun.", pinned: false });
   }
 
-  const counts = { users: users.size, clubs: clubs.size, events: await db.event.count({ where: { universityId: university.id } }), pending: await db.changeRequest.count({ where: { universityId: university.id, status: "PENDING" } }) };
-  console.info(`[seed-demo] ${counts.users} hesap, ${counts.clubs} kulüp, ${counts.events} etkinlik, ${counts.pending} bekleyen talep. Şifre: .env → DEMO_PASSWORD`);
+  const counts = {
+    users: users.size,
+    clubs: clubs.size,
+    events: await db.event.count({ where: { universityId: university.id } }),
+    registrations: await db.registration.count({ where: { event: { universityId: university.id } } }),
+    teams: await db.team.count({ where: { event: { universityId: university.id } } }),
+    pending: await db.changeRequest.count({ where: { universityId: university.id, status: "PENDING" } }),
+  };
+  console.info(`[seed-demo] ${counts.users} hesap, ${counts.clubs} kulüp, ${counts.events} etkinlik, ${counts.registrations} başvuru, ${counts.teams} takım, ${counts.pending} bekleyen talep. Şifre: .env → DEMO_PASSWORD`);
 }
 
 main()

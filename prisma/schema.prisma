@@ -118,6 +118,28 @@ enum Eligibility {
   ALUMNI_ONLY
 }
 
+enum FormFieldType {
+  SHORT_TEXT
+  LONG_TEXT
+  SINGLE_CHOICE
+  MULTI_CHOICE
+  DROPDOWN
+  NUMBER
+  DATE
+  BOOLEAN
+  FILE
+  CONSENT
+  SECTION
+}
+
+enum RegistrationStatus {
+  APPLIED
+  ACCEPTED
+  WAITLISTED
+  REJECTED
+  CANCELLED
+}
+
 enum TicketStatus {
   OPEN
   ANSWERED
@@ -265,6 +287,9 @@ model User {
   staffRoles         StaffAssignment[]
   eventsCreated      Event[]             @relation("EventCreator")
   changeRequests     ChangeRequest[]     @relation("ChangeRequestRequester")
+  eventRegistrations Registration[]
+  teamsCaptain       Team[]              @relation("TeamCaptain")
+  teamMemberships    TeamMember[]
 
   @@index([universityId, type])
 }
@@ -615,11 +640,14 @@ model Event {
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
-  university University    @relation(fields: [universityId], references: [id])
-  club       Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  category   EventCategory @relation(fields: [categoryId], references: [id])
-  createdBy  User          @relation("EventCreator", fields: [createdById], references: [id])
-  images     EventImage[]
+  university    University       @relation(fields: [universityId], references: [id])
+  club          Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  category      EventCategory    @relation(fields: [categoryId], references: [id])
+  createdBy     User             @relation("EventCreator", fields: [createdById], references: [id])
+  images        EventImage[]
+  formFields    EventFormField[]
+  registrations Registration[]
+  teams         Team[]
 
   @@unique([clubId, slug])
   @@index([universityId, status, startAt])
@@ -639,4 +667,91 @@ model EventImage {
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([eventId, order])
+}
+
+// ============================================================
+// Başvuru formu ve takımlar (F7) — sahip: event (EventFormField, Registration, Team, TeamMember)
+// ============================================================
+model EventFormField {
+  id              String        @id @default(cuid())
+  eventId         String
+  type            FormFieldType
+  order           Int
+  labelTr         String        @db.VarChar(120)
+  labelEn         String?       @db.VarChar(200)
+  helpTr          String?       @db.VarChar(300)
+  helpEn          String?       @db.VarChar(400)
+  required        Boolean       @default(false)
+  teamLevel       Boolean       @default(false) // takım modunda kaptan bir kez doldurur
+  hidden          Boolean       @default(false) // başvuru varsa silinmez, yalnızca gizlenir (veri kaybı olmaz)
+  options         Json? // seçim tipleri: [{value, labelTr, labelEn}]
+  config          Json? // {maxLength, pattern, min, max, integer, accept, maxMb, minSelect, maxSelect, otherOption}
+  showIfFieldId   String? // koşul: bu alan gösterildiğinde referans alan id'si (uygulama katmanında doğrulanır)
+  showIfValue     Json?
+  translationHash String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, order])
+}
+
+model Registration {
+  id              String             @id @default(cuid())
+  eventId         String
+  userId          String
+  teamId          String?
+  status          RegistrationStatus @default(APPLIED)
+  answers         Json // {fieldId: value}
+  profileSnapshot Json // başvuru anındaki profil alanları (export için dondurulur)
+  waitlistPos     Int?
+  decidedById     String?
+  decidedAt       DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team  Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@unique([eventId, userId])
+  @@index([eventId, status])
+  @@index([userId, status])
+  @@index([teamId])
+}
+
+model Team {
+  id        String             @id @default(cuid())
+  eventId   String
+  name      String             @db.VarChar(50)
+  code      String             @unique // 6 karakter, karışmayan alfabe
+  captainId String
+  status    RegistrationStatus @default(APPLIED)
+  answers   Json // takım seviyesindeki alan cevapları
+  lockedAt  DateTime? // kaptan "Başvuruyu tamamla" dedi veya kontenjan kararı verildi: yeni üye giremez
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  captain       User           @relation("TeamCaptain", fields: [captainId], references: [id])
+  registrations Registration[]
+  members       TeamMember[]
+
+  @@unique([eventId, name])
+  @@index([eventId, status])
+  @@index([captainId])
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  teamId   String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
 }

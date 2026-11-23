@@ -7,7 +7,7 @@ import type { ConsoleMailProvider } from "@/lib/mail/console";
 /** Her testten önce: kimlik tablolarını boşaltır, örnek üniversite kurar. */
 export async function resetDatabase() {
   await db.$executeRawUnsafe(
-    `TRUNCATE "EventImage", "Event", "Attachment", "TicketMessage", "Ticket", "ChangeRequest", "Announcement", "StaffAssignment", "ClubInvite", "Membership", "Club",
+    `TRUNCATE "TeamMember", "Team", "Registration", "EventFormField", "EventImage", "Event", "Attachment", "TicketMessage", "Ticket", "ChangeRequest", "Announcement", "StaffAssignment", "ClubInvite", "Membership", "Club",
       "AuditLog", "RateLimit", "EmailToken", "Session", "AlumniVerification", "Profile", "UniversityAdmin", "User",
       "Department", "Faculty", "UniversityDomain", "UniversityRequest", "University", "ClubCategory", "EventCategory" CASCADE`,
   );
