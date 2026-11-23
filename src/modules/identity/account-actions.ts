@@ -20,6 +20,7 @@ const errors: Partial<Record<IdentityErrorCode, MessageKey>> = {
   NOT_FOUND: "university.errors.notFound",
   WRONG_PASSWORD: "errors.invalidForm",
   LAST_SUPER_ADMIN: "account.delete.lastSuperAdmin",
+  PRESIDENT_MUST_TRANSFER: "account.delete.presidentMustTransfer",
   DELETE_TOKEN_INVALID: "account.delete.invalidToken",
 };
 

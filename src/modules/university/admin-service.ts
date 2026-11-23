@@ -93,7 +93,7 @@ export async function listUniversityUsers(universityId: string, filter: UserList
   return { items, nextCursor: hasMore ? items[items.length - 1]?.id : undefined };
 }
 
-/** Bekleyen manuel mezun doğrulamaları (karar F5'te onay motoruyla). */
+/** Bekleyen manuel mezun doğrulamaları (karar onay motorunda: ChangeRequest ALUMNI_VERIFY). */
 export function listPendingAlumni(universityId: string) {
   return db.alumniVerification.findMany({
     where: { universityId, status: "PENDING" },
@@ -101,7 +101,7 @@ export function listPendingAlumni(universityId: string) {
     take: 100,
     select: {
       id: true,
-      fileName: true,
+      changeRequestId: true,
       submittedAt: true,
       user: { select: { email: true, profile: { select: { firstName: true, lastName: true, graduationYear: true } } } },
     },

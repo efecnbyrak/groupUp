@@ -21,6 +21,7 @@ export const envSchema = z
 
     SUPERADMIN_EMAIL: z.preprocess(emptyToUndefined, z.email().optional()),
     SUPERADMIN_PASSWORD: optionalString,
+    DEMO_PASSWORD: optionalString,
 
     MAIL_PROVIDER: z.enum(["smtp", "ses", "console"]).default("console"),
     MAIL_FROM: z.string().min(1),

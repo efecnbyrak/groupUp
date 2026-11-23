@@ -1,54 +1,36 @@
 import "server-only";
 
-import { audit } from "@/lib/audit";
-import { db } from "@/lib/db";
-import { detectFileType, MB, safeFileName } from "@/lib/file-type";
-import { getStorage, newFileKey } from "@/lib/storage";
+import { db, type Tx } from "@/lib/db";
+import { MB } from "@/lib/file-type";
 
 import { fail } from "./service";
 
 /**
- * Manuel mezun doğrulama — belge yükleme (AUTH-EMAIL §6). PDF/JPG/PNG ≤ 10 MB, private storage.
- * Karar (onay/ret) F5'te onay motoruyla (ChangeRequest ALUMNI_VERIFY) verilir.
+ * Manuel mezun doğrulama durumu (AUTH-EMAIL §6) — profile modülünün `AlumniVerification` kaydı.
+ * Belge (Attachment) ve karar (ChangeRequest ALUMNI_VERIFY) approval modülündedir; approval
+ * handler'ı aşağıdaki `tx` fonksiyonlarını çağırır.
  */
 export const ALUMNI_DOC_MAX_BYTES = 10 * MB;
-const ALLOWED = new Set(["pdf", "jpg", "png"]);
 
 export function getAlumniVerification(userId: string) {
   return db.alumniVerification.findUnique({
     where: { userId },
-    select: { status: true, fileName: true, submittedAt: true, rejectReason: true },
+    select: { status: true, submittedAt: true, rejectReason: true, changeRequestId: true },
   });
 }
 
-/** İlk yükleme veya ret/yenileme sonrası yeniden yükleme: kayıt PENDING'e döner, eski dosya silinir. */
-export async function submitAlumniDocument(actor: { id: string }, file: Buffer, originalName: string): Promise<void> {
-  if (file.byteLength === 0) throw fail("FILE_INVALID");
-  if (file.byteLength > ALUMNI_DOC_MAX_BYTES) throw fail("FILE_TOO_LARGE");
-  const type = detectFileType(file);
-  if (!type || !ALLOWED.has(type.ext)) throw fail("FILE_TYPE");
+/** Belge gönderebilir mi: maili doğrulanmış, PENDING_ALUMNI_REVIEW. Üniversitesini döner. */
+export async function assertAlumniCanSubmit(userId: string, client: Tx | typeof db = db): Promise<string> {
+  const user = await client.user.findUnique({ where: { id: userId }, select: { universityId: true, status: true } });
+  if (!user?.universityId || user.status !== "PENDING_ALUMNI_REVIEW") throw fail("NOT_FOUND");
+  return user.universityId;
+}
 
-  const user = await db.user.findUniqueOrThrow({ where: { id: actor.id }, select: { universityId: true, status: true } });
-  if (!user.universityId || user.status !== "PENDING_ALUMNI_REVIEW") throw fail("NOT_FOUND");
+export async function recordAlumniSubmission(tx: Tx, userId: string, universityId: string, changeRequestId: string): Promise<void> {
+  const data = { universityId, changeRequestId, status: "PENDING" as const, rejectReason: null, decidedAt: null, submittedAt: new Date() };
+  await tx.alumniVerification.upsert({ where: { userId }, update: data, create: { userId, ...data } });
+}
 
-  const storage = getStorage();
-  const key = newFileKey("alumni", actor.id, type.ext);
-  await storage.put(key, file, "private");
-  const previous = await db.alumniVerification.findUnique({ where: { userId: actor.id }, select: { storageKey: true } });
-  const data = {
-    universityId: user.universityId,
-    storageKey: key,
-    fileName: safeFileName(originalName),
-    mimeType: type.mime,
-    sizeBytes: file.byteLength,
-    status: "PENDING" as const,
-    rejectReason: null,
-    decidedAt: null,
-    submittedAt: new Date(),
-  };
-  await db.$transaction(async (tx) => {
-    await tx.alumniVerification.upsert({ where: { userId: actor.id }, update: data, create: { userId: actor.id, ...data } });
-    await audit({ action: "profile.alumni.documentSubmitted", targetType: "User", targetId: actor.id, actorId: actor.id, universityId: user.universityId, meta: { mime: type.mime, size: file.byteLength } }, tx);
-  });
-  if (previous) await storage.delete(previous.storageKey, "private");
+export async function recordAlumniDecision(tx: Tx, userId: string, status: "APPROVED" | "REJECTED", reason: string | null): Promise<void> {
+  await tx.alumniVerification.update({ where: { userId }, data: { status, rejectReason: status === "REJECTED" ? reason : null, decidedAt: new Date() } });
 }

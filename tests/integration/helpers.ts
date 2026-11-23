@@ -1,11 +1,14 @@
+import type { SessionUser } from "@/lib/authz";
 import { db } from "@/lib/db";
+import { createClub } from "@/modules/club";
 import { getMailProvider } from "@/lib/mail";
 import type { ConsoleMailProvider } from "@/lib/mail/console";
 
 /** Her testten önce: kimlik tablolarını boşaltır, örnek üniversite kurar. */
 export async function resetDatabase() {
   await db.$executeRawUnsafe(
-    `TRUNCATE "AuditLog", "RateLimit", "EmailToken", "Session", "AlumniVerification", "Profile", "UniversityAdmin", "User",
+    `TRUNCATE "Attachment", "TicketMessage", "Ticket", "ChangeRequest", "Announcement", "StaffAssignment", "ClubInvite", "Membership", "Club",
+      "AuditLog", "RateLimit", "EmailToken", "Session", "AlumniVerification", "Profile", "UniversityAdmin", "User",
       "Department", "Faculty", "UniversityDomain", "UniversityRequest", "University", "ClubCategory", "EventCategory" CASCADE`,
   );
   mailbox().length = 0;
@@ -98,4 +101,40 @@ export async function errorCode(promise: Promise<unknown>): Promise<string> {
     if (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string") return (err as { code: string }).code;
     return String(err);
   }
+}
+
+/** Servis/yetki testleri için oturum kullanıcısı (cookie gerektirmeyen fonksiyonlar). */
+export function sessionUserOf(user: { id: string; email: string; universityId: string | null; platformRole?: "USER" | "SUPER_ADMIN"; type?: "STUDENT" | "ALUMNI" }): SessionUser {
+  return {
+    sessionId: "test",
+    id: user.id,
+    email: user.email,
+    platformRole: user.platformRole ?? "USER",
+    type: user.type ?? "STUDENT",
+    status: "ACTIVE",
+    emailVerified: true,
+    universityId: user.universityId,
+    locale: "tr",
+    firstName: "Test",
+    lastName: "Kullanıcı",
+    avatarKey: null,
+  };
+}
+
+/** Kulüp + başkan + üyeler (+ isteğe bağlı Admin) kurar. */
+export async function clubFixture(universityId: string, opts: { slug?: string; members?: number; prefix?: string } = {}) {
+  const prefix = opts.prefix ?? "k";
+  const domain = (await db.universityDomain.findFirstOrThrow({ where: { universityId, type: "STUDENT" } })).domain;
+  const admin = await createActiveUser(universityId, `${prefix}.admin@${domain}`, { firstName: "Admin" });
+  await db.universityAdmin.create({ data: { universityId, userId: admin.id } });
+  const president = await createActiveUser(universityId, `${prefix}.baskan@${domain}`, { firstName: "Başkan" });
+  const category = await db.clubCategory.upsert({ where: { slug: "spor" }, update: {}, create: { slug: "spor", nameTr: "Spor", nameEn: "Sports" } });
+  const club = await createClub(admin, { universityId, name: `Kulüp ${prefix}`, slug: opts.slug ?? `kulup-${prefix}`, categoryId: category.id, shortDescTr: "Kısa açıklama", presidentEmail: president.email });
+  const members = [];
+  for (let i = 0; i < (opts.members ?? 3); i++) {
+    const m = await createActiveUser(universityId, `${prefix}.uye${i}@${domain}`, { firstName: `Üye${i}` });
+    await db.membership.create({ data: { clubId: club.id, userId: m.id, joinedVia: "code" } });
+    members.push(m);
+  }
+  return { admin, president, club, members, category };
 }

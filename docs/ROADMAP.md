@@ -3,10 +3,13 @@
 > Her oturum bu dosyayı okur ve günceller. Bir maddeyi bitirince `[x]` yap. Oturum biterken **§Son durum**'u doldur.
 
 ## Son durum
-- **Aktif faz:** F5 — Kulüp, üyelik, ekip, onay motoru, ticket (başlanmadı)
-- **Son tamamlanan:** F4 tamamı (`main`'e merge edildi): Platform paneli (üniversite/domain/Admin/talep/kategori), Admin paneli (genel bakış, kullanıcılar, fakülte/bölüm, bekleyen mezunlar), profil + avatar, aktif oturumlar, hesap silme, manuel mezun yolu (belge + bekleme ekranı). 127 vitest + 10 e2e.
-- **Sıradaki adım:** F5.1 şema (ClubCategory/EventCategory zaten var) → Club, Membership, ClubInvite, StaffAssignment, Announcement, ChangeRequest, Attachment, Ticket, TicketMessage.
+- **Aktif faz:** F6 — Etkinlik (başlanmadı)
+- **Son tamamlanan:** F5 tamamı (`main`'e merge edildi): kulüp + başkan, davetle üyelik, ekip (max 10), onay motoru (6 handler), Admin kuyruğu + DiffView + gerekçeli ret, mezun karar ekranı, ticket (kulüp→Admin, Admin→Platform), kulüp paneli, public kulüp sayfası, Keşfet/Kulüplerim, denetim kaydı, `db:seed:demo`. 183 vitest + 11 e2e.
+- **Sıradaki adım:** F6.1 şema (EventCategory var) → Event, EventImage; Tiptap paketleri (onaylı listede) kurulumu; EVENT_* handler'ları `approval/handlers`'a.
 - **Açık sorular / engeller:** yok.
+- **MVP sırası (kullanıcı kararı 2026-11-23):** F5 kulüp + onay + ticket → F6 etkinlik → F7 başvuru/takım → F8 temel turnuva → F10 bildirim/cron → F12 yayına hazırlık. **F9 ve F11 MVP sonrası.**
+- **F5 kararları:** Demo verisi ayrı `npm run db:seed:demo` (`prisma/seed-demo.ts`; NODE_ENV≠production, idempotent, şifre `.env` `DEMO_PASSWORD`; her rol için bir hesap; her faz kendi demo verisini ekler). Onay motorundaki her ret (mezun belgesi dahil) gerekçe ister (trim, 10–500) ve talep sahibine maille gider (F10'a kadar `sendEmailSafe`). Davet kodu süre/limit seçimli (varsayılan 30 gün, sınırsız); çıkarılan üye tekrar katılabilir, engellenen katılamaz; `/kulupler/[slug]` herkese açık (üye listesi gizli). Bağımlılık yönü `approval → club, profile` (ADR-0007 ek notu).
+- **F5 notları:** Bağımlılık yönü `approval → club, profile, identity` (ADR-0007 ek notu): talep oluşturan action'lar `approval/actions.ts`'te, handler'lar `approval/handlers/*` içinde `defineHandler` ile (payload her çağrıda zod'dan geçer; `any` yok), kayıt `handlers/index.ts`. F6'da EVENT_PUBLISH/UPDATE/CANCEL aynı kalıpla: event modülü approval'ı import ETMEZ, `tx` alan uygulama fonksiyonları açar. Tek PENDING kuralı DB'de kısmi unique index (`type, targetId, COALESCE(clubId,'')`). Ekip sınırı `SELECT … FOR UPDATE` (Club satırı) + bekleyen STAFF_ASSIGN'lar yer tutar. Kulüp slug'ı **genel benzersiz** (public `/kulupler/[slug]` üniversitesiz çözülür). Ekler: `src/lib/attachments.ts` (doğrulama + private put + 5 dk imzalı URL), tablo approval'da; ticket ekleri `attachToTicketMessage`. Yetki: `getClubAccess` / `requireClubPermission(clubId, perm, { allowAdmin })` / `requireClubMember` (`src/lib/authz.ts`), saf kurallar `src/lib/club-roles.ts`. Kulüp paneli kapısı `app/panel/kulup/[slug]/club-context.ts`. Kulüp açıklaması F5'te düz metin → Tiptap uyumlu doc (`club/description.ts`); F6 editörü aynı formatı okur. Mail: `request-decided`, `alumni-result`. `ActionDialog`/`ConfirmAction` başarıda toast gösterir (PanelShell'de ToastProvider). `runAction` 4. argüman `formData` (dosya alanları). Demo: `npm run db:seed:demo` (`tsconfig.scripts.json` server-only'yi stub'a eşler; modül index'leri client kodu içerdiğinden react-server koşulu kullanılmaz), demo.* şifreleri `DEMO_PASSWORD`, e2e kulüp artıklarını temizler. e2e `workers: 3` (6 GB RAM'de dev sunucusu OOM'u). e2e önkoşulu: `db:seed:demo` (demo Admin). Ticket/onay bildirimi uygulama içi F10'da.
 - **F4 notları:** Ortak action gövdesi `runAction(formData, { authorize, schema, errors, run })` (`src/i18n/action-result.ts`): sıra authz → zod → servis, `redirect()` `unstable_rethrow` ile geçer. `'use server'` dosyaları sabit export edemez → hata anahtarları modülde `errors.ts`. Formlar için `ActionForm` / `ActionDialog` / `ConfirmAction` (`src/components/ui/action-form.tsx`, alanlar `FormField[]` prop'u; gizli alanlar flex dışında). `Select` `group` ile `<optgroup>` (profilde fakülte → bölüm tek seçim; fakülte sunucuda bölümden türetilir). `Pagination` (cursor: ilk sayfa + sonraki), `StatCard`. Depolama `src/lib/storage` (`getStorage()`, `newFileKey`, `publicFileUrl`; lokal: `STORAGE_LOCAL_DIR/{public,private}`, public `/api/files/<key>`, private 5 dk HMAC imzalı `/api/files/private?key&exp&sig`; r2 F12). Dosya tipi magic byte ile (`src/lib/file-type.ts`), avatar sharp 256×256 WebP (`src/lib/images.ts`); `serverActions.bodySizeLimit: 11mb`. Ortak kişi alanları `src/lib/person-fields.ts` (kayıt + profil). Modüller arası transaction: `Tx` tipi (`src/lib/db.ts`); hesap silmede identity → `anonymizeProfileForDeletion` (profile) + `revokeAdminRolesForUser` (university). Admin paneli üniversitesi `requireAdminPage()` (`app/panel/admin/admin-context.ts`, istek başına cache); action'lar gizli `universityId` + `requireUniversityAdmin`. Manuel mezun: domain çözümlenmeyen mail + seçilen üniversite (MANUAL/BOTH) → ALUMNI; OTP sonrası `PENDING_ALUMNI_REVIEW` (`isManualAlumni`), `requirePageUser` → `/mezun-dogrulama`, action kapısı `requirePendingAlumni()`. Belge alanları şimdilik `AlumniVerification` üzerinde (F5: ChangeRequest ALUMNI_VERIFY + Attachment, Admin onay/ret, `alumni-result` maili). Hesap silme: şifre + onay → `DELETE_ACCOUNT` link (30 dk) → `/hesap/sil/onay` (proxy'de oturumsuz açık, GET silmez) → anonimleştirme (e-posta `deleted+<id>@deleted.invalid`); son Süper Admin silinemez; başkan kontrolü F5'te `requestAccountDeletion`'a eklenecek. Kategoriler F4'te öne çekildi (`club`, `event` modüllerinde yalnızca kategori servisi; silmede kullanım kontrolü F5/F6'da genişler). `notFound()` Suspense içinde streaming nedeniyle HTTP 200 + 404 arayüzü döner (e2e içerikten doğrular). cacheComponents önceki rotayı gizli `<Activity>` olarak DOM'da tutar → e2e seçicilerinde `.filter({ visible: true })`. e2e ortak yardımcılar `tests/e2e/helpers.ts` (`registerStudent`, `login`, `superAdmin`, `waitForMail`). Entegrasyon testleri depolamayı `os.tmpdir()/groupup-test-storage`'a yazar. Bildirim mailleri (Admin atandı, talep reddedildi) F10.
 - **F3 notları:** i18n: `src/i18n/request.ts` (next-intl config), `server.ts` `getT()/getLocale()` imzası aynı (içi next-intl), `messages.ts` `createT` next-intl `createTranslator` ile (mail/action-result/test). Client'a katalog GÖNDERİLMEZ (NextIntlClientProvider yok) → metinler prop (`labelsFor`) ile; mesajlar ICU: `{ }` literal için `'{'` kaçışı (test tüm anahtarları biçimler). Sayfa başlıkları `titled(key)` (`app/_lib/metadata.ts`). `<html lang>` statik `tr` + `HtmlLangSync` (client effect). Bileşen yerleşimi: `src/components/ui` (→ ui, lib, i18n), `src/components/shell` (header/footer/panel kabukları, sunumsal; eylemler app'ten prop), `src/components/marketing` (landing) — eslint elemanları eklendi. Shell/marketing modül import edemez. Ortak sayfa kapısı `app/_lib/page-user.ts` (`requirePageUser`, `displayUser`). Yer tutucu rotalar `/akis` (giriş yapmış ana sayfa), `/kesfet`, `/kulupler`, `/etkinliklerim`, `/yasal/[slug]` (ComingSoon). Proxy: oturum cookie'si varsa `/` → `/akis`. Arketip: `data-archetype` + uygulama için `data-density="comfortable"` (16px gövde, 64px header). Yeni tokenlar: `--popover-width-*`, `--drawer-width`, `--bottom-bar-height`, `--panel-stripe-height`; panellerde `--color-link` panel rengini izler. Modal/Drawer native `<dialog>`; OtpInput tek gerçek input + 6 görsel kutu (yapıştırma/otofill/e2e `getByLabel`). Zorunlu alan yıldızı `<label>` dışında (erişilebilir ad temiz). Header'daki Kulüpler/Bildirim menüleri boş durum gösterir (F5/F10). Admin paneli linki avatar menüsüne F4'te eklenecek (şimdilik yalnızca Süper Admin → Platform). Bileşen testleri: saf yardımcılar vitest'te; DOM davranışı e2e (jsdom/testing-library onaysız). Kapsam dışı bırakılan DESIGN §6 bileşenleri ilgili fazlarda: EventCard/ClubCard, Bracket/Standings, DiffView, RichText, FileUpload, Countdown/CapacityBar, Pagination/Tooltip/StatCard/Breadcrumb.
 - **F2 notları:** Servisler request bağlamına dokunmaz (cookie/oturum yalnızca `actions.ts`). Hata akışı: servis `ServiceError(code)` / `RateLimitError` → action `actionError(err, t, ERROR_KEYS)` (`src/i18n/action-result.ts`); zod mesajları = mesaj anahtarı. Client formlar metinleri prop olarak alır (`labelsFor(t, *_KEYS)`), `useFormAction` formu sıfırlamaz. `/dogrula` adresi imzalı `gu_verify` cookie'sinden. Modüller Prisma tiplerini `@/lib/db-types` üzerinden alır. eslint boundaries `moduleEntry` seçicisi `src/modules/*/index.ts` olarak düzeltildi (önceki hali hiç eşleşmiyordu). Migration `email_token_code_hash` (`EmailToken.codeHash` indeksi). Entegrasyon testleri `groupup_test`'te: önce `npm run db:test:migrate`. e2e dev DB + Mailpit kullanır; lokal istekler IP'siz olduğundan tüm IP rate limitleri tek anahtarı paylaşır (kayıt 10/saat) — e2e'yi saatte ~10'dan fazla çalıştırırsan `RateLimit` tablosunu temizle. Manuel mezun yolu (belge) F4, `requireClubPermission` F5'te. Mail HTML'inde ham hex zorunlu (mail istemcileri CSS değişkeni desteklemez). `AlumniVerification` F4. `npm audit`: prisma CLI'nin geçişli `effect` bağımlılığı (dev), upstream bekleniyor. Lokal Süper Admin: `admin@groupup.local`, şifre `.env` → `SUPERADMIN_PASSWORD`.
@@ -68,17 +71,20 @@ Okunacak: ROLES-PERMISSIONS.md, AUTH-EMAIL.md §6
 - [x] Aktif oturumlar, hesap silme
 - [x] Mezun doğrulama (manuel yol) — onay motoru F5'te; burada belge yükleme + bekleme ekranı
 
-## F5 — Kulüp, üyelik, ekip, onay motoru, ticket (2 oturum)
+## F5 — Kulüp, üyelik, ekip, onay motoru, ticket (2 oturum) ✅
 Okunacak: APPROVALS-TICKETS.md, ROLES-PERMISSIONS.md, DATA-MODEL.md (§Kulüp)
-- [ ] Şema: ClubCategory, Club, Membership, ClubInvite, StaffAssignment, Announcement, ChangeRequest, Attachment, Ticket, TicketMessage
-- [ ] Admin: kulüp aç + Başkan ata
-- [ ] Davet kodu / link → `/katil/[kod]` → direkt üyelik; kulüpten ayrıl
-- [ ] Onay motoru (handler kayıt sistemi, unit test), Admin onay kuyruğu + DiffView
-- [ ] Handler'lar: CLUB_UPDATE, MEMBER_REMOVE, MEMBER_BAN, STAFF_ASSIGN, STAFF_REMOVE, ALUMNI_VERIFY
-- [ ] Kulüp paneli: genel bakış, üyeler, ekip (max 10), davet kodları, kulüp bilgileri (talep), talepler
-- [ ] Kanıt yükleme (private storage, imzalı URL)
-- [ ] Ticket (kulüp→admin, admin→platform)
-- [ ] Kulüp sayfası (`/kulupler/[slug]`) + Keşfet'te kulüpler
+- [x] Şema: ClubCategory, Club, Membership, ClubInvite, StaffAssignment, Announcement, ChangeRequest, Attachment, Ticket, TicketMessage
+- [x] Admin: kulüp aç + Başkan ata
+- [x] Davet kodu / link → `/katil/[kod]` → direkt üyelik; kulüpten ayrıl
+- [x] Onay motoru (handler kayıt sistemi, unit test), Admin onay kuyruğu + DiffView
+- [x] Handler'lar: CLUB_UPDATE, MEMBER_REMOVE, MEMBER_BAN, STAFF_ASSIGN, STAFF_REMOVE, ALUMNI_VERIFY
+- [x] Kulüp paneli: genel bakış, üyeler, ekip (max 10), davet kodları, kulüp bilgileri (talep), talepler
+- [x] Kanıt yükleme (private storage, imzalı URL)
+- [x] Ticket (kulüp→admin, admin→platform)
+- [x] Kulüp sayfası (`/kulupler/[slug]`) + Keşfet'te kulüpler
+- [x] Hesap silmede başkan kontrolü + Denetim kaydı listesi
+- [x] `npm run db:seed:demo` (her rol için hesap, 4 kulüp, talepler, ticket, bekleyen mezun)
+- [x] Responsive ekran kontrolü + e2e (kulüp aç, davetle katıl, görevli onayı, mezun ret→onay) + faz sonu kontrolleri
 
 ## F6 — Etkinlik (2 oturum)
 Okunacak: EVENTS-FORMS-I18N.md §1–3, §7–8
@@ -106,7 +112,7 @@ Okunacak: TOURNAMENTS.md §1–4, §6–8
 - [ ] Skor girişi + ilerleme + düzeltme
 - [ ] SVG braket, grup tabloları, fikstür, maçlarım, public sayfa
 
-## F9 — Turnuva 2 (2 oturum)
+## F9 — Turnuva 2 (2 oturum) — MVP sonrası
 Okunacak: TOURNAMENTS.md §2.2, §2.5–2.6, §5
 - [ ] Domain: çift eleme (+reset), İsviçre, FFA, iki maçlı
 - [ ] Venue + TimeSlot + planlama algoritması + elle düzenleme
@@ -116,8 +122,9 @@ Okunacak: TOURNAMENTS.md §2.2, §2.5–2.6, §5
 - [ ] Notification modeli + zil + bildirimler sayfası
 - [ ] Tüm mail şablonlarını bağla (AUTH-EMAIL §9)
 - [ ] `/api/cron/hourly`, `/api/cron/daily` (hatırlatmalar, temizlik, çeviri tekrar, COMPLETED)
+- [ ] Temizlik (F5'ten): silinmiş kullanıcıların private ekleri (mezun belgesi vb., N gün sonra), reddedilen/iptal edilen CLUB_UPDATE'lerin yetim logo/kapak dosyaları
 
-## F11 — Seçim (1 oturum)
+## F11 — Seçim (1 oturum) — MVP sonrası
 Okunacak: ELECTIONS.md
 - [ ] Şema + durum makinesi (domain, test)
 - [ ] Admin seçim yönetimi, adaylık, oy verme, sonuç + ELECTION_RESULT handler

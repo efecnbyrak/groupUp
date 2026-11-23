@@ -16,6 +16,9 @@ Kulüp bilgisi, etkinlik yayını/düzenlemesi/iptali, üye çıkarma/engelleme,
 ## Karar
 A. Payload tip başına zod şemasıyla hem oluşturmada hem uygulamada doğrulanır. Handler `apply` transaction içinde ilgili modülün public servisini çağırır. Onay idempotenttir (`WHERE status='PENDING'`). Yayındaki etkinlik düzenlemesi onaylanana kadar eski hali yayında kalır.
 
+### Ek not (2026-11-23, F5) — bağımlılık yönü
+Handler'lar `club`/`profile` servislerini çağırdığı için bu modüller `approval`'ı import ederse döngü oluşur. Bu yüzden yön **`approval → club, profile`**: talep oluşturan action'lar (görevli ata, üye çıkar, kulüp bilgisi, mezun belgesi) `approval` modülündedir; `club` ve `profile` yalnızca handler'ların çağırdığı `tx` alan uygulama fonksiyonlarını açar. Aynı hedef + tip için tek PENDING kuralı DB'de kısmi unique index ile de korunur.
+
 ## Sonuçlar
 **Olumlu:** Admin için tek kuyruk; yeni onay tipi eklemek ucuz; tutarlı audit.
 **Olumsuz:** JSON payload DB seviyesinde tipli değil → zod + unit test zorunlu.

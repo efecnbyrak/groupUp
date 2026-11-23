@@ -7,6 +7,7 @@ import { login, registerStudent, superAdmin, uniqueStudentNo } from "./helpers";
  * Atanan kullanıcı avatar menüsünde "Admin Paneli"ni görür ve fakülte ekler.
  */
 test("Süper Admin üniversite ekler, domain ekler, Admin atar; Admin fakülte ekler", async ({ browser, request }) => {
+  test.setTimeout(120_000); // çok aktörlü akış; taze dev sunucusunda ilk derlemeler paralel testlerle yarışır
   const stamp = Date.now().toString().slice(-7);
   const password = "Kahve!42x";
 

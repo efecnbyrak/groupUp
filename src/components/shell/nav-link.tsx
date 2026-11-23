@@ -20,7 +20,7 @@ function isActive(pathname: string, href: string, exact: boolean): boolean {
 }
 
 /** Aktif sayfayı `aria-current="page"` ile işaretleyen gezinme bağlantısı. */
-export function NavLink({ href, icon, children, variant, exact = false }: { href: string; icon?: ReactNode; children: ReactNode; variant: keyof typeof variants; exact?: boolean }) {
+export function NavLink({ href, icon, children, variant, exact = false, trailing }: { href: string; icon?: ReactNode; children: ReactNode; variant: keyof typeof variants; exact?: boolean; trailing?: ReactNode }) {
   const pathname = usePathname();
   return (
     <Link
@@ -33,6 +33,7 @@ export function NavLink({ href, icon, children, variant, exact = false }: { href
     >
       {icon}
       <span>{children}</span>
+      {trailing}
     </Link>
   );
 }

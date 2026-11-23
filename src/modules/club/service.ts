@@ -8,12 +8,29 @@ import { slugify } from "@/lib/slug";
 import type { ClubCategoryInput } from "./schemas";
 
 /**
- * club modülü — F4'te yalnızca kategori yönetimi (Süper Admin). Kulüp/üyelik F5'te.
- * Kategori silme: F5'te kulüplerde kullanılıyorsa engellenecek (`IN_USE`).
+ * club modülü — kategoriler (Süper Admin). Kulüp: clubs.ts, üyelik/davet: membership.ts, ekip: staff.ts.
  */
-export type ClubErrorCode = "NOT_FOUND" | "SLUG_TAKEN" | "IN_USE";
-const fail = (code: ClubErrorCode, fields?: Record<string, string>) => new ServiceError(code, fields);
-const isUniqueViolation = (err: unknown) => typeof err === "object" && err !== null && "code" in err && (err as { code: unknown }).code === "P2002";
+export type ClubErrorCode =
+  | "NOT_FOUND"
+  | "SLUG_TAKEN"
+  | "IN_USE"
+  | "PRESIDENT_INVALID"
+  | "ALREADY_PRESIDENT"
+  | "INVITE_INVALID"
+  | "ALREADY_MEMBER"
+  | "BANNED"
+  | "OTHER_UNIVERSITY"
+  | "PRESIDENT_CANNOT_LEAVE"
+  | "NOT_MEMBER"
+  | "IS_PRESIDENT"
+  | "NOT_STAFF"
+  | "STAFF_LIMIT"
+  | "CLUB_INACTIVE"
+  | "FILE_INVALID"
+  | "FILE_TYPE"
+  | "FILE_TOO_LARGE";
+export const fail = (code: ClubErrorCode, fields?: Record<string, string>) => new ServiceError(code, fields);
+export const isUniqueViolation = (err: unknown) => typeof err === "object" && err !== null && "code" in err && (err as { code: unknown }).code === "P2002";
 
 interface Actor {
   id: string;
@@ -57,6 +74,7 @@ export async function deleteClubCategory(actor: Actor, id: string): Promise<void
   await db.$transaction(async (tx) => {
     const row = await tx.clubCategory.findUnique({ where: { id }, select: { slug: true } });
     if (!row) throw fail("NOT_FOUND");
+    if ((await tx.club.count({ where: { categoryId: id } })) > 0) throw fail("IN_USE");
     await tx.clubCategory.delete({ where: { id } });
     await audit({ action: "club.category.deleted", targetType: "ClubCategory", targetId: id, actorId: actor.id, meta: { slug: row.slug } }, tx);
   });

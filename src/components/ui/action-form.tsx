@@ -9,6 +9,7 @@ import { cn } from "./cn";
 import { Input, Textarea } from "./input";
 import { Modal } from "./modal";
 import { Select, type SelectOption } from "./select";
+import { useOptionalToast } from "./toast";
 import { useFormAction, type FormAction } from "./use-form-action";
 
 type Base = { name: string; label: string; hint?: string; required?: boolean };
@@ -27,7 +28,7 @@ export type FormField =
   | (Base & { type: "textarea"; defaultValue?: string; rows?: number; maxLength?: number })
   | (Base & { type: "select"; options: SelectOption[]; defaultValue?: string; placeholder?: string })
   | (Base & { type: "checkbox"; defaultChecked?: boolean })
-  | (Base & { type: "file"; accept: string })
+  | (Base & { type: "file"; accept: string; multiple?: boolean })
   | { type: "hidden"; name: string; value: string };
 
 export type ActionFormProps = {
@@ -40,7 +41,8 @@ export type ActionFormProps = {
   /** "inline": geniş ekranda alanlar ve düğme tek satır (kısa ekleme formları). */
   layout?: "stack" | "inline";
   submitVariant?: ButtonVariant;
-  onSuccess?: () => void;
+  /** Başarıda çağrılır (sunucu mesajıyla). */
+  onSuccess?: (message?: string) => void;
   footer?: ReactNode;
 };
 
@@ -54,7 +56,7 @@ export function ActionForm({ action, fields, submitLabel, loadingLabel, resetOnS
     if (form.state?.ok && handled.current !== form.state) {
       handled.current = form.state;
       if (resetOnSuccess) ref.current?.reset();
-      onSuccess?.();
+      onSuccess?.(form.state.message);
     }
   }, [form.state, resetOnSuccess, onSuccess]);
 
@@ -105,6 +107,7 @@ function renderField(f: FormField, id: string, error: string | undefined) {
           required={f.required}
           error={error}
           accept={f.accept}
+          multiple={f.multiple}
           className="py-(--space-2) file:mr-(--space-3) file:rounded-control file:border-0 file:bg-muted file:px-(--space-3) file:py-(--space-1) file:text-fg"
         />
       );
@@ -148,6 +151,7 @@ export function ActionDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [key, setKey] = useState(0);
+  const toast = useOptionalToast();
   return (
     <>
       <Button
@@ -161,7 +165,15 @@ export function ActionDialog({
         {triggerLabel}
       </Button>
       <Modal open={open} onClose={() => setOpen(false)} title={title} description={description} closeLabel={closeLabel}>
-        <ActionForm key={key} {...formProps} onSuccess={() => setOpen(false)} />
+        <ActionForm
+          key={key}
+          {...formProps}
+          onSuccess={(message) => {
+            setOpen(false);
+            // Dialog kapanınca içindeki mesaj görünmez → toast ile duyurulur.
+            if (message) toast?.show(message, "success");
+          }}
+        />
       </Modal>
     </>
   );
@@ -193,10 +205,11 @@ export function ConfirmAction({
 }) {
   const [open, setOpen] = useState(false);
   const [key, setKey] = useState(0);
+  const toast = useOptionalToast();
   return (
     <>
       <Button
-        variant={variant === "danger" ? "ghost" : "secondary"}
+        variant={variant === "danger" ? "ghost" : variant === "primary" ? "primary" : "secondary"}
         size="sm"
         className={variant === "danger" ? "text-negative" : undefined}
         onClick={() => {
@@ -214,7 +227,10 @@ export function ConfirmAction({
           submitLabel={confirmLabel}
           submitVariant={variant}
           loadingLabel={loadingLabel}
-          onSuccess={() => setOpen(false)}
+          onSuccess={(message) => {
+            setOpen(false);
+            if (message) toast?.show(message, "success");
+          }}
           footer={
             <Button variant="secondary" onClick={() => setOpen(false)}>
               {cancelLabel}

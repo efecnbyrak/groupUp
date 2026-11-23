@@ -1,9 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-import { waitForMail } from "./helpers";
+import { demoAdmin, login, waitForMail } from "./helpers";
 
-/** Manuel mezun yolu (AUTH-EMAIL §6): kişisel mail → üniversite seç → OTP → belge yükle → bekleme ekranı. */
-test("manuel mezun kaydı, belge yükleme ve bekleme ekranı", async ({ page, request }) => {
+/**
+ * Manuel mezun yolu (AUTH-EMAIL §6): kişisel mail → üniversite seç → OTP → belge yükle → bekleme ekranı →
+ * Admin gerekçeyle reddeder (mail) → yeniden yükleme → Admin onaylar (mail) → hesap aktif.
+ * Önkoşul: `db:seed:demo` (demo Admin), Mailpit açık.
+ */
+test("manuel mezun kaydı, belge, ret → yeniden yükleme → onay", async ({ page, request, browser }) => {
+  test.setTimeout(150_000);
   const email = `mezun${Date.now().toString().slice(-8)}@kisisel-e2e.com`;
   const password = "Deniz#77y";
   const visible = <T extends { filter: (o: { visible: boolean }) => T }>(l: T) => l.filter({ visible: true });
@@ -42,9 +47,45 @@ test("manuel mezun kaydı, belge yükleme ve bekleme ekranı", async ({ page, re
   // Sahte PDF reddedilir, gerçek PDF kabul edilir
   await visible(page.getByLabel("Belge")).setInputFiles({ name: "diploma.pdf", mimeType: "application/pdf", buffer: Buffer.from("<html>sahte</html>") });
   await visible(page.getByRole("button", { name: "Belgeyi gönder" })).click();
-  await expect(visible(page.getByText("Bu dosya türü desteklenmiyor."))).toBeVisible();
+  await expect(visible(page.getByText("Yalnızca PDF, JPG, PNG veya WEBP yükleyebilirsiniz."))).toBeVisible();
   await visible(page.getByLabel("Belge")).setInputFiles({ name: "diploma.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\n%%EOF\n") });
   await visible(page.getByRole("button", { name: "Belgeyi gönder" })).click();
   await expect(visible(page.getByText("Belgen inceleniyor"))).toBeVisible();
   await expect(visible(page.getByText(/Gönderilen: diploma\.pdf/))).toBeVisible();
+
+  // Admin: mezun doğrulama → incele → gerekçeli ret
+  const reason = "Belge okunaklı değil, lütfen net bir kopya yükleyin.";
+  const admin = await (await browser.newContext()).newPage();
+  const a = demoAdmin();
+  await login(admin, a.email, a.password);
+  await admin.goto("/panel/admin/mezun-dogrulama");
+  await admin.getByRole("row", { name: new RegExp(email.replace(".", "\\.")) }).getByRole("link", { name: "İncele ve karar ver" }).click();
+  await expect(admin.getByRole("heading", { name: "Mezun doğrulama" })).toBeVisible();
+  await admin.getByRole("button", { name: "Reddet" }).click();
+  const dialog = admin.getByRole("dialog");
+  await dialog.getByLabel("Ret gerekçesi").fill("kısa");
+  await dialog.getByRole("button", { name: "Reddet" }).click();
+  await expect(dialog.getByText("Gerekçe en az 10 karakter olmalı.")).toBeVisible();
+  await dialog.getByLabel("Ret gerekçesi").fill(reason);
+  await dialog.getByRole("button", { name: "Reddet" }).click();
+  await expect(admin.getByText(/tarihinde reddedildi/)).toBeVisible();
+  const rejected = await waitForMail(request, email, /Mezun belgen onaylanmadı/);
+  expect(rejected.text).toContain(reason);
+
+  // Kullanıcı: gerekçeyi görür, yeniden yükler
+  await page.goto("/mezun-dogrulama");
+  await expect(visible(page.getByText(`Gerekçe: ${reason}`))).toBeVisible();
+  await visible(page.getByLabel("Belge")).setInputFiles({ name: "diploma-net.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-1.7\n%%EOF\n") });
+  await visible(page.getByRole("button", { name: "Yeni belge gönder" })).click();
+  await expect(visible(page.getByText("Belgen inceleniyor"))).toBeVisible();
+
+  // Admin: yeni talebi onaylar → hesap aktif
+  await admin.goto("/panel/admin/mezun-dogrulama");
+  await admin.getByRole("row", { name: new RegExp(email.replace(".", "\\.")) }).getByRole("link", { name: "İncele ve karar ver" }).click();
+  await admin.getByRole("button", { name: "Onayla" }).click();
+  await admin.getByRole("dialog").getByRole("button", { name: "Onayla" }).click();
+  await expect(admin.getByText(/tarihinde onaylandı/)).toBeVisible();
+  await waitForMail(request, email, /Mezun hesabın onaylandı/);
+  await page.goto("/akis");
+  await expect(page).toHaveURL(/\/akis$/);
 });

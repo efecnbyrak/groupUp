@@ -44,3 +44,4 @@ export {
   revokeOtherSessionsAction,
   revokeSessionAction,
 } from "./account-actions";
+export { activateManualAlumni, getMailRecipient } from "./alumni";

@@ -50,13 +50,13 @@ groupUp, **tek bir Next.js 16 uygulaması olarak modüler monolit** şeklinde in
 |---|---|---|---|
 | `identity` | Kayıt, OTP, giriş/çıkış, şifre sıfırlama, mail değiştir, oturumlar, hesap silme | User, Session, EmailToken | university, profile, notification |
 | `university` | Üniversite, domainler, fakülte/bölüm, Admin atama, üniversite talepleri | University, UniversityDomain, Faculty, Department, UniversityAdmin, UniversityRequest | — |
-| `profile` | Profil, mezun doğrulama, öğrenci→mezun geçişi | Profile, AlumniVerification | university, approval |
-| `club` | Kulüp, kategori, üyelik, davet, görevli + yetki, duyurular | Club, ClubCategory, Membership, ClubInvite, StaffAssignment, Announcement | university, approval |
-| `approval` | Genel onay motoru (ChangeRequest + handler'lar), ekler | ChangeRequest, Attachment | (handler'lar ilgili modül servisini çağırır) |
+| `profile` | Profil, mezun doğrulama durumu, öğrenci→mezun geçişi | Profile, AlumniVerification | university |
+| `club` | Kulüp, kategori, üyelik, davet, görevli + yetki, duyurular | Club, ClubCategory, Membership, ClubInvite, StaffAssignment, Announcement | university |
+| `approval` | Genel onay motoru (ChangeRequest + handler'lar), talep oluşturma action'ları, ekler | ChangeRequest, Attachment | club, profile, university (handler'lar ilgili modül servisini çağırır) |
 | `event` | Etkinlik yaşam döngüsü, görseller, kategori, çeviri | Event, EventImage, EventCategory | club, approval, lib/translation |
 | `registration` | Form alanları, başvurular, takımlar, yedek liste, export | EventFormField, Registration, Team, TeamMember | event, club, profile |
 | `tournament` | Formatlar, aşamalar, maçlar, skor, puan tablosu, saha/zaman planlama | Tournament, Stage, TournamentGroup, Participant, Match, Venue, TimeSlot | registration, event |
-| `ticket` | Destek talepleri | Ticket, TicketMessage | club, university |
+| `ticket` | Destek talepleri | Ticket, TicketMessage | club, university, approval (ekler) |
 | `election` | Seçim, adaylar, gizli oy, sonuç | Election, Candidate, BallotReceipt, Vote | club, approval |
 | `notification` | Uygulama içi bildirim + mail şablonları | Notification | lib/mail |
 | `feed` | Ana sayfa akışı, Keşfet, arama (yalnızca okuma) | — | event, club, registration |
@@ -112,8 +112,9 @@ flowchart LR
   subgraph modules
     identity --> university
     identity --> profile
-    profile --> approval
-    club --> approval
+    identity --> club
+    approval --> profile
+    approval --> club
     club --> university
     event --> club
     event --> approval
@@ -122,6 +123,7 @@ flowchart LR
     election --> club
     election --> approval
     ticket --> club
+    ticket --> approval
     feed --> event
     feed --> registration
   end

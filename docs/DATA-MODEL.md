@@ -210,6 +210,7 @@ model AuditLog {
 ```
 
 ## Kulüp, onay, ticket (F5)
+> **Uygulanan farklar (F5):** `Club.slug` genel `@unique` (public sayfa üniversitesiz), `Club.deletedAt`; `Membership.bannedUntil` (null + BANNED = süresiz); `StaffAssignment.updatedAt`; `ChangeRequest.updatedAt` + migration'da kısmi unique index `(type, targetId, COALESCE(clubId,'')) WHERE status='PENDING'`; `Ticket.category` (`TicketCategory`), `changeRequestId`, `closedAt`; `Attachment` FK'leri cascade. `AlumniVerification` yalnızca durum kaydı (belge alanları Attachment'a taşındı, `changeRequestId` son talep).
 > `ClubCategory` ve `EventCategory` F4'te (Platform paneli kategorileri) eklendi; `EventCategory.parentId` iki seviyeli ağaç (`@@index([parentId, order])`).
 ```prisma
 model ClubCategory {                // Spor, Kültür-Sanat, Bilim-Teknoloji, ...

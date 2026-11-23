@@ -56,7 +56,8 @@
     "domain": "Enter a valid domain (e.g. ogr.example.edu.tr).",
     "slug": "Only lowercase letters, digits and hyphens.",
     "icon": "Icon name must use lowercase letters, digits and hyphens (e.g. trophy).",
-    "number": "Enter a valid number."
+    "number": "Enter a valid number.",
+    "instagram": "Instagram username: up to 30 letters, digits, dots and underscores."
   },
   "password": {
     "rulesTitle": "Password rules",
@@ -213,6 +214,32 @@
       "intro": "We received a request to delete your account. Click the link below to confirm; you will be asked to confirm one last time.",
       "button": "Confirm account deletion",
       "expires": "The link is valid for 30 minutes and can be used once. If you didn't request this, ignore this email and change your password."
+    },
+    "requestDecided": {
+      "subject": {
+        "approved": "Your request was approved: {type}",
+        "rejected": "Your request was rejected: {type}"
+      },
+      "intro": {
+        "approved": "Your \"{type}\" request for {club} was approved by the University Admin and applied.",
+        "rejected": "Your \"{type}\" request for {club} was rejected by the University Admin."
+      },
+      "reason": "Reason: {reason}",
+      "footer": "You can follow request status on the Requests page of the club panel."
+    },
+    "alumniResult": {
+      "subject": {
+        "approved": "Your alumni account was approved",
+        "rejected": "Your alumni document was not approved"
+      },
+      "intro": {
+        "approved": "Your document was reviewed and your alumni account is now active. You can sign in.",
+        "rejected": "The document you uploaded was not approved. See the reason below; you can upload a new document."
+      },
+      "button": {
+        "approved": "Sign in",
+        "rejected": "Upload a new document"
+      }
     }
   },
   "meta": {
@@ -250,7 +277,8 @@
       "staff": "Staff",
       "admin": "University admin",
       "platform": "Super admin"
-    }
+    },
+    "clubPanelOf": "Club Panel · {club}"
   },
   "public": {
     "howItWorks": "How it works",
@@ -530,7 +558,10 @@
       "students": "Active students",
       "alumni": "Active alumni",
       "pendingAlumni": "Pending alumni verifications",
-      "faculties": "Faculties"
+      "faculties": "Faculties",
+      "clubs": "Clubs",
+      "openTickets": "Open support tickets",
+      "pendingApprovals": "Pending approvals"
     },
     "userTypes": {
       "STUDENT": "Student",
@@ -570,11 +601,11 @@
     },
     "alumni": {
       "body": "Users waiting for alumni verification by document.",
-      "decisionLater": "Approve and reject arrive with the approval engine (F5). For now you can see pending submissions.",
       "graduationYear": "Graduation year",
       "document": "Document",
       "submittedAt": "Submitted",
-      "empty": "No pending alumni verifications."
+      "empty": "No pending alumni verifications.",
+      "review": "Review and decide"
     }
   },
   "profile": {
@@ -633,7 +664,8 @@
       "confirmSubmit": "Permanently delete my account",
       "keep": "Cancel, back to my account",
       "invalidToken": "This link is invalid or has expired. You can request a new one from your account page.",
-      "done": "Your account has been deleted. Thanks for using groupUp."
+      "done": "Your account has been deleted. Thanks for using groupUp.",
+      "presidentMustTransfer": "You are a club president. Hand over the presidency before deleting your account — contact your university Admin (Club panel → Support)."
     }
   },
   "alumni": {
@@ -649,6 +681,416 @@
     "submittedFile": "Submitted: {file} · {date}",
     "replace": "Uploaded the wrong document? Replace it",
     "rejectedTitle": "Your document was not approved",
-    "rejectedBody": "Please upload a valid graduation document."
+    "rejectedBody": "Please upload a valid graduation document.",
+    "rejectedReason": "Reason: {reason}",
+    "rejectedRetry": "You can fix and re-upload your document; a new upload goes back to review."
+  },
+  "approval": {
+    "types": {
+      "CLUB_UPDATE": "Club info change",
+      "EVENT_PUBLISH": "Event publication",
+      "EVENT_UPDATE": "Event edit",
+      "EVENT_CANCEL": "Event cancellation",
+      "MEMBER_REMOVE": "Member removal",
+      "MEMBER_BAN": "Member ban",
+      "STAFF_ASSIGN": "Staff assignment",
+      "STAFF_REMOVE": "Staff removal",
+      "ALUMNI_VERIFY": "Alumni verification",
+      "ELECTION_RESULT": "Election result"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Withdrawn"
+    },
+    "validation": {
+      "reasonTooShort": "The reason must be at least 10 characters.",
+      "date": "Choose a valid date."
+    },
+    "errors": {
+      "alreadyDecided": "A decision has already been made on this request.",
+      "reasonRequired": "A reason is required.",
+      "attachmentRequired": "This request needs at least one evidence file.",
+      "noChanges": "No changes — there is nothing to submit.",
+      "fileType": "Only PDF, JPG, PNG or WEBP files are allowed.",
+      "tooManyFiles": "You can upload at most 5 files."
+    },
+    "approve": "Approve",
+    "approveTitle": "Approve request",
+    "approveBody": "The change is applied immediately and the requester is emailed.",
+    "reject": "Reject",
+    "rejectTitle": "Reject request",
+    "rejectBody": "The reason ({min}–{max} characters) is emailed to the requester.",
+    "reason": "Rejection reason",
+    "attachments": "Attachments",
+    "attachmentsHint": "PDF, JPG, PNG or WEBP; up to 10 MB each, at most {max} files.",
+    "cancelled": "Request withdrawn.",
+    "submitted": "Your request was sent for Admin approval.",
+    "sendForApproval": "Send for approval",
+    "pendingCount": "{count, plural, one {# pending request} other {# pending requests}}",
+    "decision": {
+      "approved": "Request approved and applied.",
+      "rejected": "Request rejected; the reason was sent."
+    },
+    "queue": {
+      "body": "Approval requests from clubs and users — oldest first. Each decision is made one by one.",
+      "type": "Request type",
+      "club": "Club",
+      "requestedBy": "Requested by",
+      "date": "Date",
+      "empty": "No pending requests",
+      "emptyBody": "New requests will appear here."
+    },
+    "detail": {
+      "title": "Request details",
+      "changes": "Changes",
+      "reason": "Request reason",
+      "noAttachments": "No attachments.",
+      "signedHint": "Links are valid for 5 minutes for security; refresh the page if they expire.",
+      "target": "Person concerned",
+      "noClub": "Not club-related",
+      "decision": "Decision",
+      "decisionBody": "Approving applies the change; rejecting requires a reason.",
+      "decided": {
+        "APPROVED": "Approved on {date}",
+        "REJECTED": "Rejected on {date}",
+        "CANCELLED": "Withdrawn by the requester on {date}"
+      }
+    },
+    "diff": {
+      "before": "Current",
+      "after": "Requested",
+      "empty": "(empty)",
+      "none": "No permissions",
+      "noRows": "No differences to show.",
+      "permanent": "Permanent",
+      "fields": {
+        "shortDescTr": "Short description",
+        "description": "Description",
+        "contactEmail": "Contact email",
+        "instagram": "Instagram",
+        "logoKey": "Logo",
+        "coverKey": "Cover image",
+        "title": "Title",
+        "permissions": "Permissions",
+        "membership": "Membership",
+        "bannedUntil": "Ban ends",
+        "accountStatus": "Account status"
+      },
+      "values": {
+        "ACTIVE": "Active",
+        "REMOVED": "Removed",
+        "BANNED": "Banned",
+        "PENDING_ALUMNI_REVIEW": "Awaiting alumni review"
+      }
+    }
+  },
+  "audit": {
+    "body": "Record of critical actions at your university (read-only).",
+    "area": "Area",
+    "date": "Date",
+    "action": "Action",
+    "actor": "By",
+    "target": "Target",
+    "empty": "No records.",
+    "system": "System",
+    "areas": {
+      "approval": "Approvals",
+      "club": "Clubs",
+      "ticket": "Support",
+      "university": "University",
+      "identity": "Accounts",
+      "profile": "Profiles"
+    },
+    "actions": {
+      "approval_request_created": "Approval request created",
+      "approval_request_updated": "Approval request updated",
+      "approval_request_approved": "Request approved",
+      "approval_request_rejected": "Request rejected",
+      "approval_request_cancelled": "Request withdrawn",
+      "club_club_created": "Club created",
+      "club_president_assigned": "President assigned",
+      "club_club_updatedDirect": "Club info updated (Admin)",
+      "club_member_joined": "Joined club",
+      "club_member_left": "Left club",
+      "club_member_removedDirect": "Member removed (Admin)",
+      "club_staff_removedDirect": "Staff removed (Admin)",
+      "club_invite_created": "Invite code created",
+      "club_invite_revoked": "Invite code revoked",
+      "ticket_ticket_opened": "Ticket opened",
+      "ticket_ticket_closed": "Ticket closed",
+      "ticket_ticket_reopened": "Ticket reopened"
+    }
+  },
+  "club": {
+    "roles": {
+      "PRESIDENT": "President",
+      "STAFF": "Staff",
+      "MEMBER": "Member"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "SUSPENDED": "Suspended",
+      "ARCHIVED": "Archived"
+    },
+    "permissions": {
+      "EVENT_MANAGE": "Event management",
+      "REGISTRATION_VIEW": "View registrations",
+      "REGISTRATION_MANAGE": "Manage registrations",
+      "TOURNAMENT_MANAGE": "Tournament management",
+      "MEMBER_INVITE": "Invite codes",
+      "ANNOUNCEMENT_POST": "Announcements",
+      "TICKET_OPEN": "Support tickets"
+    },
+    "permissionHints": {
+      "EVENT_MANAGE": "Creates and edits event drafts, submits them for approval.",
+      "REGISTRATION_VIEW": "Views event registrations.",
+      "REGISTRATION_MANAGE": "Accepts/rejects registrations, downloads Excel.",
+      "TOURNAMENT_MANAGE": "Creates tournaments, enters scores, schedules matches.",
+      "MEMBER_INVITE": "Creates and revokes invite codes/links.",
+      "ANNOUNCEMENT_POST": "Publishes club announcements.",
+      "TICKET_OPEN": "Opens tickets to the Admin on behalf of the club."
+    },
+    "memberCount": "{count, plural, one {# member} other {# members}}",
+    "presidentName": "President: {name}",
+    "noPresident": "No president assigned",
+    "nav": {
+      "members": "Members",
+      "staff": "Team",
+      "invites": "Invite codes",
+      "requests": "Requests",
+      "info": "Club info"
+    },
+    "panel": {
+      "title": "Club panel",
+      "overviewBody": "Summary of {club}."
+    },
+    "stats": {
+      "members": "Active members",
+      "joined30": "Joined in the last 30 days",
+      "staff": "Team (staff)",
+      "pendingRequests": "Pending requests",
+      "invites": "Active invite codes"
+    },
+    "fields": {
+      "name": "Club name",
+      "category": "Category",
+      "shortDesc": "Short description",
+      "description": "Description",
+      "descriptionHint": "Separate paragraphs with a blank line. A rich text editor is coming with events.",
+      "contactEmail": "Contact email",
+      "instagram": "Instagram",
+      "logo": "Logo",
+      "cover": "Cover image",
+      "imageHint": "JPG, PNG or WEBP, up to 10 MB. Logo is cropped square, cover 8:3.",
+      "president": "President",
+      "presidentEmail": "President's email",
+      "presidentEmailHint": "Must be an active student registered at your university.",
+      "members": "Members"
+    },
+    "admin": {
+      "body": "Your university's clubs. You can create clubs, assign presidents and edit details directly.",
+      "create": "Create club",
+      "createBody": "The president becomes the first member and manages the team and invite codes.",
+      "createSubmit": "Create club",
+      "created": "Club created.",
+      "empty": "No clubs yet",
+      "emptyBody": "Create the first club and assign its president.",
+      "changePresident": "Change president",
+      "changePresidentBody": "The previous president stays as a member. The new president must be an active student here and not president of another club.",
+      "presidentAssigned": "President assigned.",
+      "updated": "Club details updated.",
+      "directEditBody": "As Admin, changes apply without approval and are written to the audit log.",
+      "directBody": "As Admin, this applies without approval and is written to the audit log.",
+      "viewPage": "Club page"
+    },
+    "info": {
+      "title": "Club info",
+      "body": "Changes go live after the University Admin approves them. The club name cannot be changed.",
+      "pending": "You have a pending info change request. A new submission updates it."
+    },
+    "members": {
+      "title": "Members",
+      "body": "Active members of the club.",
+      "presidentBody": "Removing and banning members goes to Admin approval with a reason and evidence.",
+      "joined": "Joined",
+      "empty": "No members yet.",
+      "pending": "Request pending",
+      "remove": "Remove",
+      "removeTitle": "Remove {name} from the club?",
+      "removeBody": "The request goes to Admin approval. A removed person can rejoin with an invite code.",
+      "removed": "Member removed.",
+      "ban": "Ban",
+      "banTitle": "Ban {name}?",
+      "banBody": "A banned person cannot rejoin with an invite code until the ban ends (never, if permanent). The request goes to Admin approval.",
+      "banUntil": "Ban end date",
+      "banUntilHint": "Leave empty for a permanent ban.",
+      "reason": "Reason",
+      "reasonHint": "At least 10 characters. The Admin will see this.",
+      "evidence": "Evidence files"
+    },
+    "staff": {
+      "title": "Team",
+      "body": "President + up to 9 staff. Used: {used}/{max}. Changes apply after Admin approval.",
+      "add": "Add staff",
+      "addBody": "Staff must be an active member. The title is free text; permissions are what you tick.",
+      "member": "Member",
+      "titleField": "Title",
+      "titleHint": "e.g. Tournament Lead",
+      "permissions": "Permissions",
+      "noPermissions": "No permissions",
+      "editTitle": "{name} — title and permissions",
+      "removeTitle": "Remove {name} from the team?",
+      "removeBody": "They remain a club member. The request goes to Admin approval.",
+      "reasonOptional": "Reason (optional)",
+      "removed": "Staff removed.",
+      "empty": "No staff yet.",
+      "emptyBody": "You can add one of your members to the team with a title and permissions.",
+      "pendingInfo": "{count, plural, one {# staff assignment request is} other {# staff assignment requests are}} awaiting approval (they count toward the team limit)."
+    },
+    "invites": {
+      "body": "Joining via code or link needs no approval. People you share it with become members in one step.",
+      "create": "New invite code",
+      "createSubmit": "Create code",
+      "created": "Invite code created.",
+      "revoked": "Invite code revoked.",
+      "expiresIn": "Valid for",
+      "maxUses": "Usage limit",
+      "maxUsesHint": "Empty = unlimited",
+      "code": "Code",
+      "usage": "Usage",
+      "usageUnlimited": "{count} / unlimited",
+      "expires": "Expires",
+      "copyLink": "Copy link",
+      "copied": "Copied",
+      "revoke": "Revoke",
+      "revokeTitle": "Revoke {code}?",
+      "revokeBody": "Nobody can join with this code anymore. Existing members are not affected.",
+      "empty": "No invite codes yet.",
+      "expiry": {
+        "7": "7 days",
+        "30": "30 days",
+        "never": "No expiry"
+      },
+      "state": {
+        "VALID": "Valid",
+        "EXPIRED": "Expired",
+        "REVOKED": "Revoked",
+        "USED_UP": "Limit reached"
+      },
+      "stateLong": {
+        "VALID": "The invite is valid.",
+        "EXPIRED": "This invite has expired. Ask the club for a new link.",
+        "REVOKED": "This invite has been revoked. Ask the club for a new link.",
+        "USED_UP": "This invite has reached its usage limit. Ask the club for a new link."
+      }
+    },
+    "join": {
+      "title": "Join club",
+      "button": "Join club",
+      "code": "Invite code",
+      "goToClub": "Go to club page",
+      "invalidBody": "The link is wrong or the code no longer exists. Ask the club for a new invite link.",
+      "loginFirst": "Sign in with your school account first to join.",
+      "welcome": "Welcome to {club}!"
+    },
+    "leave": {
+      "button": "Leave club",
+      "title": "Leave {club}?",
+      "body": "You'll need an invite code to rejoin. If you are staff, your role ends too.",
+      "done": "You left the club."
+    },
+    "page": {
+      "about": "About",
+      "noDescription": "The club hasn't added a description yet.",
+      "membership": "Membership",
+      "loginToJoin": "Sign in to see members and join.",
+      "youAreMember": "You are a member of this club",
+      "joinWithCode": "Enter the invite code you got from the club team to join.",
+      "moreMembers": "Showing the first 30 members."
+    },
+    "requests": {
+      "body": "Status of requests you sent for approval. You can withdraw a pending request.",
+      "empty": "No requests yet.",
+      "meta": "{name} · {date}",
+      "reason": "Reason: {reason}",
+      "rejectReason": "Rejection reason: {reason}",
+      "cancel": "Withdraw",
+      "cancelTitle": "Withdraw this request?",
+      "cancelBody": "It is removed from the queue; you can submit again later."
+    },
+    "directory": {
+      "title": "Clubs",
+      "exploreBody": "Discover clubs at your university. Events are coming here soon.",
+      "search": "Search clubs",
+      "searchPlaceholder": "Name or description",
+      "categories": "Categories",
+      "all": "All",
+      "empty": "No clubs found",
+      "emptyBody": "Change the search or category filter."
+    },
+    "errors": {
+      "presidentInvalid": "No active student with this email was found at your university.",
+      "alreadyPresident": "This person is already president of another club.",
+      "inviteInvalid": "The invite code is invalid or expired.",
+      "alreadyMember": "You are already a member of this club.",
+      "banned": "You are banned from this club and cannot join.",
+      "otherUniversity": "This club belongs to another university; you can only join clubs at your own university.",
+      "presidentCannotLeave": "The president cannot leave the club; hand over the presidency first.",
+      "notMember": "This person is not an active member of the club.",
+      "isPresident": "This action cannot be applied to the president.",
+      "notStaff": "This person is not on the team.",
+      "staffLimit": "The team is full: President + 9 staff limit reached (including pending assignment requests).",
+      "inactive": "The club is not active."
+    }
+  },
+  "ticket": {
+    "title": "Support tickets",
+    "subject": "Subject",
+    "category": "Category",
+    "message": "Message",
+    "statusLabel": "Status",
+    "updated": "Last update",
+    "messageCount": "{count, plural, one {# message} other {# messages}}",
+    "empty": "No support tickets yet.",
+    "categories": {
+      "EVENT": "Event",
+      "APPROVAL": "Approval request",
+      "MEMBERSHIP": "Membership",
+      "TOURNAMENT": "Tournament",
+      "TECHNICAL": "Technical issue",
+      "OTHER": "Other"
+    },
+    "status": {
+      "OPEN": "Open",
+      "ANSWERED": "Answered",
+      "CLOSED": "Closed"
+    },
+    "open": "Send ticket",
+    "openToAdmin": "Write to Admin",
+    "openToPlatform": "Write to platform team",
+    "clubBody": "Stuck on something? Write to your university's Admin team.",
+    "adminBody": "Tickets from clubs and the ones you opened to the platform team.",
+    "platformBody": "Tickets opened by university Admins.",
+    "fromClubs": "From clubs",
+    "toPlatform": "Opened to platform team",
+    "reply": "Write a reply",
+    "send": "Send",
+    "sent": "Message sent.",
+    "close": "Close ticket",
+    "closeTitle": "Close this ticket?",
+    "closeBody": "A closed ticket can be reopened within 7 days.",
+    "closedDone": "Ticket closed.",
+    "reopen": "Reopen",
+    "reopened": "Ticket reopened.",
+    "closedReopenable": "This ticket is closed. You can reopen it within 7 days.",
+    "closedFinal": "This ticket is closed. Open a new ticket for a new topic.",
+    "openCount": "{count, plural, one {# open ticket} other {# open tickets}}",
+    "errors": {
+      "closed": "The ticket is closed; reopen it first.",
+      "reopenExpired": "More than 7 days have passed since it was closed; open a new ticket.",
+      "notClosed": "The ticket is already open."
+    }
   }
 }

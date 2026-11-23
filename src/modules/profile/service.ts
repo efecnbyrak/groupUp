@@ -111,11 +111,12 @@ export async function removeAvatar(actor: Actor): Promise<void> {
 
 /**
  * Hesap silme (identity çağırır, aynı transaction): kişisel veriler anonimleştirilir,
- * mezun belgesi kaydı silinir. Silinecek dosya anahtarları döner (commit sonrası silinir).
+ * mezun durum kaydı silinir. Silinecek dosya anahtarları döner (commit sonrası silinir).
+ * Mezun belgesi (Attachment, approval) doğrulama kanıtıdır; silinmiş kullanıcı eklerinin temizliği F10 cron'unda.
  */
 export async function anonymizeProfileForDeletion(tx: Tx, userId: string): Promise<{ publicKeys: string[]; privateKeys: string[] }> {
   const profile = await tx.profile.findUnique({ where: { userId }, select: { avatarKey: true } });
-  const alumni = await tx.alumniVerification.findUnique({ where: { userId }, select: { storageKey: true } });
+  const alumni = await tx.alumniVerification.findUnique({ where: { userId }, select: { id: true } });
   if (profile) {
     await tx.profile.update({
       where: { userId },
@@ -136,5 +137,5 @@ export async function anonymizeProfileForDeletion(tx: Tx, userId: string): Promi
     });
   }
   if (alumni) await tx.alumniVerification.delete({ where: { userId } });
-  return { publicKeys: profile?.avatarKey ? [profile.avatarKey] : [], privateKeys: alumni ? [alumni.storageKey] : [] };
+  return { publicKeys: profile?.avatarKey ? [profile.avatarKey] : [], privateKeys: [] };
 }

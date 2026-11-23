@@ -74,3 +74,15 @@ export function superAdmin(): { email: string; password: string } {
   if (!email || !password) throw new Error("SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD tanımlı değil");
   return { email, password };
 }
+
+/** Demo Üniversite Admini (`npm run db:seed:demo`; şifre .env → DEMO_PASSWORD). */
+export function demoAdmin(): { email: string; password: string } {
+  try {
+    process.loadEnvFile(".env");
+  } catch {
+    /* CI: ortam değişkenleri zaten tanımlı */
+  }
+  const password = process.env.DEMO_PASSWORD;
+  if (!password) throw new Error("DEMO_PASSWORD tanımlı değil — önce npm run db:seed:demo");
+  return { email: "demo.admin@ogr.kent.edu.tr", password };
+}
