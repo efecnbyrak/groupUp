@@ -10,13 +10,14 @@ import { listCategoriesWithCounts, listClubs } from "@/modules/club";
 export async function ClubDirectory({ universityId, basePath, sp, t, locale }: { universityId: string; basePath: string; sp: Record<string, string | string[] | undefined>; t: Translate; locale: string }) {
   const q = typeof sp.q === "string" ? sp.q.slice(0, 100) : undefined;
   const kategori = typeof sp.kategori === "string" ? sp.kategori.slice(0, 80) : undefined;
+  const sekme = sp.sekme === "kulupler" ? "kulupler" : undefined;
   const cursor = typeof sp.sonraki === "string" ? sp.sonraki.slice(0, 40) : undefined;
   const categories = (await listCategoriesWithCounts(universityId)).filter((c) => c._count.clubs > 0);
   const category = categories.find((c) => c.slug === kategori);
   const { items, nextCursor } = await listClubs(universityId, { q, categoryId: category?.id, cursor });
   const href = (extra: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    for (const [k, v] of Object.entries({ q, kategori: category?.slug, ...extra })) if (v) p.set(k, v);
+    for (const [k, v] of Object.entries({ sekme, q, kategori: category?.slug, ...extra })) if (v) p.set(k, v);
     const s = p.toString();
     return `${basePath}${s ? `?${s}` : ""}`;
   };
@@ -33,6 +34,7 @@ export async function ClubDirectory({ universityId, basePath, sp, t, locale }: {
       </h2>
       <Card padding="sm">
         <form method="get" role="search" className="flex flex-col gap-(--space-3) sm:flex-row sm:items-end">
+          {sekme ? <input type="hidden" name="sekme" value={sekme} /> : null}
           {category ? <input type="hidden" name="kategori" value={category.slug} /> : null}
           <div className="sm:flex-1">
             <Input id="q" name="q" type="search" label={t("club.directory.search")} placeholder={t("club.directory.searchPlaceholder")} defaultValue={q} />

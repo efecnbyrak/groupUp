@@ -38,3 +38,22 @@ export async function toCoverWebp(input: Buffer): Promise<Buffer> {
     .webp({ quality: 80 })
     .toBuffer();
 }
+
+/** Etkinlik kapağı (16:9): 1200×675 + kart için 400×225 WebP (EVENTS-FORMS-I18N §3, §8). */
+export async function toEventCoverWebp(input: Buffer): Promise<{ large: Buffer; small: Buffer }> {
+  const base = sharp(input, { limitInputPixels: 40_000_000 }).rotate();
+  const [large, small] = await Promise.all([
+    base.clone().resize(1200, 675, { fit: "cover", position: "attention" }).webp({ quality: 80 }).toBuffer(),
+    base.clone().resize(400, 225, { fit: "cover", position: "attention" }).webp({ quality: 78 }).toBuffer(),
+  ]);
+  return { large, small };
+}
+
+/** İçerik/galeri görseli: en çok 1200px genişlik, oran korunur. */
+export async function toContentWebp(input: Buffer): Promise<Buffer> {
+  return sharp(input, { limitInputPixels: 40_000_000 })
+    .rotate()
+    .resize({ width: 1200, height: 1600, fit: "inside", withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
+}

@@ -9,6 +9,7 @@ import { requireClubPermission, requirePendingAlumni, requireUniversityAdmin, re
 import type { ActionResult } from "@/lib/errors";
 import { enforceRateLimits } from "@/lib/rate-limit";
 import { clubInfoSchema, getClubInfo, getStaffAssignment, storeClubImage } from "@/modules/club";
+import { EVENT_CONTENT_FIELDS, eventContentSchema, getEventContent, type EventContent } from "@/modules/event";
 
 import { changedOnly } from "./domain/diff";
 import { APPROVAL_ERROR_KEYS as errors } from "./errors";
@@ -155,6 +156,86 @@ export async function requestMemberBanAction(_prev: Prev, formData: FormData) {
       const { universityId } = await getClubInfo(clubId);
       const files = await filesFromForm(fd, "files");
       await submitRequest(user, { type: "MEMBER_BAN", universityId, clubId, payload: { userId: data.userId, until: data.until }, reason: data.reason, files });
+      refresh();
+      return { ok: true, message: t("approval.submitted") };
+    },
+  });
+}
+
+// ---------------------------------------------------------------- Etkinlik talepleri (F6)
+
+const eventManager = (clubId: string) => () => requireClubPermission(clubId, "EVENT_MANAGE", { allowAdmin: false });
+const eventIdField = z.string().min(1).max(40);
+
+/** Taslağı onaya gönder (EVENT_PUBLISH). İstemci önce son hali kaydeder. */
+export async function submitEventForApprovalAction(_prev: Prev, formData: FormData) {
+  const clubId = String(formData.get("clubId") ?? "");
+  return runAction(formData, {
+    authorize: eventManager(clubId),
+    schema: z.object({ eventId: eventIdField }),
+    errors,
+    run: async (user, data, t) => {
+      await limit(user.id);
+      const { universityId } = await getEventContent(clubId, data.eventId);
+      await submitRequest(user, { type: "EVENT_PUBLISH", universityId, clubId, payload: { eventId: data.eventId } });
+      refresh();
+      return { ok: true, message: t("approval.submitted") };
+    },
+  });
+}
+
+/** Yayındaki etkinlikte değişiklik (EVENT_UPDATE): yalnızca değişen alanlar, yayındaki hal aynen kalır. */
+export async function requestEventUpdateAction(_prev: Prev, formData: FormData) {
+  const clubId = String(formData.get("clubId") ?? "");
+  return runAction(formData, {
+    authorize: eventManager(clubId),
+    schema: z.object({
+      eventId: eventIdField,
+      data: z
+        .string()
+        .max(500_000)
+        .transform((v, ctx) => {
+          try {
+            return JSON.parse(v) as unknown;
+          } catch {
+            ctx.addIssue({ code: "custom", message: "validation.invalid" });
+            return z.NEVER;
+          }
+        })
+        .pipe(eventContentSchema),
+      reason: z.string().trim().max(500).optional(),
+    }),
+    errors,
+    run: async (user, data, t) => {
+      await limit(user.id);
+      const current = await getEventContent(clubId, data.eventId);
+      const before: Partial<EventContent> = {};
+      const after: Partial<EventContent> = {};
+      for (const f of EVENT_CONTENT_FIELDS) {
+        if (JSON.stringify(current.content[f]) !== JSON.stringify(data.data[f])) {
+          (before as Record<string, unknown>)[f] = current.content[f];
+          (after as Record<string, unknown>)[f] = data.data[f];
+        }
+      }
+      if (Object.keys(after).length === 0) throw approvalError("NO_CHANGES");
+      await submitRequest(user, { type: "EVENT_UPDATE", universityId: current.universityId, clubId, payload: { eventId: data.eventId, before, after }, reason: data.reason });
+      refresh();
+      return { ok: true, message: t("approval.submitted") };
+    },
+  });
+}
+
+/** Etkinlik iptali (EVENT_CANCEL) — yalnızca Başkan, gerekçe zorunlu. */
+export async function requestEventCancelAction(_prev: Prev, formData: FormData) {
+  const clubId = String(formData.get("clubId") ?? "");
+  return runAction(formData, {
+    authorize: president(clubId),
+    schema: z.object({ eventId: eventIdField, reason: z.string().trim().min(10, { error: "approval.validation.reasonTooShort" }).max(500, { error: "validation.tooLong" }) }),
+    errors,
+    run: async (user, data, t) => {
+      await limit(user.id);
+      const { universityId } = await getEventContent(clubId, data.eventId);
+      await submitRequest(user, { type: "EVENT_CANCEL", universityId, clubId, payload: { eventId: data.eventId }, reason: data.reason });
       refresh();
       return { ok: true, message: t("approval.submitted") };
     },

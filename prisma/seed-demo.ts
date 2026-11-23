@@ -1,7 +1,8 @@
 // Demo verisi — `npm run db:seed:demo`. Yalnızca geliştirme (NODE_ENV !== production). İdempotent:
 // kayıtlar doğal anahtarla bulunur, yoksa oluşturulur; demo sırasında yapılan işlemler (onay, katılım)
 // tekrar çalıştırmada geri alınmaz. Tüm demo.* hesaplarının şifresi .env → DEMO_PASSWORD.
-// Her faz kendi demo verisini buraya ekler (F5: kulüpler, üyeler, ekip, talepler, ticket, bekleyen mezun).
+// Her faz kendi demo verisini buraya ekler (F5: kulüpler, üyeler, ekip, talepler, ticket, bekleyen mezun;
+// F6: etkinlikler — taslak, onay bekleyen, yayında, geçmiş — ve duyurular).
 import sharp from "sharp";
 
 import type { SessionUser } from "../src/lib/authz";
@@ -10,6 +11,7 @@ import { env } from "../src/lib/env";
 import { hashPassword } from "../src/lib/password";
 import { decideRequest, submitRequest } from "../src/modules/approval";
 import { createClub, storeClubImage, textToDoc } from "../src/modules/club";
+import { createAnnouncement, createEventDraft, saveEventDraft, storeEventImage, type EventContent } from "../src/modules/event";
 import { openAdminTicket, openClubTicket, replyTicket } from "../src/modules/ticket";
 
 const KENT_SLUG = "istanbul-kent-universitesi";
@@ -68,6 +70,42 @@ async function cover(color: string): Promise<Buffer> {
   return sharp(Buffer.from(svg)).png().toBuffer();
 }
 
+async function eventCover(color: string, label: string): Promise<Buffer> {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="#0f172a"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g)"/><text x="80" y="780" font-family="Inter, Arial, sans-serif" font-size="96" font-weight="700" fill="#ffffff">${label}</text></svg>`;
+  return sharp(Buffer.from(svg)).png().toBuffer();
+}
+
+const para = (...texts: string[]) => ({ type: "doc" as const, content: texts.map((text) => ({ type: "paragraph" as const, content: [{ type: "text" as const, text }] })) });
+const H = 3600_000;
+const D = 24 * H;
+
+type DemoEvent = {
+  club: string;
+  slug: string;
+  category: string;
+  title: string;
+  summary: string;
+  body: string[];
+  color: string;
+  /** başlangıç (şimdiden gün) */
+  startIn: number;
+  /** başvuru: açılış ve kapanış (şimdiden saat) */
+  opensIn: number;
+  closesIn: number;
+  target: "DRAFT" | "PENDING" | "PUBLISHED" | "COMPLETED";
+  over?: Partial<EventContent>;
+};
+
+const EVENTS: DemoEvent[] = [
+  { club: "kent-spor", slug: "bahar-futbol-turnuvasi", category: "futbol", title: "Bahar Futbol Turnuvası", summary: "Fakülteler arası halı saha turnuvası — 5+2 kişilik takımlarla kaydol.", body: ["Turnuva tek eleme usulüyle oynanır, maçlar 2×20 dakikadır.", "Her takım en az 5, en çok 7 oyuncudan oluşur. Formalar kulüpten."], color: "#047857", startIn: 12, opensIn: -48, closesIn: 5 * 24, target: "PUBLISHED", over: { mode: "TEAM", teamMinSize: 5, teamMaxSize: 7, capacity: 16 } },
+  { club: "kent-spor", slug: "masa-tenisi-turnuvasi", category: "masa-tenisi", title: "Masa Tenisi Turnuvası", summary: "Bireysel masa tenisi turnuvası; son başvuru yarın!", body: ["Grup aşaması ve eleme turları spor salonunda oynanacak.", "Raketler kulüpten temin edilebilir."], color: "#0f766e", startIn: 4, opensIn: -72, closesIn: 30, target: "PUBLISHED", over: { capacity: 32 } },
+  { club: "kent-spor", slug: "basketbol-3x3", category: "basketbol", title: "3x3 Basketbol Şenliği", summary: "Kampüs avlusunda 3x3 sokak basketbolu.", body: ["Takımlar 3 asıl + 1 yedek oyuncudan oluşur."], color: "#c2410c", startIn: 20, opensIn: 24, closesIn: 14 * 24, target: "PENDING", over: { mode: "TEAM", teamMinSize: 3, teamMaxSize: 4, capacity: 12 } },
+  { club: "kent-spor", slug: "voleybol-dostluk-maci", category: "voleybol", title: "Voleybol Dostluk Maçı", summary: "", body: [], color: "#4338ca", startIn: 30, opensIn: 0, closesIn: 0, target: "DRAFT" },
+  { club: "yazilim-yapay-zeka", slug: "yapay-zeka-atolyesi", category: "workshop", title: "Yapay Zekâ ile Uygulama Geliştirme Atölyesi", summary: "Büyük dil modelleriyle ilk uygulamanı 3 saatte yaz.", body: ["Atölye online yapılacak; bağlantı kayıtlı katılımcılarla paylaşılır.", "Dizüstü bilgisayar ve temel Python bilgisi yeterli."], color: "#1d4ed8", startIn: 8, opensIn: -24, closesIn: 6 * 24, target: "PUBLISHED", over: { isOnline: true, onlineUrl: "https://meet.example.com/kent-ai", locationName: null, capacity: 40 } },
+  { club: "yazilim-yapay-zeka", slug: "guz-hackathonu-2026", category: "hackathon", title: "Güz Hackathonu 2026", summary: "24 saatlik kampüs hackathonu — tamamlandı.", body: ["12 takım, 48 katılımcı. Kazananlara tebrikler!"], color: "#7c3aed", startIn: -20, opensIn: -40 * 24, closesIn: -22 * 24, target: "COMPLETED", over: { mode: "TEAM", teamMinSize: 2, teamMaxSize: 4, capacity: 12 } },
+  { club: "fotograf-sinema", slug: "kadikoy-foto-gezisi", category: "gezi", title: "Kadıköy Fotoğraf Gezisi", summary: "Moda sahilinden Yeldeğirmeni'ne sokak fotoğrafçılığı yürüyüşü.", body: ["Buluşma Kadıköy iskelesi önünde.", "Telefon kamerası da olur; önemli olan bakış açısı."], color: "#b45309", startIn: 15, opensIn: 3 * 24, closesIn: 12 * 24, target: "PUBLISHED", over: { capacity: 20 } },
+];
+
 async function main() {
   if (env.NODE_ENV === "production") throw new Error("seed-demo canlı ortamda çalıştırılamaz");
   if (!env.DEMO_PASSWORD) throw new Error("DEMO_PASSWORD .env'de tanımlı olmalı (bkz. .env.example)");
@@ -84,6 +122,12 @@ async function main() {
     const ids = e2eClubs.map((c) => c.id);
     await db.$transaction([db.changeRequest.deleteMany({ where: { clubId: { in: ids } } }), db.ticket.deleteMany({ where: { clubId: { in: ids } } }), db.club.deleteMany({ where: { id: { in: ids } } })]);
     console.info(`[seed-demo] ${ids.length} e2e kulübü temizlendi`);
+  }
+
+  const e2eEvents = await db.event.deleteMany({ where: { slug: { startsWith: "e2e-etkinlik-" } } });
+  if (e2eEvents.count) {
+    await db.changeRequest.deleteMany({ where: { type: { in: ["EVENT_PUBLISH", "EVENT_UPDATE", "EVENT_CANCEL"] }, targetId: { notIn: (await db.event.findMany({ select: { id: true } })).map((e) => e.id) } } });
+    console.info(`[seed-demo] ${e2eEvents.count} e2e etkinliği temizlendi`);
   }
 
   // ------------------------------------------------------------ Hesaplar
@@ -197,8 +241,62 @@ async function main() {
     await openAdminTicket(admin, university.id, { category: "TECHNICAL", subject: "Lisansüstü öğrenciler için ek domain", body: "Lisansüstü öğrencilerimiz @lisansustu.kent.edu.tr kullanıyor. Bu domaini öğrenci domaini olarak ekleyebilir misiniz?", changeRequestId: null });
   }
 
-  const counts = { users: users.size, clubs: clubs.size, pending: await db.changeRequest.count({ where: { universityId: university.id, status: "PENDING" } }) };
-  console.info(`[seed-demo] ${counts.users} hesap, ${counts.clubs} kulüp, ${counts.pending} bekleyen talep. Şifre: .env → DEMO_PASSWORD`);
+  // ------------------------------------------------------------ Etkinlikler (F6)
+  for (const ev of EVENTS) {
+    const club = clubs.get(ev.club)!;
+    if (await db.event.findUnique({ where: { clubId_slug: { clubId: club.id, slug: ev.slug } }, select: { id: true } })) continue;
+    const clubRow = await db.club.findUniqueOrThrow({ where: { id: club.id }, select: { presidentId: true } });
+    const president = [...users.values()].find((x) => x.id === clubRow.presidentId)!;
+    const category = await db.eventCategory.findUniqueOrThrow({ where: { slug: ev.category } });
+    const { id } = await createEventDraft(president, club.id, { categoryId: category.id, titleTr: ev.title });
+    await db.event.update({ where: { id }, data: { slug: ev.slug } });
+    if (ev.target === "DRAFT") continue;
+    const t0 = now.getTime();
+    const content: EventContent = {
+      categoryId: category.id,
+      titleTr: ev.title,
+      summaryTr: ev.summary,
+      descriptionTr: para(...ev.body),
+      coverKey: await storeEventImage(club.id, id, "cover", await eventCover(ev.color, ev.title.split(" ").slice(0, 3).join(" "))),
+      images: [],
+      locationName: "Kent Üniversitesi Spor Salonu",
+      locationAddress: "Kağıthane, İstanbul",
+      mapUrl: "https://maps.example.com/kent",
+      isOnline: false,
+      onlineUrl: null,
+      startAt: new Date(t0 + ev.startIn * D),
+      endAt: new Date(t0 + ev.startIn * D + 4 * H),
+      applyOpensAt: new Date(t0 + ev.opensIn * H),
+      applyClosesAt: new Date(t0 + ev.closesIn * H),
+      capacity: null,
+      waitlistEnabled: true,
+      autoPromoteWaitlist: true,
+      autoAccept: true,
+      mode: "INDIVIDUAL",
+      teamMinSize: null,
+      teamMaxSize: null,
+      eligibility: "ALL_MEMBERS",
+      ...ev.over,
+    };
+    await saveEventDraft(club.id, id, content);
+    if (ev.target === "COMPLETED") {
+      await db.event.update({ where: { id }, data: { status: "COMPLETED", publishedAt: new Date(t0 + (ev.opensIn - 24) * H) } });
+      continue;
+    }
+    const req = await submitRequest(president, { type: "EVENT_PUBLISH", universityId: university.id, clubId: club.id, payload: { eventId: id } });
+    if (ev.target === "PUBLISHED") await decideRequest(admin, university.id, req.id, "APPROVE", null);
+  }
+
+  // ------------------------------------------------------------ Duyurular (F6)
+  if ((await db.announcement.count({ where: { clubId: spor.id } })) === 0) {
+    await createAnnouncement(baskan, spor.id, { titleTr: "Antrenman saatleri değişti", body: "Bu dönem antrenmanlar salı ve perşembe 18.00'de.\n\nYeni üyeler için tanışma antrenmanı bu perşembe!", pinned: true });
+  }
+  if ((await db.announcement.count({ where: { clubId: yazilim.id } })) === 0) {
+    await createAnnouncement(yzBaskan, yazilim.id, { titleTr: "Mentorluk programı başvuruları açıldı", body: "Mezun mentorlarımızla birebir eşleşmek için kulüp panosundaki formu doldurun.", pinned: false });
+  }
+
+  const counts = { users: users.size, clubs: clubs.size, events: await db.event.count({ where: { universityId: university.id } }), pending: await db.changeRequest.count({ where: { universityId: university.id, status: "PENDING" } }) };
+  console.info(`[seed-demo] ${counts.users} hesap, ${counts.clubs} kulüp, ${counts.events} etkinlik, ${counts.pending} bekleyen talep. Şifre: .env → DEMO_PASSWORD`);
 }
 
 main()

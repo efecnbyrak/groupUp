@@ -4,14 +4,18 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 
+import { EventGrid } from "@/app/_components/events";
 import { personName } from "@/app/_components/requests";
 import { confirmLabels, formLabels } from "@/app/_lib/form-labels";
-import { ActionForm, Alert, Avatar, Badge, ButtonLink, Card, ConfirmAction, Skeleton } from "@/components/ui";
+import { ActionForm, Alert, Avatar, Badge, ButtonLink, Card, ConfirmAction, RichText, Skeleton } from "@/components/ui";
 import { getLocale, getT } from "@/i18n/server";
 import { getClubAccess, getSessionUser } from "@/lib/authz";
 import { canOpenClubPanel } from "@/lib/club-roles";
+import { formatDateTime } from "@/lib/dates";
+import { renderRichText } from "@/lib/rich-text/sanitize";
 import { publicFileUrl } from "@/lib/storage";
 import { docParagraphs, getClubPublic, getMembership, isBanActive, joinClubAction, leaveClubAction, listMembers } from "@/modules/club";
+import { listClubAnnouncements, listClubPublicEvents, pick } from "@/modules/event";
 
 export async function generateMetadata({ params }: PageProps<"/kulupler/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -36,6 +40,8 @@ async function Content({ params, searchParams }: PageProps<"/kulupler/[slug]">) 
     insider ? listMembers(club.id) : null,
   ]);
   const isMember = membership?.status === "ACTIVE";
+  const now = new Date();
+  const [events, announcements] = await Promise.all([listClubPublicEvents(club.id, now), isMember || (access && canOpenClubPanel(access)) ? listClubAnnouncements(club.id, 5) : []]);
   const banned = membership ? isBanActive(membership, new Date()) : false;
   const description = docParagraphs((locale === "en" && club.descriptionEn) || club.descriptionTr);
   const presidentName = club.president?.profile ? `${club.president.profile.firstName} ${club.president.profile.lastName}` : t("club.noPresident");
@@ -89,6 +95,26 @@ async function Content({ params, searchParams }: PageProps<"/kulupler/[slug]">) 
               <p className="text-fg-secondary">{t("club.page.noDescription")}</p>
             )}
           </Card>
+          <section aria-labelledby="club-events" className="flex flex-col gap-(--space-3)">
+            <h2 id="club-events" className="text-(length:--type-heading-sm) font-semibold text-fg">
+              {t("club.page.events")}
+            </h2>
+            {events.length ? <EventGrid events={events} t={t} locale={locale} now={now} /> : <p className="text-fg-secondary">{t("club.page.noEvents")}</p>}
+          </section>
+          {announcements.length ? (
+            <Card className="flex flex-col gap-(--space-3)">
+              <h2 className="text-(length:--type-heading-sm) font-semibold text-fg">{t("feed.announcements")}</h2>
+              <ul className="flex flex-col gap-(--space-4)">
+                {announcements.map((a) => (
+                  <li key={a.id} className="flex flex-col gap-(--space-1)">
+                    <h3 className="font-semibold break-words text-fg">{pick(locale, a.titleTr, a.titleEn)}</h3>
+                    <p className="text-(length:--type-caption) text-fg-secondary">{formatDateTime(a.createdAt, locale)}</p>
+                    <RichText sanitizedHtml={renderRichText(pick(locale, a.bodyTr, a.bodyEn))} className="text-(length:--type-body-sm) text-fg-secondary" />
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ) : null}
           {members ? (
             <Card className="flex flex-col gap-(--space-3)">
               <h2 className="text-(length:--type-heading-sm) font-semibold text-fg">{t("club.members.title")}</h2>

@@ -59,3 +59,59 @@ body {
   font-size: var(--type-body);
   line-height: var(--line-height-relaxed);
 }
+
+/* Zengin metin (Tiptap çıktısı ve editör içeriği) — yalnızca tokenlar. */
+.rich-text {
+  overflow-wrap: anywhere;
+  line-height: var(--line-height-relaxed);
+}
+.rich-text > * + * {
+  margin-top: var(--space-3);
+}
+.rich-text h1 {
+  font-size: var(--type-heading-lg);
+  font-weight: 700;
+  line-height: var(--line-height-snug);
+}
+.rich-text h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  line-height: var(--line-height-snug);
+}
+.rich-text h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  line-height: var(--line-height-snug);
+}
+.rich-text ul {
+  list-style: disc;
+  padding-left: var(--space-6);
+}
+.rich-text ol {
+  list-style: decimal;
+  padding-left: var(--space-6);
+}
+.rich-text li > * + * {
+  margin-top: var(--space-1);
+}
+.rich-text blockquote {
+  border-left: var(--border-width-strong) solid var(--color-border-strong);
+  padding-left: var(--space-4);
+  color: var(--color-text-secondary);
+}
+.rich-text a {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+.rich-text hr {
+  border: 0;
+  border-top: var(--border-width) solid var(--color-border);
+}
+.rich-text img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--corner-md);
+}
+.rich-text .ProseMirror-selectednode {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+}
