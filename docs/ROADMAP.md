@@ -3,11 +3,12 @@
 > Her oturum bu dosyayı okur ve günceller. Bir maddeyi bitirince `[x]` yap. Oturum biterken **§Son durum**'u doldur.
 
 ## Son durum
-- **Aktif faz:** F2 — Kimlik ve üniversite
-- **Son tamamlanan:** F1 — İskelet (2026-11-23, `feat/f1-iskelet` → `main`)
-- **Sıradaki adım:** F2 şema v1 (DATA-MODEL §Kimlik) → ilk migration
-- **Açık sorular / engeller:** ⚠️ Lokal DB henüz oluşturulmadı — `groupup` rolü + `groupup`/`groupup_test` DB'leri sudo ister, kullanıcı çalıştıracak (SETUP-LOCAL §2). Doğrulama: `npm run db:seed` → "veritabanı bağlantısı tamam". F2 migration'ından önce şart.
-- **F1 notları:** Tailwind `@tailwindcss/postcss` ile (Next 16.4 şablonundaki `@tailwindcss/turbopack` onaylı listede olmadığı için kullanılmadı). Prisma client `prisma/generated` (gitignore'da, `postinstall` üretir). Prisma `.env`'i `process.loadEnvFile` ile okur (dotenv yok). tsx scriptleri `--conditions=react-server` ile çalışır (`server-only` için). env şeması saf `src/lib/env-schema.ts`, çalışma zamanı `src/lib/env.ts`. npm 11 `allowScripts`: prisma, @prisma/engines, esbuild.
+- **Aktif faz:** F2 — Kimlik ve üniversite (yarıda; dal `feat/f2-kimlik`, değişiklikler **commitlenmedi**, faz sonunda commit)
+- **Son tamamlanan:** F2 çekirdek: şema v1 + migration `f2_identity_university`, seed, `src/lib/{crypto,password,session,authz,rate-limit,audit}.ts`, şifre politikası + domain çözümleme (unit testli, toplam 35 test)
+- **Sıradaki adım:** `identity` modülü servis/action'ları: kayıt (domain çözümleme → User+Profile → OTP) → `/dogrula` → giriş/çıkış; mail şablonları; `proxy.ts`
+- **Açık sorular / engeller:** yok.
+- **F2 notları:** `authz.ts`'de `requireClubPermission`/`requireClubMember` F5'te (kulüp tabloları yok). `AlumniVerification` modeli F4'e bırakıldı. Prisma 7'de `migrate dev` client üretmez → `npm run db:migrate` artık `&& prisma generate`. Lokal Süper Admin: `admin@groupup.local`, şifre `.env` → `SUPERADMIN_PASSWORD`. Fakülte/bölüm seed'i ÖRNEK veridir. `npm audit`: 3 high, yalnızca `prisma` CLI'nin geçişli `effect` bağımlılığı (dev); `--force` Prisma'yı düşürür → upstream bekleniyor. next-intl henüz yok (F3) → mail şablonları `messages/*.json`'u doğrudan okuyabilir.
+- **F1 notları:** Tailwind `@tailwindcss/postcss` (şablondaki `@tailwindcss/turbopack` onaysız). Prisma client `prisma/generated` (gitignore'da). Prisma `.env`'i `process.loadEnvFile` ile okur. tsx scriptleri `--conditions=react-server`. env şeması `src/lib/env-schema.ts`. npm 11 `allowScripts`.
 - **Teyit edilenler (2026-11-23):** Kent domainleri `ogr.kent.edu.tr` / `mezun.kent.edu.tr`; tek kulüpte başkanlık; mezun oy vermez; 8 ADR `Kabul edildi`; repo https://github.com/efecnbyrak/groupUp (`main`).
 
 ---
@@ -19,13 +20,13 @@
 - [x] İlk commit
 - [x] GitHub remote + push
 
-## F1 — İskelet ✅ (yalnız F1.4b DB kurulumu açık)
+## F1 — İskelet ✅
 Okunacak: ARCHITECTURE.md, SETUP-LOCAL.md, DESIGN.md §1–3
 - [x] F1.1 `npx create-next-app@latest` (TS, ESLint, Tailwind, App Router, `src/` YOK — `app/` kökte, `@/*` alias → `./src/*` ve `@/app/*`), mevcut dosyaları ezmeden
 - [x] F1.2 Klasörler: `src/modules`, `src/lib`, `src/components/ui`, `src/i18n`, `messages/`
 - [x] F1.3 `eslint-plugin-boundaries` kuralları + `server-only`
 - [x] F1.4 Prisma 7 init (`prisma.config.ts`, adapter-pg), `src/lib/db.ts` singleton
-- [ ] F1.4b Lokal DB oluştur (SETUP-LOCAL §2) — **kullanıcı, sudo gerekli**
+- [x] F1.4b Lokal DB oluştur (SETUP-LOCAL §2) — kullanıcı çalıştırdı, `db:seed` bağlantı OK
 - [x] F1.5 `src/lib/env.ts` (zod) + `.env` (kullanıcı oluşturur)
 - [x] F1.6 `docker-compose.yml` (Mailpit) + `src/lib/mail/` (smtp/console provider) + test maili
 - [x] F1.7 vitest + playwright kurulumu, örnek test
@@ -35,10 +36,10 @@ Okunacak: ARCHITECTURE.md, SETUP-LOCAL.md, DESIGN.md §1–3
 
 ## F2 — Kimlik ve üniversite (1–2 oturum)
 Okunacak: AUTH-EMAIL.md, DATA-MODEL.md (§Kimlik), ROLES-PERMISSIONS.md §2
-- [ ] Şema v1: University, UniversityDomain, Faculty, Department, UniversityAdmin, UniversityRequest, User, Profile, Session, EmailToken, RateLimit, AuditLog → migration
-- [ ] Seed: Süper Admin, İstanbul Kent Üniversitesi + domainler + örnek fakülte/bölüm
-- [ ] `src/lib/session.ts`, `src/lib/authz.ts`, `src/lib/rate-limit.ts`, `src/lib/audit.ts`
-- [ ] Şifre politikası zod şeması + unit testler
+- [x] Şema v1: University, UniversityDomain, Faculty, Department, UniversityAdmin, UniversityRequest, User, Profile, Session, EmailToken, RateLimit, AuditLog → migration
+- [x] Seed: Süper Admin, İstanbul Kent Üniversitesi + domainler + örnek fakülte/bölüm
+- [x] `src/lib/session.ts`, `src/lib/authz.ts` (kulüp kapıları F5), `src/lib/rate-limit.ts`, `src/lib/audit.ts`
+- [x] Şifre politikası (`identity/password-policy.ts`) + unit testler (zod'a bağlama kayıt şemasında)
 - [ ] Kayıt (domain çözümleme, üniversite talebi) → OTP → doğrulama
 - [ ] Giriş / çıkış / tüm cihazlardan çık
 - [ ] Şifremi unuttum / sıfırla
