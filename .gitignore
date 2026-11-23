@@ -33,3 +33,9 @@ prisma/generated/
 
 # claude yerel ayarlari
 .claude/settings.local.json
+
+# create-next-app'ten birleştirildi
+/build
+.vercel
+*.pem
+npm-debug.log*

@@ -16,24 +16,29 @@
 sudo -u postgres psql <<'SQL'
 CREATE ROLE groupup WITH LOGIN PASSWORD 'groupup_dev' CREATEDB;   -- CREATEDB: prisma shadow DB için
 CREATE DATABASE groupup OWNER groupup;
+CREATE DATABASE groupup_test OWNER groupup;
 SQL
 sudo -u postgres psql -d groupup -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
+sudo -u postgres psql -d groupup_test -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;'
 ```
 `.env`: `DATABASE_URL="postgresql://groupup:groupup_dev@localhost:5432/groupup"`
-Test DB: `groupup_test` (aynı komutla) → `DATABASE_URL_TEST`.
+Test DB: `groupup_test` (yukarıdaki blokta) → `DATABASE_URL_TEST`.
+Doğrulama: `npm run db:seed` → "veritabanı bağlantısı tamam".
 
 ## 3. Mail (Mailpit)
 `docker-compose.yml` (F1'de oluşturulur):
 ```yaml
 services:
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:v1.29   # sabit sürüm
+    container_name: groupup-mailpit
     ports: ["1025:1025", "8025:8025"]
     restart: unless-stopped
 ```
 ```bash
 docker compose up -d
 # Gönderilen tüm mailler: http://localhost:8025
+npm run mail:test        # Mailpit'e test maili
 ```
 
 ## 4. Ortam değişkenleri
@@ -70,3 +75,6 @@ git push -u origin main
 | `permission denied to create database` (migrate dev) | rolde `CREATEDB` olmalı |
 | Mail gelmiyor | `docker compose ps`, `MAIL_PROVIDER=smtp`, `SMTP_PORT=1025` |
 | `sharp` kurulum hatası | `npm rebuild sharp` |
+| `npm install` sonrası prisma/esbuild çalışmıyor | npm 11 kurulum scriptlerini onaysız çalıştırmaz → `package.json` `allowScripts`; yeni sürümde `npm approve-scripts <paket>` |
+| tsx script'inde `server-only` hatası | scriptler `tsx --conditions=react-server` ile çalışır (package.json'daki scriptleri kullanın) |
+| Playwright tarayıcısı yok | `npx playwright install chromium` |

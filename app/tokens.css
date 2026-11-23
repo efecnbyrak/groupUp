@@ -1,0 +1,408 @@
+/* groupUp tasarım tokenları — kaynak: professional-design-system/assets/tokens.css
+   Proje kararları: docs/DESIGN.md §1–3. Marka: indigo. Karanlık mod kapsam dışı (dark blok çıkarıldı).
+   Ham hex YALNIZCA bu dosyada. Kontrol: node ~/.claude/skills/professional-design-system/scripts/contrast-check.mjs app/tokens.css */
+
+/* ==========================================================================
+   Professional Design System — Design Tokens (v1.0, 2026-11-07)
+   --------------------------------------------------------------------------
+   Single source of truth for every value referenced in references/*.md.
+   Original values derived from research (see research/), not copied from
+   any brand. Plain CSS custom properties: works with plain CSS, CSS Modules,
+   Sass, styled-components and as input for Tailwind (see references/tokens.md).
+
+   Usage
+     1. Copy this file into the project (e.g. src/styles/tokens.css).
+     2. Replace the BRAND ramp (--brand-*) with the project's brand color.
+     3. Pick an archetype:  <html data-archetype="commerce|editorial|showcase|productive">
+     4. Optional dark mode: <html data-theme="dark">  (or follow the OS, see bottom)
+   Never hard-code a raw value in components when a token exists.
+
+   Naming note: scale tokens deliberately avoid Tailwind v4 theme namespaces
+   (--text-*, --leading-*, --tracking-*, --radius-*, --shadow-*, --container-*,
+   --ease-*, --font-sans, --breakpoint-*) so importing this file into a Tailwind
+   project never silently changes rounded-md, max-w-xl, text-3xl, shadow-md …
+     font sizes  --font-size-*      line-height  --line-height-*
+     tracking    --letter-spacing-* radius scale --corner-*  (components use --radius-control/field/card/overlay/badge)
+     shadows     --elevation-*      widths       --content-width-*
+     easing      --easing-*         families     --font-family-base/display/mono
+   ========================================================================== */
+
+:root {
+  /* ---------- 1. PRIMITIVE COLORS (do not use directly in components) ---- */
+  --gray-0: #ffffff;
+  --gray-25: #fcfcfd;
+  --gray-50: #f7f7f8;
+  --gray-100: #f0f0f2;
+  --gray-200: #e4e4e7;
+  --gray-300: #d4d4d8;
+  --gray-400: #8e8e96;   /* lightest grey allowed for input borders on white (3.25:1) */
+  --gray-500: #6b6b74;   /* lightest grey allowed for text on white / gray-50 / gray-100 */
+  --gray-600: #52525b;
+  --gray-700: #3f3f46;
+  --gray-800: #27272a;
+  --gray-900: #18181b;
+  --gray-950: #0b0b0d;
+
+  /* BRAND — groupUp indigo (DESIGN §3.1). --brand-600 >= 4.5:1 with white. */
+  --brand-50: #edf2ff;
+  --brand-100: #dbe4ff;
+  --brand-200: #bac8ff;
+  --brand-400: #748ffc;
+  --brand-600: #3b5bdb;
+  --brand-700: #364fc7;
+  --brand-800: #2b3d9e;
+
+  /* PANEL vurgu primitifleri (DESIGN §3.2) — yalnızca [data-panel] blokları kullanır */
+  --panel-blue-50: #eff6ff;
+  --panel-blue-600: #2563eb;
+  --panel-blue-700: #1d4ed8;
+  --panel-blue-800: #1e40af;
+  --panel-amber-50: #fffbeb;
+  --panel-amber-700: #b45309;
+  --panel-amber-800: #92400e;
+  --panel-amber-900: #78350f;
+  --panel-emerald-50: #ecfdf5;
+  --panel-emerald-700: #047857;
+  --panel-emerald-800: #065f46;
+  --panel-emerald-900: #064e3b;
+  --panel-teal-50: #f0fdfa;
+  --panel-teal-700: #0f766e;
+  --panel-teal-800: #115e59;
+  --panel-teal-900: #134e4a;
+  --panel-violet-50: #f5f3ff;
+  --panel-violet-700: #6d28d9;
+  --panel-violet-800: #5b21b6;
+  --panel-violet-900: #4c1d95;
+  --panel-slate-50: #f1f5f9;
+  --panel-slate-800: #1e293b;
+  --panel-slate-900: #0f172a;
+  --panel-slate-950: #020617;
+
+  --green-50: #ecfdf3;
+  --green-700: #15803d;
+  --amber-50: #fffbeb;
+  --amber-700: #b45309;
+  --red-50: #fef2f2;
+  --red-600: #dc2626;
+  --red-700: #c81e1e;
+
+  /* ---------- 2. SEMANTIC COLORS (use these) ----------------------------- */
+  --color-bg: var(--gray-0);
+  --color-bg-subtle: var(--gray-50);          /* alternate section field */
+  --color-surface: var(--gray-0);             /* cards, sheets */
+  --color-surface-muted: var(--gray-100);     /* inputs on white, chips, skeleton base */
+  --color-surface-inverse: var(--gray-950);   /* dark sections, tooltips */
+
+  --color-border: var(--gray-200);            /* decorative dividers, card borders */
+  --color-border-strong: var(--gray-300);
+  --color-border-input: var(--gray-400);      /* form controls: >= 3:1 vs bg */
+
+  --color-text: var(--gray-900);
+  --color-text-secondary: var(--gray-600);
+  --color-text-tertiary: var(--gray-500);     /* meta, captions; never on gray-200+ */
+  --color-text-disabled: var(--gray-400);
+  --color-text-inverse: var(--gray-0);
+
+  --color-primary: var(--brand-600);
+  --color-primary-hover: var(--brand-700);
+  --color-primary-active: var(--brand-800);
+  --color-primary-subtle: var(--brand-50);
+  --color-on-primary: #ffffff;
+  --color-link: var(--brand-700);
+  --color-link-hover: var(--brand-800);
+  --color-focus: var(--brand-600);
+
+  --color-success: var(--green-700);
+  --color-success-subtle: var(--green-50);
+  --color-warning: var(--amber-700);
+  --color-warning-subtle: var(--amber-50);
+  --color-danger: var(--red-700);             /* red-600 fails on danger-subtle (4.41:1) */
+  --color-danger-subtle: var(--red-50);
+  --color-danger-fill: var(--red-600);        /* destructive button background */
+  --color-on-danger: #ffffff;                 /* 4.83:1 on danger-fill */
+  --color-info: var(--brand-700);
+  --color-info-subtle: var(--brand-50);
+
+  --color-price: var(--gray-900);
+  --color-price-sale: var(--red-700);
+  --color-price-old: var(--gray-500);
+
+  --color-overlay: rgb(11 11 13 / 0.56);      /* modal/drawer scrim */
+  --color-scrim-media: linear-gradient(to top, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 60%);
+
+  /* ---------- 3. TYPOGRAPHY -------------------------------------------- */
+  /* Default = zero-dependency system stack. Swap --font-family-base only after the
+     user approves a web font (references/dependencies-and-fonts.md). */
+  --font-family-base: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-family-display: var(--font-family-base);
+  --font-family-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+
+  /* Size scale (rem, 1rem = 16px) */
+  --font-size-2xs: 0.6875rem;  /* 11px — legal/footnotes only */
+  --font-size-xs: 0.75rem;     /* 12px — captions, badges */
+  --font-size-sm: 0.875rem;    /* 14px — dense UI body, nav, labels */
+  --font-size-md: 1rem;        /* 16px — default body */
+  --font-size-lg: 1.125rem;    /* 18px — reading body, lead */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 1.75rem;    /* 28px */
+  --font-size-4xl: 2rem;       /* 32px */
+  --font-size-5xl: 2.5rem;     /* 40px */
+  --font-size-6xl: 3rem;       /* 48px */
+  --font-size-7xl: 3.5rem;     /* 56px */
+  --font-size-8xl: 4rem;       /* 64px */
+  --font-size-9xl: 5rem;       /* 80px */
+
+  /* Line heights (unitless) */
+  --line-height-none: 1;
+  --line-height-tight: 1.1;   /* display >= 48px */
+  --line-height-snug: 1.2;    /* headings 24–40px */
+  --line-height-normal: 1.4;  /* UI text 12–16px */
+  --line-height-relaxed: 1.5; /* body copy */
+  --line-height-loose: 1.65;  /* long-form reading */
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Tracking: tighter as size grows, never on body text */
+  --letter-spacing-tighter: -0.02em; /* >= 64px */
+  --letter-spacing-tight: -0.012em;  /* 32–56px */
+  --letter-spacing-snug: -0.006em;   /* 20–28px */
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.04em;     /* uppercase overline/eyebrow */
+
+  /* Semantic text roles (fluid; min at 360px, max at 1440px) */
+  --type-display-xl: clamp(2.5rem, 1.67rem + 3.7vw, 5rem);     /* 40 → 80 */
+  --type-display-lg: clamp(2rem, 1.33rem + 2.96vw, 4rem);      /* 32 → 64 */
+  --type-display-md: clamp(1.75rem, 1.33rem + 1.85vw, 3rem);   /* 28 → 48 */
+  --type-heading-xl: clamp(1.5rem, 1.25rem + 1.11vw, 2.25rem); /* 24 → 36 */
+  --type-heading-lg: clamp(1.25rem, 1.08rem + 0.74vw, 1.75rem);/* 20 → 28 */
+  --type-heading-md: clamp(1.125rem, 1.04rem + 0.37vw, 1.375rem); /* 18 → 22 */
+  --type-heading-sm: var(--font-size-md);
+  --type-body-lg: var(--font-size-lg);
+  --type-body: var(--font-size-md);
+  --type-body-sm: var(--font-size-sm);
+  --type-caption: var(--font-size-xs);
+
+  /* ---------- 4. SPACING (4px grid) ------------------------------------ */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem; /* 2 */
+  --space-1: 0.25rem;    /* 4 */
+  --space-1-5: 0.375rem; /* 6 */
+  --space-2: 0.5rem;     /* 8 */
+  --space-3: 0.75rem;    /* 12 */
+  --space-4: 1rem;       /* 16 */
+  --space-5: 1.25rem;    /* 20 */
+  --space-6: 1.5rem;     /* 24 */
+  --space-8: 2rem;       /* 32 */
+  --space-10: 2.5rem;    /* 40 */
+  --space-12: 3rem;      /* 48 */
+  --space-16: 4rem;      /* 64 */
+  --space-20: 5rem;      /* 80 */
+  --space-24: 6rem;      /* 96 */
+  --space-32: 8rem;      /* 128 */
+
+  /* Section rhythm (vertical padding of page sections) */
+  --section-y-sm: clamp(2rem, 1.5rem + 2.2vw, 3.5rem);   /* 32 → 56 */
+  --section-y-md: clamp(3rem, 2.17rem + 3.7vw, 5.5rem);  /* 48 → 88 */
+  --section-y-lg: clamp(4rem, 2.67rem + 5.9vw, 8rem);    /* 64 → 128 */
+
+  /* ---------- 5. LAYOUT ------------------------------------------------ */
+  --content-width-prose: 68ch;   /* long-form text measure */
+  --content-width-sm: 40rem;     /* 640  forms, auth, dialogs */
+  --content-width-md: 48rem;     /* 768  articles */
+  --content-width-lg: 64rem;     /* 1024 editorial content */
+  --content-width-xl: 80rem;     /* 1280 default site container */
+  --content-width-2xl: 90rem;    /* 1440 dense commerce / dashboards */
+  --gutter: clamp(1rem, 0.5rem + 2.2vw, 2.5rem);  /* page side padding 16 → 40 */
+  --grid-gap: clamp(0.75rem, 0.5rem + 1.1vw, 1.5rem); /* 12 → 24 */
+
+  --header-height: 4rem;          /* 64 standard */
+  --header-height-compact: 3.5rem;/* 56 showcase / mobile */
+  --sidebar-width: 16rem;         /* 256 app sidebar */
+  --sidebar-width-collapsed: 4.5rem;
+  --filter-sidebar-width: 15rem;  /* 240 commerce filters */
+
+  /* Breakpoints — intentionally NOT custom properties (var() does not work
+     inside @media, and --breakpoint-* would override Tailwind's). Canonical
+     values, identical to Tailwind defaults; use them literally:
+       sm 640px · md 768px · lg 1024px · xl 1280px · 2xl 1536px          */
+
+  /* ---------- 6. SHAPE ------------------------------------------------- */
+  --corner-none: 0;
+  --corner-xs: 2px;
+  --corner-sm: 4px;
+  --corner-md: 8px;
+  --corner-lg: 12px;
+  --corner-xl: 16px;
+  --corner-2xl: 24px;
+  --corner-3xl: 32px;
+  --corner-full: 9999px;
+
+  /* Component-level radius aliases — change these per archetype */
+  --radius-control: var(--corner-md);   /* buttons, chips, segmented controls */
+  --radius-field: var(--corner-md);     /* text inputs, selects, textareas (never pill) */
+  --radius-card: var(--corner-lg);
+  --radius-overlay: var(--corner-xl);   /* modals, popovers, sheets */
+  --radius-badge: var(--corner-full);
+
+  --border-width: 1px;
+  --border-width-strong: 2px;
+
+  /* ---------- 7. ELEVATION -------------------------------------------- */
+  --elevation-none: none;
+  --elevation-xs: 0 1px 2px rgb(16 16 20 / 0.06);
+  --elevation-sm: 0 1px 3px rgb(16 16 20 / 0.10), 0 1px 2px rgb(16 16 20 / 0.06);
+  --elevation-md: 0 4px 12px rgb(16 16 20 / 0.08), 0 1px 3px rgb(16 16 20 / 0.06);
+  --elevation-lg: 0 8px 24px rgb(16 16 20 / 0.12), 0 2px 6px rgb(16 16 20 / 0.06);
+  --elevation-xl: 0 16px 48px rgb(16 16 20 / 0.16), 0 4px 12px rgb(16 16 20 / 0.08);
+
+  /* ---------- 8. LAYERING (z-index) ----------------------------------- */
+  --z-base: 0;
+  --z-raised: 10;      /* card hover, sticky table header inside content */
+  --z-dropdown: 100;   /* menus anchored in flow */
+  --z-sticky: 200;     /* sticky sub-nav, sticky CTA bar */
+  --z-header: 300;     /* global header */
+  --z-overlay: 400;    /* scrim */
+  --z-drawer: 500;     /* side sheets, mobile menu */
+  --z-modal: 600;
+  --z-popover: 700;    /* popovers opened from inside modals */
+  --z-toast: 800;
+  --z-tooltip: 900;
+  --z-skip-link: 1000;
+
+  /* ---------- 9. MOTION ----------------------------------------------- */
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;   /* hover, color, small toggles */
+  --duration-base: 220ms;   /* dropdowns, tooltips, accordions */
+  --duration-slow: 320ms;   /* modals, drawers, sheets */
+  --duration-slower: 500ms; /* large media / hero reveals only */
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --easing-out: cubic-bezier(0, 0, 0.2, 1);     /* entering */
+  --easing-in: cubic-bezier(0.4, 0, 1, 1);      /* leaving */
+  --easing-emphasized: cubic-bezier(0.3, 0, 0, 1);
+
+  /* ---------- 10. CONTROLS ------------------------------------------- */
+  --control-height-sm: 2rem;    /* 32 */
+  --control-height-md: 2.5rem;  /* 40 */
+  --control-height-lg: 3rem;    /* 48 */
+  --touch-target-min: 2.75rem;  /* 44 — minimum hit area on touch */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --icon-size-sm: 1rem;
+  --icon-size-md: 1.25rem;
+  --icon-size-lg: 1.5rem;
+}
+
+/* ==========================================================================
+   ARCHETYPE PRESETS — shape, density and type defaults per design approach.
+   Colors stay brand-driven; only structure changes here.
+   ========================================================================== */
+
+/* Dense Commerce (marketplaces, large catalogs) — Trendyol/Amazon research */
+[data-archetype="commerce"] {
+  --radius-control: var(--corner-md);
+  --radius-field: var(--corner-md);
+  --radius-card: var(--corner-md);
+  --radius-overlay: var(--corner-lg);
+  --header-height: 4rem;
+  --grid-gap: clamp(0.625rem, 0.5rem + 0.6vw, 1.25rem); /* 10 → 20 */
+  --type-body: var(--font-size-sm);
+  --type-display-xl: clamp(1.75rem, 1.5rem + 1.1vw, 2.5rem);
+  --type-display-lg: clamp(1.5rem, 1.33rem + 0.74vw, 2rem);
+}
+
+/* Editorial Product (SaaS marketing, product stories, D2C) — Apple research */
+[data-archetype="editorial"] {
+  --radius-control: var(--corner-full);
+  --radius-field: var(--corner-lg);
+  --radius-card: var(--corner-2xl);
+  --radius-overlay: var(--corner-2xl);
+  --header-height: 3.5rem;
+  --type-body: var(--font-size-lg);
+}
+
+/* Cinematic Showcase (launches, hardware, automotive, portfolios) — Tesla research */
+[data-archetype="showcase"] {
+  --radius-control: var(--corner-sm);
+  --radius-field: var(--corner-sm);
+  --radius-card: var(--corner-sm);
+  --radius-overlay: var(--corner-md);
+  --header-height: var(--header-height-compact);
+  --type-body: var(--font-size-md);
+}
+
+/* Productive UI (dashboards, admin, internal tools) — Amazon density + token structure */
+[data-archetype="productive"] {
+  --radius-control: var(--corner-sm);
+  --radius-field: var(--corner-sm);
+  --radius-card: var(--corner-md);
+  --radius-overlay: var(--corner-lg);
+  --header-height: 3.5rem;
+  --type-body: var(--font-size-sm);
+  --section-y-md: var(--space-6);
+}
+
+
+
+/* ==========================================================================
+   PANEL VURGU RENKLERİ (DESIGN §3.2) — <div data-panel="..."> alt ağacında
+   birincil renk yeniden tanımlanır. Durum renkleri panelden bağımsızdır.
+   Tam kontrast doğrulaması F3 maddesidir.
+   ========================================================================== */
+[data-panel="student"] {
+  --color-primary: var(--panel-blue-600);
+  --color-primary-hover: var(--panel-blue-700);
+  --color-primary-active: var(--panel-blue-800);
+  --color-primary-subtle: var(--panel-blue-50);
+  --color-focus: var(--panel-blue-600);
+}
+[data-panel="alumni"] {
+  --color-primary: var(--panel-amber-700);
+  --color-primary-hover: var(--panel-amber-800);
+  --color-primary-active: var(--panel-amber-900);
+  --color-primary-subtle: var(--panel-amber-50);
+  --color-focus: var(--panel-amber-700);
+}
+[data-panel="president"] {
+  --color-primary: var(--panel-emerald-700);
+  --color-primary-hover: var(--panel-emerald-800);
+  --color-primary-active: var(--panel-emerald-900);
+  --color-primary-subtle: var(--panel-emerald-50);
+  --color-focus: var(--panel-emerald-700);
+}
+[data-panel="staff"] {
+  --color-primary: var(--panel-teal-700);
+  --color-primary-hover: var(--panel-teal-800);
+  --color-primary-active: var(--panel-teal-900);
+  --color-primary-subtle: var(--panel-teal-50);
+  --color-focus: var(--panel-teal-700);
+}
+[data-panel="admin"] {
+  --color-primary: var(--panel-violet-700);
+  --color-primary-hover: var(--panel-violet-800);
+  --color-primary-active: var(--panel-violet-900);
+  --color-primary-subtle: var(--panel-violet-50);
+  --color-focus: var(--panel-violet-700);
+}
+[data-panel="platform"] {
+  --color-primary: var(--panel-slate-800);
+  --color-primary-hover: var(--panel-slate-900);
+  --color-primary-active: var(--panel-slate-950);
+  --color-primary-subtle: var(--panel-slate-50);
+  --color-focus: var(--panel-slate-800);
+}
+
+/* Motion safety: every animation must respect this. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+}
