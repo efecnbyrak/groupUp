@@ -1,0 +1,35 @@
+# deps
+node_modules/
+
+# next
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env (sadece .env.example commitlenir)
+.env
+.env.*
+!.env.example
+
+# lokal dosya depolama
+storage/
+
+# test
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# prisma
+prisma/generated/
+
+# os / editor
+.DS_Store
+*.log
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# claude yerel ayarlari
+.claude/settings.local.json
