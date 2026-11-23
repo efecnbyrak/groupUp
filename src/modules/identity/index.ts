@@ -36,3 +36,11 @@ export {
 export { getPendingVerification } from "./verify-cookie";
 export { otpHash, OTP_MAX_ATTEMPTS } from "./otp";
 export { registerSchema, type RegisterInput } from "./schemas";
+export { isDeleteTokenValid, listSessions, type SessionRow } from "./account";
+export { confirmAccountDeletion, requestAccountDeletion, revokeSession } from "./account";
+export {
+  confirmAccountDeletionAction,
+  requestAccountDeletionAction,
+  revokeOtherSessionsAction,
+  revokeSessionAction,
+} from "./account-actions";

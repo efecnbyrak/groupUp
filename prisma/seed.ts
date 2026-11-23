@@ -2,6 +2,7 @@
 import { db } from "../src/lib/db";
 import { env } from "../src/lib/env";
 import { hashPassword } from "../src/lib/password";
+import { CLUB_CATEGORIES, EVENT_CATEGORIES } from "./seed-categories";
 
 const KENT = {
   slug: "istanbul-kent-universitesi",
@@ -96,10 +97,32 @@ async function seedKent() {
   console.info(`[seed] ${KENT.name}: ${KENT.domains.length} domain, ${KENT.faculties.length} fakülte`);
 }
 
+/** Kategoriler yalnızca yoksa oluşturulur — panelde yapılan düzenlemeler ezilmez. */
+async function seedCategories() {
+  for (const [order, c] of CLUB_CATEGORIES.entries()) {
+    await db.clubCategory.upsert({ where: { slug: c.slug }, update: {}, create: { ...c, order } });
+  }
+  for (const [order, c] of EVENT_CATEGORIES.entries()) {
+    const parent = await db.eventCategory.upsert({
+      where: { slug: c.slug },
+      update: {},
+      create: { slug: c.slug, nameTr: c.nameTr, nameEn: c.nameEn, order },
+    });
+    for (const [childOrder, [slug, nameTr, nameEn]] of c.children.entries()) {
+      await db.eventCategory.upsert({
+        where: { slug },
+        update: {},
+        create: { slug, nameTr, nameEn, order: childOrder, parentId: parent.id },
+      });
+    }
+  }
+  console.info(`[seed] ${CLUB_CATEGORIES.length} kulüp, ${EVENT_CATEGORIES.length} üst etkinlik kategorisi`);
+}
+
 async function main() {
   await seedSuperAdmin();
   await seedKent();
-  // Kulüp kategorileri F5'te, etkinlik kategorileri F6'da eklenir.
+  await seedCategories();
 }
 
 main()

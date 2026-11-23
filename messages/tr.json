@@ -17,7 +17,18 @@
       "en": "English"
     },
     "comingSoon": "Yakında",
-    "comingSoonBody": "Bu bölüm geliştiriliyor. Kısa süre içinde burada olacak."
+    "comingSoonBody": "Bu bölüm geliştiriliyor. Kısa süre içinde burada olacak.",
+    "actions": "İşlemler",
+    "add": "Ekle",
+    "cancel": "Vazgeç",
+    "confirm": "Onayla",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "remove": "Kaldır",
+    "save": "Kaydet",
+    "pagination": "Sayfalar",
+    "firstPage": "İlk sayfa",
+    "nextPage": "Sonraki"
   },
   "errors": {
     "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
@@ -41,7 +52,11 @@
     "passwordPolicy": "Şifre kurallara uymuyor.",
     "kvkk": "Devam etmek için aydınlatma metnini onaylamalısınız.",
     "otp": "Kod 6 haneli bir sayı olmalı.",
-    "department": "Seçilen bölüm bu fakülteye ait değil."
+    "department": "Seçilen bölüm bu fakülteye ait değil.",
+    "domain": "Geçerli bir domain girin (ör. ogr.ornek.edu.tr).",
+    "slug": "Yalnızca küçük harf, rakam ve tire kullanılabilir.",
+    "icon": "İkon adı küçük harf, rakam ve tireden oluşmalı (ör. trophy).",
+    "number": "Geçerli bir sayı girin."
   },
   "password": {
     "rulesTitle": "Şifre kuralları",
@@ -106,7 +121,11 @@
       "notFoundBody": "Üniversitenizin eklenmesini talep edebilirsiniz. Eklendiğinde size haber vereceğiz.",
       "requestSubmit": "Talep gönder",
       "requestSent": "Talebiniz alındı. Teşekkürler!",
-      "emailTaken": "Bu e-posta ile kayıt olunamıyor. Giriş yapmayı deneyin."
+      "emailTaken": "Bu e-posta ile kayıt olunamıyor. Giriş yapmayı deneyin.",
+      "alumniManualTitle": "Mezunum, okul mailim yok",
+      "alumniManualBody": "Kişisel mailinle kayıt ol; ardından mezuniyet belgeni yükle. Üniversite Admini onaylayınca hesabın açılır.",
+      "alumniUniversity": "Mezun olduğun üniversite",
+      "alumniContinue": "Mezun olarak devam et"
     },
     "verify": {
       "title": "E-postanı doğrula",
@@ -188,6 +207,12 @@
       "subject": "groupUp e-posta adresin değiştirildi",
       "intro": "Hesabının giriş e-postası {email} olarak değiştirildi.",
       "warning": "Bu işlemi sen yapmadıysan bizimle hemen iletişime geç."
+    },
+    "deleteAccount": {
+      "subject": "groupUp hesabını silme onayı",
+      "intro": "Hesabını silmek için bir istek aldık. Onaylamak için aşağıdaki bağlantıya tıkla; açılan sayfada son bir kez onaylaman istenecek.",
+      "button": "Hesap silmeyi onayla",
+      "expires": "Bağlantı 30 dakika geçerlidir ve yalnızca bir kez kullanılabilir. Bu isteği sen yapmadıysan bu e-postayı yok say ve şifreni değiştir."
     }
   },
   "meta": {
@@ -368,5 +393,262 @@
       "body": "Okul e-postanla iki dakikada hesabını aç.",
       "button": "Hemen kayıt ol"
     }
+  },
+  "university": {
+    "errors": {
+      "notFound": "Kayıt bulunamadı. Sayfayı yenileyip tekrar deneyin.",
+      "slugTaken": "Bu kısa ad (slug) zaten kullanılıyor.",
+      "domainTaken": "Bu domain başka bir üniversiteye kayıtlı.",
+      "userNotFound": "Bu e-posta ile aktif bir kullanıcı bulunamadı.",
+      "userOtherUniversity": "Bu kullanıcı başka bir üniversiteye kayıtlı. Admin yalnızca o üniversitenin kullanıcısı olabilir.",
+      "alreadyAdmin": "Bu kullanıcı zaten bu üniversitenin Admini.",
+      "requestResolved": "Bu talep zaten sonuçlandırılmış.",
+      "nameTaken": "Bu ad zaten kullanılıyor.",
+      "inUse": "Kullanımda olduğu için silinemez (bağlı kayıtlar var)."
+    }
+  },
+  "platform": {
+    "overviewBody": "Platformdaki üniversiteler, Adminler ve bekleyen talepler.",
+    "saved": "Değişiklikler kaydedildi.",
+    "stats": {
+      "universities": "Aktif üniversite",
+      "users": "Aktif kullanıcı",
+      "admins": "Üniversite Admini",
+      "pendingRequests": "Bekleyen talep"
+    },
+    "status": {
+      "active": "Aktif",
+      "inactive": "Kapalı"
+    },
+    "alumniModes": {
+      "BOTH": "Domain + belge",
+      "DOMAIN": "Yalnızca mezun domaini",
+      "MANUAL": "Yalnızca belge"
+    },
+    "domainTypes": {
+      "STUDENT": "Öğrenci",
+      "ALUMNI": "Mezun"
+    },
+    "requestStatus": {
+      "PENDING": "Bekliyor",
+      "APPROVED": "Onaylandı",
+      "REJECTED": "Reddedildi",
+      "CANCELLED": "İptal edildi"
+    },
+    "fields": {
+      "name": "Ad",
+      "slug": "Kısa ad (slug)",
+      "slugHint": "Boş bırakırsanız addan üretilir.",
+      "city": "Şehir",
+      "alumniVerifyMode": "Mezun doğrulama yolu",
+      "alumniVerifyModeHint": "Mezunlar mezun domaini ile mi, belge yükleyerek mi doğrulanır?",
+      "users": "Kullanıcı",
+      "status": "Durum",
+      "domain": "Domain",
+      "domainType": "Tür",
+      "university": "Üniversite",
+      "adminEmail": "Kullanıcının e-postası",
+      "person": "Kişi",
+      "since": "Atanma",
+      "date": "Tarih",
+      "nameTr": "Ad (Türkçe)",
+      "nameEn": "Ad (İngilizce)",
+      "order": "Sıra",
+      "icon": "İkon",
+      "iconHint": "lucide ikon adı, ör. trophy",
+      "parent": "Üst kategori"
+    },
+    "universities": {
+      "body": "Platformdaki üniversiteler. Domainler ve Adminler üniversite sayfasından yönetilir.",
+      "add": "Üniversite ekle",
+      "addBody": "Üniversiteyi oluşturduktan sonra domainlerini ekleyip Admin atayın.",
+      "create": "Üniversiteyi oluştur",
+      "empty": "Henüz üniversite yok.",
+      "info": "Üniversite bilgileri",
+      "detailBody": "{users} kullanıcı · {faculties} fakülte",
+      "deactivate": "Kapat",
+      "deactivateBody": "Kapalı üniversiteye yeni kayıt yapılamaz ve domainleri çözümlenmez. Mevcut kullanıcılar etkilenmez.",
+      "activate": "Aktif et",
+      "activateBody": "Üniversite yeniden kayıt ve domain çözümlemesine açılır."
+    },
+    "domains": {
+      "body": "Kayıtta e-posta domaini bu listeyle eşleştirilir (alt domainler dahil).",
+      "added": "Domain eklendi.",
+      "empty": "Henüz domain yok.",
+      "removeTitle": "{domain} kaldırılsın mı?",
+      "removeBody": "Bu domainle yeni kayıt yapılamaz. Mevcut kullanıcılar etkilenmez."
+    },
+    "admins": {
+      "body": "Admin, yalnızca o üniversitede kayıtlı aktif bir kullanıcı olabilir.",
+      "assign": "Admin ata",
+      "assigned": "Admin atandı.",
+      "empty": "Henüz Admin atanmadı.",
+      "removeTitle": "{name} Adminlikten çıkarılsın mı?",
+      "removeBody": "Kullanıcı Admin paneline erişimini kaybeder; hesabı silinmez."
+    },
+    "requests": {
+      "body": "Kayıt sırasında \"Üniversitem yok\" diyenlerin talepleri.",
+      "empty": "Bekleyen talep yok.",
+      "createUniversity": "Üniversite oluştur",
+      "reject": "Reddet",
+      "rejectTitle": "\"{name}\" talebi reddedilsin mi?",
+      "rejectBody": "Talep kapanır; talep sahibine bildirim F10'da gönderilecek.",
+      "resolved": "Sonuçlanan talepler",
+      "fromRequest": "Talepten oluşturuluyor",
+      "fromRequestBody": "Talep eden: {email} · domain: {domain}. Oluşturduktan sonra domaini üniversite sayfasından ekleyin."
+    },
+    "categories": {
+      "body": "Kulüp ve etkinlik kategorileri tüm üniversitelerde ortaktır.",
+      "club": "Kulüp kategorileri",
+      "clubBody": "Kulüp açılırken seçilir.",
+      "event": "Etkinlik kategorileri",
+      "eventBody": "Üst kategori → alt kategori (iki seviye).",
+      "addClub": "Kulüp kategorisi ekle",
+      "addEvent": "Etkinlik kategorisi ekle",
+      "edit": "{name} düzenle",
+      "deleteTitle": "{name} silinsin mi?",
+      "created": "Kategori eklendi.",
+      "topLevel": "Yok (üst kategori)",
+      "noChildren": "Alt kategori yok",
+      "hasChildren": "Alt kategorisi olan kategori silinemez.",
+      "parentInvalid": "Alt kategori yalnızca bir üst kategorinin altına eklenebilir."
+    }
+  },
+  "admin": {
+    "title": "Admin Paneli",
+    "overviewBody": "{university} için kullanıcılar, fakülteler ve bekleyen işler.",
+    "nav": {
+      "approvals": "Onay kuyruğu",
+      "clubs": "Kulüpler",
+      "users": "Kullanıcılar",
+      "alumni": "Mezun doğrulama",
+      "elections": "Seçimler",
+      "faculties": "Fakülte / Bölüm",
+      "audit": "Denetim kaydı"
+    },
+    "stats": {
+      "students": "Aktif öğrenci",
+      "alumni": "Aktif mezun",
+      "pendingAlumni": "Bekleyen mezun doğrulama",
+      "faculties": "Fakülte"
+    },
+    "userTypes": {
+      "STUDENT": "Öğrenci",
+      "ALUMNI": "Mezun"
+    },
+    "userStatus": {
+      "ACTIVE": "Aktif",
+      "PENDING_VERIFICATION": "Doğrulama bekliyor",
+      "PENDING_ALUMNI_REVIEW": "Mezun incelemesinde",
+      "SUSPENDED": "Askıda",
+      "DELETED": "Silinmiş"
+    },
+    "users": {
+      "body": "Üniversitenizde kayıtlı kullanıcılar.",
+      "search": "Ara",
+      "searchPlaceholder": "Ad, e-posta veya öğrenci no",
+      "type": "Tür",
+      "status": "Durum",
+      "all": "Tümü",
+      "filter": "Filtrele",
+      "person": "Kişi",
+      "studentNo": "Öğrenci no",
+      "department": "Bölüm",
+      "joined": "Kayıt",
+      "empty": "Bu ölçütlere uyan kullanıcı yok."
+    },
+    "faculties": {
+      "body": "Kayıt ve profil formlarındaki fakülte/bölüm listesi. Kullanımdaki kayıtlar silinemez.",
+      "add": "Fakülte ekle",
+      "created": "Fakülte eklendi.",
+      "empty": "Henüz fakülte yok.",
+      "members": "{count, plural, =0 {kişi yok} one {# kişi} other {# kişi}}",
+      "deleteBody": "Yalnızca hiçbir profilde kullanılmayan (ve fakültede bölümü olmayan) kayıtlar silinebilir.",
+      "addDepartment": "Bölüm ekle",
+      "departmentTr": "Bölüm adı (Türkçe)",
+      "departmentEn": "Bölüm adı (İngilizce)"
+    },
+    "alumni": {
+      "body": "Belge yükleyerek mezun doğrulaması bekleyen kullanıcılar.",
+      "decisionLater": "Onay ve ret, onay motoruyla birlikte gelecek (F5). Şimdilik bekleyen başvuruları görebilirsiniz.",
+      "graduationYear": "Mezuniyet yılı",
+      "document": "Belge",
+      "submittedAt": "Gönderim",
+      "empty": "Bekleyen mezun doğrulaması yok."
+    }
+  },
+  "profile": {
+    "title": "Profilim",
+    "edit": "Profili düzenle",
+    "saved": "Profilin güncellendi.",
+    "university": "Üniversite",
+    "facultyDepartment": "Fakülte / bölüm",
+    "bio": "Hakkımda",
+    "bioHint": "En fazla 300 karakter. Kulüp yöneticileri görebilir.",
+    "details": "Kişisel bilgiler",
+    "detailsBody": "Etkinlik başvurularında bu bilgiler otomatik eklenir.",
+    "privacyNote": "Telefon ve doğum tarihin yalnızca başvurduğun etkinliğin yöneticileri tarafından, gerekli olduğunda görülebilir.",
+    "avatar": {
+      "title": "Profil fotoğrafı",
+      "choose": "Fotoğraf seç",
+      "upload": "Yükle",
+      "remove": "Fotoğrafı kaldır",
+      "hint": "JPG, PNG veya WebP, en fazla 5 MB. Kare olarak kırpılır.",
+      "updated": "Profil fotoğrafın güncellendi.",
+      "removed": "Profil fotoğrafın kaldırıldı."
+    },
+    "errors": {
+      "fileTooLarge": "Dosya çok büyük.",
+      "fileType": "Bu dosya türü desteklenmiyor.",
+      "fileInvalid": "Dosya okunamadı. Başka bir dosya deneyin."
+    }
+  },
+  "account": {
+    "sessions": {
+      "title": "Aktif oturumlar",
+      "body": "Hesabına giriş yapılmış cihazlar. Tanımadığın bir oturumu kapat ve şifreni değiştir.",
+      "current": "Bu cihaz",
+      "unknownDevice": "Bilinmeyen cihaz",
+      "lastSeen": "Son etkinlik {date}",
+      "started": "Açılış {date}",
+      "revoke": "Oturumu kapat",
+      "revokeTitle": "{device} oturumu kapatılsın mı?",
+      "revokeBody": "O cihazda yeniden giriş yapılması gerekir.",
+      "revoked": "Oturum kapatıldı.",
+      "revokeOthers": "Diğer tüm oturumları kapat",
+      "othersRevoked": "{count, plural, =0 {Kapatılacak başka oturum yoktu.} one {# oturum kapatıldı.} other {# oturum kapatıldı.}}"
+    },
+    "delete": {
+      "title": "Hesabı sil",
+      "teaser": "Hesabını ve kişisel verilerini kalıcı olarak silebilirsin.",
+      "warningTitle": "Bu işlem geri alınamaz",
+      "warningBody": "Adın, iletişim bilgilerin, profil fotoğrafın ve belgelerin silinir; giriş yapamazsın. Kulüp başkanıysan önce başkanlığı devretmen gerekir.",
+      "confirmLabel": "Hesabımın kalıcı olarak silineceğini anlıyorum.",
+      "confirmRequired": "Devam etmek için kutuyu işaretle.",
+      "submit": "Silme bağlantısı gönder",
+      "mailSent": "E-posta adresine bir onay bağlantısı gönderdik. Bağlantı 30 dakika geçerli.",
+      "lastSuperAdmin": "Son Süper Admin hesabı silinemez. Önce başka bir Süper Admin tanımlayın.",
+      "confirmTitle": "Hesap silmeyi onayla",
+      "confirmBody": "Onayladığında hesabın hemen silinir ve oturumun kapatılır.",
+      "confirmSubmit": "Hesabımı kalıcı olarak sil",
+      "keep": "Vazgeç, hesabıma dön",
+      "invalidToken": "Bu bağlantı geçersiz veya süresi dolmuş. Hesap sayfandan yeni bir bağlantı isteyebilirsin.",
+      "done": "Hesabın silindi. groupUp'ı kullandığın için teşekkürler."
+    }
+  },
+  "alumni": {
+    "title": "Mezun doğrulama",
+    "intro": "Hesabını açmamız için mezun olduğunu gösteren bir belge yükle: mezuniyet belgesi, e-Devlet mezun belgesi veya diploma.",
+    "document": "Belge",
+    "documentHint": "PDF, JPG veya PNG, en fazla 10 MB. Belge yalnızca üniversitenin Adminleri tarafından görülür.",
+    "submit": "Belgeyi gönder",
+    "resubmit": "Yeni belge gönder",
+    "submitted": "Belgen alındı. İnceleme sonucunu e-postayla bildireceğiz.",
+    "pendingTitle": "Belgen inceleniyor",
+    "pendingBody": "Üniversitenin Admini belgeni inceledikten sonra hesabın açılacak ve sana e-posta göndereceğiz.",
+    "submittedFile": "Gönderilen: {file} · {date}",
+    "replace": "Yanlış belge mi yükledin? Değiştir",
+    "rejectedTitle": "Belgen onaylanmadı",
+    "rejectedBody": "Lütfen geçerli bir mezuniyet belgesi yükle."
   }
 }

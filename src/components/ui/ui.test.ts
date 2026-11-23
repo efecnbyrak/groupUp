@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { initials } from "./avatar";
 import { cn } from "./cn";
 import { normalizeOtp } from "./otp";
+import { groupOptions } from "./select";
 import { sortRows } from "./table-sort";
 
 describe("ui yardımcıları", () => {
@@ -33,5 +34,14 @@ describe("ui yardımcıları", () => {
     expect(sortRows(rows, "name", "desc").map((r) => r.id)).toEqual(["1", "3", "2", "4"]);
     expect(sortRows(rows, "n", "asc").map((r) => r.id)).toEqual(["4", "1", "3", "2"]);
     expect(sortRows(rows, null, "asc").map((r) => r.id)).toEqual(["1", "2", "3", "4"]);
+  });
+  it("groupOptions ardışık grupları toplar", () => {
+    const groups = groupOptions([
+      { value: "1", label: "A", group: "F1" },
+      { value: "2", label: "B", group: "F1" },
+      { value: "3", label: "C", group: "F2" },
+      { value: "4", label: "D" },
+    ]);
+    expect(groups.map((g) => [g.group, g.options.length])).toEqual([["F1", 2], ["F2", 1], [undefined, 1]]);
   });
 });

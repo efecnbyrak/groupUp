@@ -12,3 +12,20 @@ export function candidateDomains(email: string): string[] {
   for (let i = 0; i <= labels.length - 2; i++) candidates.push(labels.slice(i).join("."));
   return candidates;
 }
+
+const DOMAIN_PATTERN = /^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
+/**
+ * Panelde girilen domaini normalize eder: "@Ogr.Kent.edu.tr", "https://ogr.kent.edu.tr/" →
+ * "ogr.kent.edu.tr". Geçersizse null.
+ */
+export function normalizeDomain(input: string): string | null {
+  const domain = input
+    .trim()
+    .toLowerCase()
+    .replace(/^[a-z]+:\/\//, "")
+    .replace(/^@/, "")
+    .replace(/\/.*$/, "")
+    .replace(/\.$/, "");
+  return DOMAIN_PATTERN.test(domain) ? domain : null;
+}

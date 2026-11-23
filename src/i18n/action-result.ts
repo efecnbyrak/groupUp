@@ -1,11 +1,13 @@
 import "server-only";
 
+import { unstable_rethrow } from "next/navigation";
 import type { z } from "zod";
 
 import { ForbiddenError, UnauthorizedError } from "@/lib/authz";
 import { RateLimitError, ServiceError, type ActionResult } from "@/lib/errors";
 
 import type { MessageKey, Translate } from "./messages";
+import { getT } from "./server";
 
 /**
  * Action hata çevirisi. zod mesajları ve ServiceError kodları mesaj anahtarıdır
@@ -54,4 +56,30 @@ export function formToObject(formData: FormData): Record<string, string> {
     if (typeof value === "string" && !key.startsWith("$ACTION")) out[key] = value;
   }
   return out;
+}
+
+/**
+ * Ortak action gövdesi — sıra her zaman: authz → zod → servis.
+ * `authorize` ilk iştir; hata/yetkisizlik çevrilmiş `ActionResult` olur. `redirect()` /
+ * `notFound()` çağrıları `unstable_rethrow` ile Next'e geri fırlatılır.
+ */
+export async function runAction<S extends z.ZodType, U>(
+  formData: FormData,
+  opts: {
+    authorize: () => Promise<U>;
+    schema: S;
+    errors?: Partial<Record<string, MessageKey>>;
+    run: (user: U, data: z.output<S>, t: Translate) => Promise<ActionResult | void>;
+  },
+): Promise<ActionResult> {
+  const t = await getT();
+  try {
+    const user = await opts.authorize();
+    const parsed = opts.schema.safeParse(formToObject(formData));
+    if (!parsed.success) return invalidForm(parsed.error, t);
+    return (await opts.run(user, parsed.data, t)) ?? { ok: true };
+  } catch (err) {
+    unstable_rethrow(err);
+    return actionError(err, t, opts.errors);
+  }
 }

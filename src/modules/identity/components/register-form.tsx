@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button, Checkbox, FormMessage, Input, Select, useFormAction } from "@/components/ui";
 import type { ActionResult } from "@/lib/errors";
 
-import { checkEmailAction, registerAction, type CheckEmailData } from "../actions";
+import { checkEmailAction, chooseAlumniUniversityAction, registerAction, type CheckEmailData } from "../actions";
 import type { Labels, REGISTER_KEYS } from "./labels";
 import { passwordLabels, PasswordInput } from "./password-input";
 
@@ -29,7 +29,7 @@ export function RegisterForm({ labels, requestUniversity }: { labels: L; request
       </Button>
     );
     if (result.status === "notFound") {
-      return <UniversityRequest email={result.email} labels={labels} action={requestUniversity} back={back} />;
+      return <NotFoundStep data={result} labels={labels} requestUniversity={requestUniversity} back={back} />;
     }
     return <ProfileStep data={result} labels={labels} back={back} />;
   }
@@ -74,6 +74,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
       </div>
       <FormMessage state={form.state} />
       <input type="hidden" name="email" value={data.email} />
+      {data.manualUniversityId ? <input type="hidden" name="universityId" value={data.manualUniversityId} /> : null}
 
       <div className="grid gap-(--space-4) sm:grid-cols-2">
         <Input
@@ -189,6 +190,41 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
         {labels["auth.register.submit"]}
       </Button>
     </form>
+  );
+}
+
+type NotFoundData = Extract<CheckEmailData, { status: "notFound" }>;
+
+/** Domain bulunamadı: manuel mezun yolu (üniversite seç) veya üniversite talebi. */
+function NotFoundStep({ data, labels, requestUniversity, back }: { data: NotFoundData; labels: L; requestUniversity: UniversityRequestAction; back: React.ReactNode }) {
+  const choose = useFormAction(chooseAlumniUniversityAction);
+  const chosen = choose.state?.ok ? choose.state.data : undefined;
+  if (chosen?.status === "found") return <ProfileStep data={chosen} labels={labels} back={back} />;
+  return (
+    <div className="flex flex-col gap-(--space-6)">
+      <UniversityRequest email={data.email} labels={labels} action={requestUniversity} back={back} />
+      {data.alumniUniversities.length > 0 ? (
+        <form onSubmit={choose.onSubmit} className="flex flex-col gap-(--space-4) border-t border-line pt-(--space-6)" noValidate>
+          <div className="flex flex-col gap-(--space-1)">
+            <h2 className="font-semibold text-fg">{labels["auth.register.alumniManualTitle"]}</h2>
+            <p className="text-(length:--type-body-sm) text-fg-secondary">{labels["auth.register.alumniManualBody"]}</p>
+          </div>
+          <FormMessage state={choose.state && !choose.state.ok ? choose.state : null} />
+          <input type="hidden" name="email" value={data.email} />
+          <Select
+            id="universityId"
+            label={labels["auth.register.alumniUniversity"]}
+            placeholder={labels["common.select"]}
+            required
+            options={data.alumniUniversities.map((u) => ({ value: u.id, label: u.name }))}
+            error={choose.fieldError("universityId")}
+          />
+          <Button type="submit" variant="secondary" size="lg" block loading={choose.pending} loadingLabel={labels["common.loading"]}>
+            {labels["auth.register.alumniContinue"]}
+          </Button>
+        </form>
+      ) : null}
+    </div>
   );
 }
 

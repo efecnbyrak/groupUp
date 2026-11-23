@@ -40,6 +40,14 @@ export async function requireUser(): Promise<SessionUser> {
   return user;
 }
 
+/** Manuel mezun yolu: maili doğrulanmış, belge onayı bekleyen kullanıcı (AUTH-EMAIL §6). */
+export async function requirePendingAlumni(): Promise<SessionUser> {
+  const user = await getCurrentSession();
+  if (!user) throw new UnauthorizedError();
+  if (!user.emailVerified || user.status !== "PENDING_ALUMNI_REVIEW") throw new ForbiddenError();
+  return user;
+}
+
 export async function requireSuperAdmin(): Promise<SessionUser> {
   const user = await requireUser();
   if (user.platformRole !== "SUPER_ADMIN") throw new ForbiddenError();

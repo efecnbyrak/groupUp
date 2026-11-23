@@ -4,7 +4,8 @@ import type { ComponentProps } from "react";
 import { cn } from "./cn";
 import { controlClass, controlTextClass, describedBy, Field } from "./field";
 
-export type SelectOption = { value: string; label: string };
+/** `group` verilirse ardışık aynı gruptaki seçenekler `<optgroup>` içinde gösterilir. */
+export type SelectOption = { value: string; label: string; group?: string };
 
 type SelectProps = ComponentProps<"select"> & {
   id: string;
@@ -30,11 +31,23 @@ export function Select({ id, label, error, hint, placeholder, options, name, cla
           {...rest}
         >
           {placeholder !== undefined ? <option value="">{placeholder}</option> : null}
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
+          {groupOptions(options).map((g, i) =>
+            g.group === undefined ? (
+              g.options.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))
+            ) : (
+              <optgroup key={`${g.group}-${i}`} label={g.group}>
+                {g.options.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+            ),
+          )}
         </select>
         <ChevronDown
           aria-hidden="true"
@@ -43,4 +56,15 @@ export function Select({ id, label, error, hint, placeholder, options, name, cla
       </div>
     </Field>
   );
+}
+
+/** Ardışık aynı `group` değerine sahip seçenekleri bir araya toplar (saf; test edilir). */
+export function groupOptions(options: SelectOption[]): { group?: string; options: SelectOption[] }[] {
+  const out: { group?: string; options: SelectOption[] }[] = [];
+  for (const o of options) {
+    const last = out[out.length - 1];
+    if (last && last.group === o.group) last.options.push(o);
+    else out.push({ group: o.group, options: [o] });
+  }
+  return out;
 }

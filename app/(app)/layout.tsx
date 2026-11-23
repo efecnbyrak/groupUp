@@ -6,6 +6,7 @@ import { ToastProvider } from "@/components/ui";
 import { getT } from "@/i18n/server";
 import { getSessionUser } from "@/lib/authz";
 import { logoutAction } from "@/modules/identity";
+import { isUniversityAdmin } from "@/modules/university";
 
 /**
  * Giriş yapmış öğrenci uygulaması: Productive yapı + rahat yoğunluk, panel rengi kullanıcı
@@ -14,7 +15,9 @@ import { logoutAction } from "@/modules/identity";
 async function AppFrame({ children }: { children: React.ReactNode }) {
   const [t, user] = await Promise.all([getT(), getSessionUser()]);
   const active = user && user.emailVerified && user.status === "ACTIVE" ? user : null;
-  const panels: PanelLink[] = active?.platformRole === "SUPER_ADMIN" ? [{ href: "/panel/platform", label: t("nav.platformPanel") }] : [];
+  const panels: PanelLink[] = [];
+  if (active?.platformRole === "SUPER_ADMIN") panels.push({ href: "/panel/platform", label: t("nav.platformPanel") });
+  if (active && (await isUniversityAdmin(active.id))) panels.push({ href: "/panel/admin", label: t("nav.adminPanel") });
 
   return (
     <div data-panel={active?.type === "ALUMNI" ? "alumni" : "student"} data-archetype="productive" data-density="comfortable" className="flex flex-1 flex-col bg-canvas-subtle">

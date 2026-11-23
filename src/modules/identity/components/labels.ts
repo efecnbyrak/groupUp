@@ -53,6 +53,10 @@ export const REGISTER_KEYS = [
   "auth.register.notFoundTitle",
   "auth.register.notFoundBody",
   "auth.register.requestSubmit",
+  "auth.register.alumniManualTitle",
+  "auth.register.alumniManualBody",
+  "auth.register.alumniUniversity",
+  "auth.register.alumniContinue",
 ] as const satisfies readonly MessageKey[];
 
 export const VERIFY_KEYS = [

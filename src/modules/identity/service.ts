@@ -9,7 +9,7 @@ import { hashPassword, verifyPassword } from "@/lib/password";
 import { enforceRateLimits } from "@/lib/rate-limit";
 import { destroyUserSessions } from "@/lib/session";
 import { sendEmail, sendEmailSafe } from "@/modules/notification";
-import { isValidFacultyDepartment, resolveEmailDomain } from "@/modules/university";
+import { getManualAlumniUniversity, isValidFacultyDepartment, resolveEmailDomain } from "@/modules/university";
 
 import { consumeOtp, issueOtp, type OtpResult } from "./otp";
 import { checkPassword } from "./password-policy";
@@ -32,9 +32,12 @@ export type IdentityErrorCode =
   | "SUSPENDED"
   | "RESET_TOKEN_INVALID"
   | "WRONG_PASSWORD"
-  | "EMAIL_NOT_ALLOWED";
+  | "EMAIL_NOT_ALLOWED"
+  | "NOT_FOUND"
+  | "DELETE_TOKEN_INVALID"
+  | "LAST_SUPER_ADMIN";
 
-const fail = (code: IdentityErrorCode, fields?: Record<string, string>) => new ServiceError<IdentityErrorCode>(code, fields);
+export const fail = (code: IdentityErrorCode, fields?: Record<string, string>) => new ServiceError<IdentityErrorCode>(code, fields);
 
 const MIN = 60;
 const HOUR = 60 * MIN;
@@ -60,7 +63,7 @@ export const limits = {
   accountUser: (userId: string) => [{ key: `account:user:${userId}`, limit: 10, windowSec: 15 * MIN }],
 };
 
-function displayName(profile: { firstName: string } | null | undefined, email: string): string {
+export function displayName(profile: { firstName: string } | null | undefined, email: string): string {
   return profile?.firstName ?? email.split("@")[0] ?? email;
 }
 
@@ -79,11 +82,30 @@ export async function resolveRegistration(email: string): Promise<RegistrationCo
 }
 
 /**
+ * Domain çözümlenirse o kullanılır (seçilen üniversite yok sayılır). Çözümlenmezse ve
+ * manuel mezun yolu açık bir üniversite seçildiyse → ALUMNI (belge ile doğrulanacak).
+ */
+async function resolveRegistrationTarget(email: string, universityId?: string): Promise<{ universityId: string; type: "STUDENT" | "ALUMNI" } | null> {
+  const resolved = await resolveEmailDomain(email);
+  if (resolved) return { universityId: resolved.universityId, type: resolved.type };
+  if (!universityId) return null;
+  const manual = await getManualAlumniUniversity(universityId);
+  return manual ? { universityId: manual.id, type: "ALUMNI" } : null;
+}
+
+/** Manuel mezun mu? ALUMNI tipinde ama e-postası üniversitenin mezun domaininden değil. */
+async function isManualAlumni(user: { type: string; universityId: string | null }, email: string): Promise<boolean> {
+  if (user.type !== "ALUMNI") return false;
+  const resolved = await resolveEmailDomain(email);
+  return !(resolved?.type === "ALUMNI" && resolved.universityId === user.universityId);
+}
+
+/**
  * Kayıt (AUTH-EMAIL §1): User + Profile + OTP + audit tek transaction'da. Mail doğrulanmamış
  * eski kayıt varsa güncellenir. OTP maili gönderilemezse `MAIL_FAILED` (kayıt kalır, yeniden gönderilebilir).
  */
 export async function register(input: RegisterInput, ctx: { locale: string }): Promise<{ email: string }> {
-  const resolved = await resolveEmailDomain(input.email);
+  const resolved = await resolveRegistrationTarget(input.email, input.universityId);
   if (!resolved) throw fail("UNIVERSITY_NOT_FOUND");
 
   const fields: Record<string, string> = {};
@@ -196,15 +218,17 @@ function otpOrThrow(result: OtpResult): string | null {
 export async function verifyEmail(email: string, code: string): Promise<{ userId: string }> {
   const tokenUserId = otpOrThrow(await consumeOtp({ email, purpose: "VERIFY_EMAIL", code }));
 
-  const user = await db.user.findUnique({ where: { email }, select: { id: true, universityId: true, status: true } });
+  const user = await db.user.findUnique({ where: { email }, select: { id: true, universityId: true, status: true, type: true } });
   if (!user || (tokenUserId && tokenUserId !== user.id)) throw fail("OTP_EXPIRED");
+  // Manuel mezun: mail doğrulandı ama belge onayı bekleniyor (AUTH-EMAIL §2, §6).
+  const nextStatus = (await isManualAlumni(user, email)) ? ("PENDING_ALUMNI_REVIEW" as const) : ("ACTIVE" as const);
 
   await db.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: user.id },
       data: {
         emailVerifiedAt: new Date(),
-        ...(user.status === "PENDING_VERIFICATION" ? { status: "ACTIVE" as const } : {}),
+        ...(user.status === "PENDING_VERIFICATION" ? { status: nextStatus } : {}),
       },
     });
     await audit(

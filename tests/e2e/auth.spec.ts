@@ -1,33 +1,14 @@
-import { expect, test, type APIRequestContext } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+import { uniqueStudentNo, waitForMail } from "./helpers";
 
 /**
  * Uçtan uca kimlik akışı (AUTH-EMAIL §1–3, §7): kayıt → Mailpit'ten OTP → doğrula → çıkış →
  * şifremi unuttum → Mailpit'ten link → yeni şifre → giriş.
  * Gereken: Mailpit (docker compose up -d), dev DB'de seed (İstanbul Kent Üniversitesi).
  */
-const MAILPIT = process.env.MAILPIT_URL ?? "http://localhost:8025";
-
-interface MailpitSummary {
-  ID: string;
-  Subject: string;
-}
-
-async function waitForMail(request: APIRequestContext, to: string, subject: RegExp): Promise<{ id: string; subject: string; text: string }> {
-  for (let i = 0; i < 40; i++) {
-    const res = await request.get(`${MAILPIT}/api/v1/search`, { params: { query: `to:"${to}"`, limit: "10" } });
-    const { messages } = (await res.json()) as { messages: MailpitSummary[] };
-    const hit = messages.find((m) => subject.test(m.Subject));
-    if (hit) {
-      const full = (await (await request.get(`${MAILPIT}/api/v1/message/${hit.ID}`)).json()) as { Text: string };
-      return { id: hit.ID, subject: hit.Subject, text: full.Text };
-    }
-    await new Promise((r) => setTimeout(r, 250));
-  }
-  throw new Error(`Mail gelmedi: ${to} ${subject}`);
-}
-
 test("kayıt → doğrulama → çıkış → şifre sıfırlama → giriş", async ({ page, request }) => {
-  const studentNo = `9${Date.now().toString().slice(-8)}`;
+  const studentNo = uniqueStudentNo();
   const email = `${studentNo}@ogr.kent.edu.tr`;
   const password = "Kahve!42x";
   const newPassword = "Deniz#77y";
@@ -55,7 +36,7 @@ test("kayıt → doğrulama → çıkış → şifre sıfırlama → giriş", as
 
   // 3) OTP
   await expect(page).toHaveURL(/\/dogrula$/);
-  await expect(page.getByText(email)).toBeVisible();
+  await expect(page.getByText(email).filter({ visible: true })).toBeVisible();
   const verifyMail = await waitForMail(request, email, /doğrulama kodun/);
   const code = verifyMail.subject.match(/\d{6}/)?.[0];
   expect(code).toBeTruthy();

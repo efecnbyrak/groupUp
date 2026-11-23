@@ -50,14 +50,17 @@ export async function PanelShell({ panel, title, roleLabel, items, children }: {
         </span>
       </header>
       <div className="flex flex-1">
-        <aside className="sticky top-0 hidden h-dvh w-(--sidebar-width) shrink-0 flex-col gap-(--space-6) overflow-y-auto border-r border-line bg-card p-(--space-4) lg:flex">
-          <Logo href="/akis" label={t("nav.backToApp")} />
-          {heading}
-          {nav}
-          <div className="mt-auto">
-            <BackLink label={t("nav.backToApp")} />
-          </div>
-        </aside>
+        {/* Sütun sayfa boyunca uzar (zemin + kenarlık); içerik ekrana yapışık kalır. */}
+        <div className="hidden w-(--sidebar-width) shrink-0 border-r border-line bg-card lg:block">
+          <aside className="sticky top-0 flex h-dvh flex-col gap-(--space-6) overflow-y-auto p-(--space-4)">
+            <Logo href="/akis" label={t("nav.backToApp")} />
+            {heading}
+            {nav}
+            <div className="mt-auto">
+              <BackLink label={t("nav.backToApp")} />
+            </div>
+          </aside>
+        </div>
         <main id="icerik" className="min-w-0 flex-1 px-(--gutter) py-(--space-6)">
           <div className="mx-auto flex w-full max-w-(--content-width-2xl) flex-col gap-(--space-6)">{children}</div>
         </main>

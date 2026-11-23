@@ -23,4 +23,12 @@ describe("mail şablonları", () => {
     expect(mail.html).toContain(`href="${url}"`);
     expect(mail.text).toContain(url);
   });
+
+  it("delete-account onay bağlantısı ve süre uyarısı içerir (TR/EN)", () => {
+    const url = "http://localhost:3000/hesap/sil/onay?token=abc";
+    const tr = renderTemplate("delete-account", "tr", { name: "A", url });
+    expect(tr.html).toContain(`href="${url}"`);
+    expect(tr.text).toContain("30 dakika");
+    expect(renderTemplate("delete-account", "en", { name: "A", url }).subject).toMatch(/delet/i);
+  });
 });
