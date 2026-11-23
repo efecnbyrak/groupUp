@@ -9,3 +9,242 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ============================================================
+// Enum'lar (F2) — docs/DATA-MODEL.md §Enum'lar
+// ============================================================
+enum PlatformRole {
+  USER
+  SUPER_ADMIN
+}
+
+enum UserType {
+  STUDENT
+  ALUMNI
+}
+
+enum UserStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  PENDING_ALUMNI_REVIEW
+  SUSPENDED
+  DELETED
+}
+
+enum DomainType {
+  STUDENT
+  ALUMNI
+}
+
+enum AlumniVerifyMode {
+  DOMAIN
+  MANUAL
+  BOTH
+}
+
+enum EmailTokenPurpose {
+  VERIFY_EMAIL
+  PASSWORD_RESET
+  CHANGE_EMAIL
+  DELETE_ACCOUNT
+}
+
+enum Gender {
+  FEMALE
+  MALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// ============================================================
+// Kimlik ve üniversite (F2) — sahip: university, identity, profile modülleri
+// ============================================================
+model University {
+  id               String           @id @default(cuid())
+  name             String
+  slug             String           @unique
+  city             String?
+  logoKey          String?
+  alumniVerifyMode AlumniVerifyMode @default(BOTH)
+  isActive         Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  domains   UniversityDomain[]
+  faculties Faculty[]
+  admins    UniversityAdmin[]
+  users     User[]
+}
+
+model UniversityDomain {
+  id           String     @id @default(cuid())
+  universityId String
+  domain       String     @unique // küçük harf, ör. "ogr.kent.edu.tr"
+  type         DomainType
+
+  university University @relation(fields: [universityId], references: [id])
+
+  @@index([universityId])
+}
+
+model Faculty {
+  id           String  @id @default(cuid())
+  universityId String
+  nameTr       String
+  nameEn       String?
+
+  university  University   @relation(fields: [universityId], references: [id])
+  departments Department[]
+  profiles    Profile[]
+
+  @@unique([universityId, nameTr])
+}
+
+model Department {
+  id        String  @id @default(cuid())
+  facultyId String
+  nameTr    String
+  nameEn    String?
+
+  faculty  Faculty   @relation(fields: [facultyId], references: [id])
+  profiles Profile[]
+
+  @@unique([facultyId, nameTr])
+  @@index([facultyId])
+}
+
+model UniversityAdmin {
+  id           String   @id @default(cuid())
+  universityId String
+  userId       String
+  createdById  String?
+  createdAt    DateTime @default(now())
+
+  university University @relation(fields: [universityId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@unique([universityId, userId])
+  @@index([userId])
+}
+
+model UniversityRequest {
+  id        String              @id @default(cuid())
+  email     String
+  name      String
+  domain    String
+  note      String?
+  status    ChangeRequestStatus @default(PENDING)
+  createdAt DateTime            @default(now())
+
+  @@index([status, createdAt])
+}
+
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique // giriş maili, küçük harf
+  emailVerifiedAt DateTime?
+  passwordHash    String
+  platformRole    PlatformRole @default(USER)
+  type            UserType     @default(STUDENT)
+  status          UserStatus   @default(PENDING_VERIFICATION)
+  universityId    String? // Süper Admin için null olabilir
+  locale          String       @default("tr")
+  lastLoginAt     DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  university      University?       @relation(fields: [universityId], references: [id])
+  profile         Profile?
+  sessions        Session[]
+  universityAdmin UniversityAdmin[]
+
+  @@index([universityId, type])
+}
+
+model Profile {
+  userId         String    @id
+  firstName      String
+  lastName       String
+  studentNo      String?
+  facultyId      String?
+  departmentId   String?
+  classYear      Int? // 0 = hazırlık, 1-6
+  graduationYear Int?
+  phone          String? // E.164
+  gender         Gender?
+  birthDate      DateTime? @db.Date
+  avatarKey      String?
+  bio            String?   @db.VarChar(300)
+  kvkkConsentAt  DateTime
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  faculty    Faculty?    @relation(fields: [facultyId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  @@index([facultyId])
+  @@index([departmentId])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique // sha256(token)
+  userAgent  String?
+  ipHash     String?
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model EmailToken {
+  id        String            @id @default(cuid())
+  userId    String?
+  email     String
+  purpose   EmailTokenPurpose
+  codeHash  String // sha256(OTP veya link token'ı)
+  attempts  Int               @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime          @default(now())
+
+  @@index([email, purpose])
+  @@index([codeHash])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model RateLimit {
+  key       String   @id // "login:ip:<hash>" / "otp:mail:x@y"
+  count     Int
+  windowEnd DateTime
+
+  @@index([windowEnd])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  universityId String?
+  actorId      String?
+  action       String // "identity.user.registered"
+  targetType   String
+  targetId     String
+  meta         Json?
+  createdAt    DateTime @default(now())
+
+  @@index([universityId, createdAt])
+  @@index([targetType, targetId])
+  @@index([actorId])
+}

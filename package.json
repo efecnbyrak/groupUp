@@ -12,13 +12,15 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "prisma migrate dev && prisma generate",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "db:test:migrate": "node scripts/db-test-migrate.mjs",
     "mail:test": "tsx --env-file-if-exists=.env --conditions=react-server scripts/send-test-mail.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "clsx": "^2.1.1",

@@ -1,1 +1,183 @@
-{}
+{
+  "common": {
+    "appName": "groupUp",
+    "submit": "Submit",
+    "loading": "Sending…",
+    "show": "Show",
+    "hide": "Hide",
+    "select": "Select",
+    "optional": "optional",
+    "backHome": "Back to home"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "rateLimited": "Too many attempts. Please try again in {minutes} minutes.",
+    "invalidForm": "Please fix the highlighted fields.",
+    "unauthorized": "You need to sign in to do this.",
+    "forbidden": "You are not allowed to do this.",
+    "mailFailed": "We couldn't send the verification code. Please try \"Resend code\" in a few minutes."
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Enter a valid email address.",
+    "tooLong": "Must be at most {max} characters.",
+    "name": "Only letters, spaces, apostrophes and hyphens are allowed.",
+    "studentNo": "Student number must be 4–20 letters and digits.",
+    "phone": "Enter the phone number with country code (e.g. +905551234567).",
+    "birthDate": "Enter a valid birth date (age 13–100).",
+    "classYear": "Select your year.",
+    "graduationYear": "Enter a valid graduation year.",
+    "passwordMismatch": "Passwords do not match.",
+    "passwordPolicy": "Password does not meet the rules.",
+    "kvkk": "You must accept the privacy notice to continue.",
+    "otp": "The code must be a 6-digit number.",
+    "department": "The selected department does not belong to this faculty."
+  },
+  "password": {
+    "rulesTitle": "Password rules",
+    "rules": {
+      "length": "6–64 characters",
+      "letter": "At least one letter",
+      "symbol": "At least one symbol (! @ # $ % ^ & * ( ) - _ = + . , ? : [ ] { } ~)",
+      "allowedChars": "No spaces, < > \" ' ` / \\ ; or emoji",
+      "noPersonalInfo": "Does not contain your name, surname or student number"
+    }
+  },
+  "auth": {
+    "fields": {
+      "email": "University email address",
+      "emailPlain": "Email address",
+      "password": "Password",
+      "passwordConfirm": "Password (again)",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "studentNo": "Student number",
+      "faculty": "Faculty",
+      "department": "Department",
+      "classYear": "Year",
+      "graduationYear": "Graduation year",
+      "phone": "Phone",
+      "gender": "Gender",
+      "birthDate": "Date of birth",
+      "code": "Verification code",
+      "kvkk": "I have read the privacy notice (KVKK) and consent to the processing of my personal data.",
+      "universityName": "University name",
+      "note": "Note"
+    },
+    "classYears": {
+      "0": "Preparatory",
+      "1": "1st year",
+      "2": "2nd year",
+      "3": "3rd year",
+      "4": "4th year",
+      "5": "5th year",
+      "6": "6th year"
+    },
+    "genders": {
+      "FEMALE": "Female",
+      "MALE": "Male",
+      "OTHER": "Other",
+      "PREFER_NOT_TO_SAY": "Prefer not to say"
+    },
+    "register": {
+      "title": "Sign up",
+      "subtitle": "Start with your university email address.",
+      "continue": "Continue",
+      "submit": "Create account",
+      "detected": "{university} — {type}",
+      "typeStudent": "Student",
+      "typeAlumni": "Alumni",
+      "changeEmail": "Change email",
+      "haveAccount": "Already have an account?",
+      "login": "Sign in",
+      "notFoundTitle": "Your university is not on groupUp yet",
+      "notFoundBody": "You can request that your university be added. We'll let you know when it is.",
+      "requestSubmit": "Send request",
+      "requestSent": "Your request has been received. Thank you!",
+      "emailTaken": "You can't sign up with this email. Try signing in."
+    },
+    "verify": {
+      "title": "Verify your email",
+      "subtitle": "We sent a 6-digit code to {email}. The code is valid for 10 minutes.",
+      "submit": "Verify",
+      "resend": "Resend code",
+      "resent": "A new code has been sent.",
+      "invalid": "The code is incorrect.",
+      "expired": "The code has expired. Request a new one.",
+      "tooMany": "Too many incorrect attempts. Request a new code.",
+      "noPending": "No pending registration found. Please sign in or sign up."
+    },
+    "login": {
+      "title": "Sign in",
+      "submit": "Sign in",
+      "invalid": "Incorrect email or password.",
+      "suspended": "Your account has been suspended.",
+      "forgot": "Forgot password",
+      "noAccount": "Don't have an account?",
+      "register": "Sign up"
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email; if you have an account we'll send a reset link.",
+      "submit": "Send link",
+      "sent": "If an account exists for this address, we've sent a reset link. The link is valid for 30 minutes.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "submit": "Update password",
+      "invalidToken": "The link is invalid or has expired. Request a new password reset.",
+      "done": "Your password has been updated. You can now sign in with it."
+    },
+    "account": {
+      "title": "My account",
+      "signedInAs": "Signed in as {email}.",
+      "security": "Security settings",
+      "logout": "Sign out",
+      "logoutAll": "Sign out of all devices"
+    },
+    "security": {
+      "title": "Security",
+      "changePassword": "Change password",
+      "changePasswordSubmit": "Change password",
+      "passwordChanged": "Your password has been changed. Sessions on other devices were signed out.",
+      "wrongPassword": "Current password is incorrect.",
+      "changeEmail": "Change email",
+      "changeEmailHint": "The new address must be on one of your university's domains.",
+      "newEmail": "New email address",
+      "sendCode": "Send code",
+      "codeSent": "We sent a verification code to {email}.",
+      "confirmEmail": "Update email",
+      "emailChanged": "Your email address has been updated.",
+      "emailNotAllowed": "This address can't be used. Use one of your university's domains.",
+      "back": "Back to my account"
+    }
+  },
+  "email": {
+    "footer": "You received this email because of an action on your groupUp account. If it wasn't you, you can ignore this email.",
+    "greeting": "Hi {name},",
+    "verify": {
+      "subject": "Your groupUp verification code: {code}",
+      "intro": "Use the code below to verify your groupUp account:",
+      "expires": "The code is valid for 10 minutes. Don't share it with anyone."
+    },
+    "passwordReset": {
+      "subject": "Reset your groupUp password",
+      "intro": "Click the link below to reset your password:",
+      "button": "Reset password",
+      "expires": "The link is valid for 30 minutes and can be used once. If you didn't request this, ignore this email."
+    },
+    "passwordChanged": {
+      "subject": "Your groupUp password was changed",
+      "intro": "Your account password was just changed.",
+      "warning": "If you didn't do this, request a password reset right away and contact us."
+    },
+    "emailChanged": {
+      "subject": "Your groupUp email address was changed",
+      "intro": "Your sign-in email was changed to {email}.",
+      "warning": "If you didn't do this, contact us right away."
+    }
+  }
+}
