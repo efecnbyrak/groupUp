@@ -2,13 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { titled } from "@/app/_lib/metadata";
+import { Alert } from "@/components/ui";
 import { getT } from "@/i18n/server";
 import { getSessionUser } from "@/lib/authz";
 import { labelsFor, LOGIN_KEYS, LoginForm } from "@/modules/identity";
 
 import { AuthCard, linkClass } from "../_components/auth-card";
 
-export const metadata = { title: "Giriş yap — groupUp" };
+export const generateMetadata = titled("auth.login.title");
 
 type Params = { next?: string; sifirlandi?: string };
 
@@ -33,9 +35,9 @@ async function LoginContent({ searchParams }: { searchParams: Promise<Params> })
       }
     >
       {params.sifirlandi ? (
-        <p role="status" className="mb-(--space-4) rounded-control bg-(--color-success-subtle) p-(--space-3) text-(length:--type-body-sm)">
+        <Alert tone="success" className="mb-(--space-4)">
           {t("auth.reset.done")}
-        </p>
+        </Alert>
       ) : null}
       <LoginForm labels={labelsFor(t, LOGIN_KEYS)} next={typeof params.next === "string" ? params.next : undefined} />
     </AuthCard>

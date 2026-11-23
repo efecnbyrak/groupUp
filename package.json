@@ -17,14 +17,17 @@
     "db:studio": "prisma studio",
     "db:test:migrate": "node scripts/db-test-migrate.mjs",
     "mail:test": "tsx --env-file-if-exists=.env --conditions=react-server scripts/send-test-mail.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "check:contrast": "node scripts/contrast-check.mjs"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "clsx": "^2.1.1",
+    "lucide-react": "^1.78.0",
     "next": "16.4.6",
+    "next-intl": "^4.15.3",
     "nodemailer": "^10.6.1",
     "pg": "^8.23.1",
     "react": "19.3.0",

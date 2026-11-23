@@ -1,7 +1,20 @@
+import { Suspense } from "react";
+
+import { Footer, PublicHeader, PublicHeaderFallback } from "@/components/shell";
+
+/** Auth sayfaları: Editorial arketip, ortalanmış kart (DESIGN §1). */
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
-    <main data-archetype="editorial" className="flex flex-1 items-start justify-center px-(--space-4) py-(--space-12) sm:items-center">
-      {children}
-    </main>
+    <div data-archetype="editorial" className="flex flex-1 flex-col">
+      <Suspense fallback={<PublicHeaderFallback />}>
+        <PublicHeader />
+      </Suspense>
+      <main id="icerik" className="flex flex-1 items-start justify-center bg-canvas-subtle px-(--gutter) py-(--space-12) sm:py-(--space-16)">
+        {children}
+      </main>
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
+    </div>
   );
 }

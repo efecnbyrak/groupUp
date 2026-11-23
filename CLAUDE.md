@@ -40,6 +40,7 @@ npm run db:migrate     # prisma migrate dev
 npm run db:seed        # tsx prisma/seed.ts
 npm run db:studio      # prisma studio
 npm run mail:test      # Mailpit'e test maili
+npm run check:contrast # tokens.css + tüm data-panel temaları WCAG AA
 docker compose up -d   # Mailpit
 ```
 Kurulum: [docs/SETUP-LOCAL.md](docs/SETUP-LOCAL.md)
@@ -58,7 +59,9 @@ src/
     components/          modüle özel UI
     domain/              (sadece tournament, approval, election) saf TS, framework bağımsız
   lib/                   db, session, authz, mail, storage, translation, rate-limit, audit, sanitize, env
-  components/ui/         paylaşılan UI bileşenleri (Button, Input, Card, Modal...)
+  components/ui/         paylaşılan UI bileşenleri (Button, Input, Card, Modal...) → ui, lib, i18n
+  components/shell/      header/footer/tab bar/PanelShell (sunumsal; modül import etmez)
+  components/marketing/  landing bölümleri
   i18n/                  next-intl config
 messages/tr.json en.json
 prisma/schema.prisma seed.ts

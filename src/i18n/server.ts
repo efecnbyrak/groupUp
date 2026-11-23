@@ -1,16 +1,19 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { getLocale as intlLocale, getTranslations } from "next-intl/server";
 
-import { createT, toLocale, type Locale, type Translate } from "./messages";
+import { toLocale, type Locale } from "./config";
+import type { Translate, TranslateVars } from "./messages";
 
-export const LOCALE_COOKIE = "gu_locale";
+export { LOCALE_COOKIE } from "./config";
 
-/** İstek dili: `gu_locale` cookie'si, yoksa tr. (F3'te next-intl devralır.) */
+/** İstek dili (next-intl → `gu_locale` cookie'si, yoksa tr). */
 export async function getLocale(): Promise<Locale> {
-  return toLocale((await cookies()).get(LOCALE_COOKIE)?.value);
+  return toLocale(await intlLocale());
 }
 
+/** İstek diline bağlı çevirici; imza F2'deki ile aynı (`MessageKey` tipli). */
 export async function getT(): Promise<Translate> {
-  return createT(await getLocale());
+  const t = await getTranslations();
+  return (key, vars) => (t as unknown as (k: string, v?: TranslateVars) => string)(key, vars);
 }

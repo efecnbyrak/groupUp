@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { Button, FormMessage, Input, OtpInput, useFormAction } from "@/components/ui";
+
 import {
   confirmEmailChangeAction,
   changePasswordAction,
@@ -12,7 +14,6 @@ import {
   resetPasswordAction,
   verifyEmailAction,
 } from "../actions";
-import { FormMessage, SubmitButton, TextField, useFormAction } from "./form-parts";
 import type { FORGOT_KEYS, Labels, LOGIN_KEYS, RESET_KEYS, SECURITY_KEYS, VERIFY_KEYS } from "./labels";
 import { passwordLabels, PasswordInput } from "./password-input";
 
@@ -27,27 +28,15 @@ export function OtpForm({ labels, initialError }: { labels: Labels<typeof VERIFY
     <div className="flex flex-col gap-(--space-4)">
       <FormMessage state={message} />
       <form onSubmit={verify.onSubmit} className={formClass} noValidate>
-        <TextField
-          id="code"
-          label={labels["auth.fields.code"]}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={6}
-          pattern="\d{6}"
-          required
-          error={verify.fieldError("code")}
-          className="h-(--control-height-lg) w-full rounded-field border border-line-input bg-card px-(--space-3) text-center font-mono text-(length:--type-heading-md) tracking-[0.4em] text-fg"
-        />
-        <SubmitButton pending={verify.pending} label={labels["auth.verify.submit"]} pendingLabel={labels["common.loading"]} />
+        <OtpInput id="code" label={labels["auth.fields.code"]} error={verify.fieldError("code")} autoFocus />
+        <Button type="submit" size="lg" block loading={verify.pending} loadingLabel={labels["common.loading"]}>
+          {labels["auth.verify.submit"]}
+        </Button>
       </form>
       <form onSubmit={resend.onSubmit}>
-        <button
-          type="submit"
-          disabled={resend.pending}
-          className="text-(length:--type-body-sm) text-(--color-link) underline disabled:opacity-60"
-        >
+        <Button type="submit" variant="ghost" size="sm" loading={resend.pending}>
           {labels["auth.verify.resend"]}
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -59,9 +48,11 @@ export function LoginForm({ labels, next }: { labels: Labels<typeof LOGIN_KEYS>;
     <form onSubmit={form.onSubmit} className={formClass} noValidate>
       <FormMessage state={form.state} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
-      <TextField id="email" type="email" label={labels["auth.fields.emailPlain"]} autoComplete="email" required />
+      <Input id="email" type="email" label={labels["auth.fields.emailPlain"]} autoComplete="email" required />
       <PasswordInput id="password" autoComplete="current-password" labels={passwordLabels(labels, labels["auth.fields.password"], false)} />
-      <SubmitButton pending={form.pending} label={labels["auth.login.submit"]} pendingLabel={labels["common.loading"]} />
+      <Button type="submit" size="lg" block loading={form.pending} loadingLabel={labels["common.loading"]}>
+          {labels["auth.login.submit"]}
+        </Button>
     </form>
   );
 }
@@ -71,8 +62,10 @@ export function ForgotPasswordForm({ labels }: { labels: Labels<typeof FORGOT_KE
   return (
     <form onSubmit={form.onSubmit} className={formClass} noValidate>
       <FormMessage state={form.state} />
-      <TextField id="email" type="email" label={labels["auth.fields.emailPlain"]} autoComplete="email" required error={form.fieldError("email")} />
-      <SubmitButton pending={form.pending} label={labels["auth.forgot.submit"]} pendingLabel={labels["common.loading"]} />
+      <Input id="email" type="email" label={labels["auth.fields.emailPlain"]} autoComplete="email" required error={form.fieldError("email")} />
+      <Button type="submit" size="lg" block loading={form.pending} loadingLabel={labels["common.loading"]}>
+          {labels["auth.forgot.submit"]}
+        </Button>
     </form>
   );
 }
@@ -95,7 +88,9 @@ export function ResetPasswordForm({ labels, token }: { labels: Labels<typeof RES
         labels={passwordLabels(labels, labels["auth.fields.passwordConfirm"], false)}
         error={form.fieldError("passwordConfirm")}
       />
-      <SubmitButton pending={form.pending} label={labels["auth.reset.submit"]} pendingLabel={labels["common.loading"]} />
+      <Button type="submit" size="lg" block loading={form.pending} loadingLabel={labels["common.loading"]}>
+          {labels["auth.reset.submit"]}
+        </Button>
     </form>
   );
 }
@@ -123,7 +118,9 @@ export function ChangePasswordForm({ labels }: { labels: Labels<typeof SECURITY_
         labels={passwordLabels(labels, labels["auth.fields.passwordConfirm"], false)}
         error={form.fieldError("passwordConfirm")}
       />
-      <SubmitButton pending={form.pending} label={labels["auth.security.changePasswordSubmit"]} pendingLabel={labels["common.loading"]} />
+      <Button type="submit" size="lg" block loading={form.pending} loadingLabel={labels["common.loading"]}>
+          {labels["auth.security.changePasswordSubmit"]}
+        </Button>
     </form>
   );
 }
@@ -141,20 +138,13 @@ export function ChangeEmailForm({ labels }: { labels: Labels<typeof SECURITY_KEY
       <form onSubmit={confirm.onSubmit} className={formClass} noValidate>
         <FormMessage state={confirm.state ?? request.state} />
         <input type="hidden" name="email" value={pendingEmail} />
-        <TextField
-          id="change-code"
-          name="code"
-          label={labels["auth.fields.code"]}
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          maxLength={6}
-          required
-          error={confirm.fieldError("code")}
-        />
-        <SubmitButton pending={confirm.pending} label={labels["auth.security.confirmEmail"]} pendingLabel={labels["common.loading"]} />
-        <button type="button" onClick={() => setCancelled(request.state)} className="text-(length:--type-body-sm) text-(--color-link) underline">
+        <OtpInput id="change-code" name="code" label={labels["auth.fields.code"]} error={confirm.fieldError("code")} />
+        <Button type="submit" size="lg" block loading={confirm.pending} loadingLabel={labels["common.loading"]}>
+          {labels["auth.security.confirmEmail"]}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setCancelled(request.state)}>
           {labels["auth.security.newEmail"]}
-        </button>
+        </Button>
       </form>
     );
   }
@@ -162,7 +152,7 @@ export function ChangeEmailForm({ labels }: { labels: Labels<typeof SECURITY_KEY
   return (
     <form onSubmit={request.onSubmit} className={formClass} noValidate>
       <FormMessage state={request.state?.ok ? null : request.state} />
-      <TextField
+      <Input
         id="new-email"
         name="email"
         type="email"
@@ -172,7 +162,9 @@ export function ChangeEmailForm({ labels }: { labels: Labels<typeof SECURITY_KEY
         required
         error={request.fieldError("email")}
       />
-      <SubmitButton pending={request.pending} label={labels["auth.security.sendCode"]} pendingLabel={labels["common.loading"]} />
+      <Button type="submit" size="lg" block loading={request.pending} loadingLabel={labels["common.loading"]}>
+          {labels["auth.security.sendCode"]}
+        </Button>
     </form>
   );
 }

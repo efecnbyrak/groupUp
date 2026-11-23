@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 
+import { Button, Checkbox, FormMessage, Input, Select, useFormAction } from "@/components/ui";
 import type { ActionResult } from "@/lib/errors";
 
 import { checkEmailAction, registerAction, type CheckEmailData } from "../actions";
 import type { Labels, REGISTER_KEYS } from "./labels";
-import { Field, FormMessage, SelectField, SubmitButton, TextField, useFormAction } from "./form-parts";
 import { passwordLabels, PasswordInput } from "./password-input";
 
 type L = Labels<typeof REGISTER_KEYS>;
@@ -24,9 +24,9 @@ export function RegisterForm({ labels, requestUniversity }: { labels: L; request
 
   if (result && result !== dismissed) {
     const back = (
-      <button type="button" onClick={() => setDismissed(result)} className="text-(length:--type-body-sm) text-(--color-link) underline">
+      <Button variant="ghost" size="sm" className="self-start" onClick={() => setDismissed(result)}>
         {labels["auth.register.changeEmail"]}
-      </button>
+      </Button>
     );
     if (result.status === "notFound") {
       return <UniversityRequest email={result.email} labels={labels} action={requestUniversity} back={back} />;
@@ -37,7 +37,7 @@ export function RegisterForm({ labels, requestUniversity }: { labels: L; request
   return (
     <form onSubmit={check.onSubmit} className="flex flex-col gap-(--space-4)" noValidate>
       <FormMessage state={check.state && !check.state.ok ? check.state : null} />
-      <TextField
+      <Input
         id="email"
         type="email"
         label={labels["auth.fields.email"]}
@@ -45,7 +45,9 @@ export function RegisterForm({ labels, requestUniversity }: { labels: L; request
         required
         error={check.fieldError("email")}
       />
-      <SubmitButton pending={check.pending} label={labels["auth.register.continue"]} pendingLabel={labels["common.loading"]} />
+      <Button type="submit" size="lg" block loading={check.pending} loadingLabel={labels["common.loading"]}>
+        {labels["auth.register.continue"]}
+      </Button>
     </form>
   );
 }
@@ -63,7 +65,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
 
   return (
     <form onSubmit={form.onSubmit} className="flex flex-col gap-(--space-4)" noValidate>
-      <div className="rounded-control bg-muted p-(--space-3) text-(length:--type-body-sm)">
+      <div className="flex flex-col gap-(--space-1) rounded-control bg-muted p-(--space-3) text-(length:--type-body-sm)">
         <p className="font-semibold text-fg">{data.email}</p>
         <p className="text-fg-secondary">
           {data.universityName} — {isAlumni ? labels["auth.register.typeAlumni"] : labels["auth.register.typeStudent"]}
@@ -74,7 +76,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
       <input type="hidden" name="email" value={data.email} />
 
       <div className="grid gap-(--space-4) sm:grid-cols-2">
-        <TextField
+        <Input
           id="firstName"
           label={labels["auth.fields.firstName"]}
           autoComplete="given-name"
@@ -82,7 +84,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
           error={err("firstName")}
           onChange={(e) => setNames((n) => ({ ...n, firstName: e.target.value }))}
         />
-        <TextField
+        <Input
           id="lastName"
           label={labels["auth.fields.lastName"]}
           autoComplete="family-name"
@@ -92,7 +94,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
         />
       </div>
 
-      <TextField
+      <Input
         id="studentNo"
         label={labels["auth.fields.studentNo"]}
         defaultValue={/^\d+$/.test(localPart) ? localPart : ""}
@@ -101,7 +103,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
         error={err("studentNo")}
       />
 
-      <SelectField
+      <Select
         id="facultyId"
         label={labels["auth.fields.faculty"]}
         placeholder={labels["common.select"]}
@@ -111,7 +113,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
         required
         error={err("facultyId")}
       />
-      <SelectField
+      <Select
         key={facultyId}
         id="departmentId"
         label={labels["auth.fields.department"]}
@@ -123,7 +125,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
       />
 
       {isAlumni ? (
-        <TextField
+        <Input
           id="graduationYear"
           type="number"
           inputMode="numeric"
@@ -134,7 +136,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
           error={err("graduationYear")}
         />
       ) : (
-        <SelectField
+        <Select
           id="classYear"
           label={labels["auth.fields.classYear"]}
           placeholder={labels["common.select"]}
@@ -145,7 +147,7 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
       )}
 
       <div className="grid gap-(--space-4) sm:grid-cols-2">
-        <TextField
+        <Input
           id="phone"
           type="tel"
           inputMode="tel"
@@ -155,10 +157,10 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
           required
           error={err("phone")}
         />
-        <TextField id="birthDate" type="date" label={labels["auth.fields.birthDate"]} autoComplete="bday" required error={err("birthDate")} />
+        <Input id="birthDate" type="date" label={labels["auth.fields.birthDate"]} autoComplete="bday" required error={err("birthDate")} />
       </div>
 
-      <SelectField
+      <Select
         id="gender"
         label={labels["auth.fields.gender"]}
         placeholder={labels["common.select"]}
@@ -181,14 +183,11 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
         error={err("passwordConfirm")}
       />
 
-      <Field id="kvkk" label="" error={err("kvkk")}>
-        <label className="flex items-start gap-(--space-2) text-(length:--type-body-sm) text-fg">
-          <input id="kvkk" name="kvkk" type="checkbox" required className="mt-(--space-1)" aria-invalid={err("kvkk") ? true : undefined} />
-          <span>{labels["auth.fields.kvkk"]}</span>
-        </label>
-      </Field>
+      <Checkbox id="kvkk" required label={labels["auth.fields.kvkk"]} error={err("kvkk")} />
 
-      <SubmitButton pending={form.pending} label={labels["auth.register.submit"]} pendingLabel={labels["common.loading"]} />
+      <Button type="submit" size="lg" block loading={form.pending} loadingLabel={labels["common.loading"]}>
+        {labels["auth.register.submit"]}
+      </Button>
     </form>
   );
 }
@@ -214,10 +213,12 @@ function UniversityRequest({
         {back}
       </div>
       <FormMessage state={form.state} />
-      <TextField id="uni-email" name="email" type="email" label={labels["auth.fields.emailPlain"]} defaultValue={email} readOnly />
-      <TextField id="uni-name" name="name" label={labels["auth.fields.universityName"]} required error={form.fieldError("name")} />
-      <TextField id="uni-note" name="note" label={labels["auth.fields.note"]} error={form.fieldError("note")} />
-      <SubmitButton pending={form.pending} label={labels["auth.register.requestSubmit"]} pendingLabel={labels["common.loading"]} />
+      <Input id="uni-email" name="email" type="email" label={labels["auth.fields.emailPlain"]} defaultValue={email} readOnly />
+      <Input id="uni-name" name="name" label={labels["auth.fields.universityName"]} required error={form.fieldError("name")} />
+      <Input id="uni-note" name="note" label={labels["auth.fields.note"]} error={form.fieldError("note")} />
+      <Button type="submit" size="lg" block loading={form.pending} loadingLabel={labels["common.loading"]}>
+        {labels["auth.register.requestSubmit"]}
+      </Button>
     </form>
   );
 }

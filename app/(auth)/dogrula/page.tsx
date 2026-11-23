@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { titled } from "@/app/_lib/metadata";
 import { getT } from "@/i18n/server";
 import { getPendingVerification, labelsFor, OtpForm, VERIFY_KEYS } from "@/modules/identity";
 
 import { AuthCard, linkClass } from "../_components/auth-card";
 
-export const metadata = { title: "E-posta doğrulama — groupUp" };
+export const generateMetadata = titled("auth.verify.title");
 
 async function VerifyContent({ searchParams }: { searchParams: Promise<{ hata?: string }> }) {
   const [t, email, params] = await Promise.all([getT(), getPendingVerification(), searchParams]);

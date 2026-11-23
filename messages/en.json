@@ -7,7 +7,17 @@
     "hide": "Hide",
     "select": "Select",
     "optional": "optional",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "close": "Close",
+    "menu": "Menu",
+    "language": "Language",
+    "skipToContent": "Skip to content",
+    "languages": {
+      "tr": "Türkçe",
+      "en": "English"
+    },
+    "comingSoon": "Coming soon",
+    "comingSoonBody": "This section is under construction. It will be here shortly."
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -38,7 +48,7 @@
     "rules": {
       "length": "6–64 characters",
       "letter": "At least one letter",
-      "symbol": "At least one symbol (! @ # $ % ^ & * ( ) - _ = + . , ? : [ ] { } ~)",
+      "symbol": "At least one symbol (! @ # $ % ^ & * ( ) - _ = + . , ? : [ ] '{' '}' ~)",
       "allowedChars": "No spaces, < > \" ' ` / \\ ; or emoji",
       "noPersonalInfo": "Does not contain your name, surname or student number"
     }
@@ -178,6 +188,185 @@
       "subject": "Your groupUp email address was changed",
       "intro": "Your sign-in email was changed to {email}.",
       "warning": "If you didn't do this, contact us right away."
+    }
+  },
+  "meta": {
+    "description": "Events, applications, teams and tournaments for university clubs"
+  },
+  "nav": {
+    "main": "Main menu",
+    "mobile": "Bottom menu",
+    "home": "Home",
+    "explore": "Explore",
+    "clubs": "Clubs",
+    "myEvents": "My events",
+    "profile": "Profile",
+    "search": "Search",
+    "notifications": "Notifications",
+    "accountMenu": "Account menu",
+    "clubsMenu": "Clubs menu",
+    "myClubs": "My clubs",
+    "noClubs": "You are not a member of any club yet.",
+    "noClubsHint": "Ask a club president for an invite code or explore clubs.",
+    "allClubs": "Explore all clubs",
+    "account": "My account",
+    "security": "Security",
+    "logout": "Log out",
+    "panels": "Panels",
+    "platformPanel": "Platform panel",
+    "adminPanel": "Admin panel",
+    "clubPanel": "Club panel",
+    "panelMenu": "Panel menu",
+    "backToApp": "Back to app",
+    "roles": {
+      "student": "Student",
+      "alumni": "Alumni",
+      "president": "President",
+      "staff": "Staff",
+      "admin": "University admin",
+      "platform": "Super admin"
+    }
+  },
+  "public": {
+    "howItWorks": "How it works",
+    "features": "Features",
+    "forClubs": "For clubs",
+    "faq": "FAQ",
+    "login": "Log in",
+    "register": "Sign up",
+    "openMenu": "Open menu",
+    "goToApp": "Go to app",
+    "homeLink": "groupUp home"
+  },
+  "footer": {
+    "tagline": "Events, applications, teams and tournaments for university clubs, in one platform.",
+    "product": "Product",
+    "forClubs": "For clubs",
+    "support": "Support",
+    "legal": "Legal",
+    "clubGuide": "Club president guide",
+    "adminGuide": "University admin guide",
+    "addUniversity": "Add your university",
+    "help": "Help center",
+    "contact": "Contact",
+    "kvkk": "KVKK privacy notice",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "copyright": "groupUp · Made for university clubs"
+  },
+  "panel": {
+    "platformTitle": "Platform panel",
+    "overview": "Overview",
+    "universities": "Universities",
+    "domains": "Domains",
+    "admins": "Admins",
+    "universityRequests": "University requests",
+    "categories": "Categories",
+    "support": "Support",
+    "systemStatus": "System status"
+  },
+  "landing": {
+    "hero": {
+      "eyebrow": "For university clubs",
+      "title": "All your club's events in one place.",
+      "body": "Application forms, team building, tournament brackets and admin approval — without Google Forms, spreadsheets or hand-drawn brackets.",
+      "ctaPrimary": "Sign up with your school email",
+      "ctaSecondary": "How it works",
+      "mockupLabel": "Sample event card and tournament bracket"
+    },
+    "mockup": {
+      "category": "Tournament",
+      "club": "Sports Club",
+      "title": "Spring Football Tournament",
+      "date": "Sat 12 Apr · 14:00–18:00",
+      "place": "Campus pitch",
+      "team": "Team (5–7 people)",
+      "capacity": "12/16 teams",
+      "deadline": "2 days 4 hours left",
+      "open": "Open",
+      "apply": "Apply",
+      "bracket": "Semi-final",
+      "final": "Final"
+    },
+    "trust": {
+      "title": "Designed with the clubs of Istanbul Kent University",
+      "clubs": "clubs",
+      "events": "events",
+      "applications": "applications",
+      "tournaments": "tournaments",
+      "demoNote": "Demo data"
+    },
+    "steps": {
+      "title": "Get started in three steps",
+      "s1Title": "Sign up with your school email",
+      "s1Body": "Your university email verifies you; student and alumni accounts are separated automatically.",
+      "s2Title": "Join your club with a code",
+      "s2Body": "Become a member instantly with the invite code or link shared by your club president.",
+      "s3Title": "Apply to events in one click",
+      "s3Body": "Your profile details are prefilled; the form takes seconds and you can track your status live."
+    },
+    "features": {
+      "title": "Everything club work needs",
+      "body": "One flow instead of scattered tools: from application to tournament final.",
+      "f1Title": "Smart application forms",
+      "f1Body": "Build your own form with conditional questions, capacity and an automatic waitlist.",
+      "f2Title": "Build teams, invite by code",
+      "f2Body": "The captain shares a code and teammates join in a single step.",
+      "f3Title": "Automatic tournament brackets",
+      "f3Body": "Knockout, league and group formats — fixtures and scores advance on their own.",
+      "f4Title": "One click to Excel",
+      "f4Body": "Download applications and teams as xlsx or CSV in one click.",
+      "f5Title": "Secure, admin-approved management",
+      "f5Body": "Critical changes are approved by the university admin and every step is logged.",
+      "f6Title": "Automatic TR/EN translation",
+      "f6Body": "Event texts are translated once on approval, so international students can follow along."
+    },
+    "forClubs": {
+      "title": "For clubs: end the scattered chain",
+      "body": "No need for four different tools for a single event.",
+      "before": "Before",
+      "after": "With groupUp",
+      "b1": "Collecting applications with Google Forms",
+      "a1": "A ready application form on the club page",
+      "b2": "Sorting and filtering by hand in a spreadsheet",
+      "a2": "Capacity, waitlist and approval on one screen",
+      "b3": "Drawing the bracket on paper",
+      "a3": "Pick a format; bracket and fixtures are generated",
+      "b4": "Sending people to another site for results",
+      "a4": "Live scores and standings on the event page"
+    },
+    "roles": {
+      "title": "Everyone in their own panel",
+      "body": "Each role has its own color and menu, so it is always clear where you are.",
+      "studentBody": "Explore events, apply, build teams and follow your matches.",
+      "alumniBody": "Keep joining your club's events after graduation.",
+      "presidentBody": "Manage events, applications, staff and tournaments from one panel.",
+      "adminBody": "Open clubs, approve requests and oversee everything at your university."
+    },
+    "showcase": {
+      "title": "Tournament showcase",
+      "body": "The bracket advances as soon as a score is entered. Participants see their matches and opponents instantly.",
+      "label": "Sample four-team knockout bracket"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": "Which email can I sign up with?",
+      "a1": "Your university student or alumni email (e.g. ogr.kent.edu.tr). Personal emails are not accepted, so everyone is verifiably from that university.",
+      "q2": "I am an alumnus — can I still join?",
+      "a2": "Yes. Sign up with your alumni email; if you do not have one, you can verify with a document.",
+      "q3": "How do I join a club?",
+      "a3": "Use the invite code or link shared by the club president or staff and you become a member instantly.",
+      "q4": "Is groupUp paid?",
+      "a4": "It is free for students and clubs.",
+      "q5": "Is my data safe?",
+      "a5": "Data is stored in line with KVKK, is visible only within your own university, and critical actions are logged.",
+      "q6": "My university is not listed. What should I do?",
+      "a6": "Enter your school email on the sign-up screen; if your university is not found you can send a request to add it."
+    },
+    "cta": {
+      "title": "Host your club's next event on groupUp.",
+      "body": "Create your account with your school email in two minutes.",
+      "button": "Sign up now"
     }
   }
 }

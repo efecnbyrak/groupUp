@@ -9,7 +9,10 @@ import boundaries from "eslint-plugin-boundaries";
  *  module         → kendi modülü, başka modülün yalnızca index.ts'i, lib, ui, i18n
  *  module-domain  → yalnızca kendi modülünün domain/ dosyaları (saf TS)
  *  lib            → lib (+ prisma/generated)
- *  ui / i18n      → kendisi + lib
+ *  ui             → ui, lib, i18n (yalnızca saf config/tipler)
+ *  i18n           → i18n, lib
+ *  shell          → shell, ui, lib, i18n (header/footer/sidebar kabukları, sunumsal)
+ *  marketing      → marketing, shell, ui, lib, i18n (landing bölümleri)
  * Sıra önemli: ilk eşleşen tip kazanır (domain, module'den önce).
  */
 const elements = [
@@ -17,6 +20,8 @@ const elements = [
   { type: "module", pattern: "src/modules/*/**", partialMatch: false, capture: ["mod"] },
   { type: "lib", pattern: "src/lib/**", partialMatch: false },
   { type: "ui", pattern: "src/components/ui/**", partialMatch: false },
+  { type: "shell", pattern: "src/components/shell/**", partialMatch: false },
+  { type: "marketing", pattern: "src/components/marketing/**", partialMatch: false },
   { type: "i18n", pattern: "src/i18n/**", partialMatch: false },
   { type: "app", pattern: "app/**", partialMatch: false },
   { type: "prisma-client", pattern: "prisma/generated/**", partialMatch: false },
@@ -45,7 +50,7 @@ const boundaryRules = defineConfig({
         policies: [
           {
             from: { element: { type: "app" } },
-            allow: { to: { element: [moduleEntry, { types: ["lib", "ui", "i18n", "app"] }] } },
+            allow: { to: { element: [moduleEntry, { types: ["lib", "ui", "i18n", "app", "shell", "marketing"] }] } },
           },
           {
             from: { element: { type: "module" } },
@@ -68,7 +73,12 @@ const boundaryRules = defineConfig({
             from: { element: { type: "lib" } },
             allow: { to: { element: { types: ["lib", "prisma-client"] } } },
           },
-          { from: { element: { type: "ui" } }, allow: { to: { element: { types: ["ui", "lib"] } } } },
+          { from: { element: { type: "ui" } }, allow: { to: { element: { types: ["ui", "lib", "i18n"] } } } },
+          { from: { element: { type: "shell" } }, allow: { to: { element: { types: ["shell", "ui", "lib", "i18n"] } } } },
+          {
+            from: { element: { type: "marketing" } },
+            allow: { to: { element: { types: ["marketing", "shell", "ui", "lib", "i18n"] } } },
+          },
           { from: { element: { type: "i18n" } }, allow: { to: { element: { types: ["i18n", "lib"] } } } },
           {
             from: { element: { type: "tooling" } },
