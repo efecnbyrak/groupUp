@@ -7,7 +7,17 @@
     "hide": "Gizle",
     "select": "Seçin",
     "optional": "isteğe bağlı",
-    "backHome": "Ana sayfaya dön"
+    "backHome": "Ana sayfaya dön",
+    "close": "Kapat",
+    "menu": "Menü",
+    "language": "Dil",
+    "skipToContent": "İçeriğe geç",
+    "languages": {
+      "tr": "Türkçe",
+      "en": "English"
+    },
+    "comingSoon": "Yakında",
+    "comingSoonBody": "Bu bölüm geliştiriliyor. Kısa süre içinde burada olacak."
   },
   "errors": {
     "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
@@ -38,7 +48,7 @@
     "rules": {
       "length": "6–64 karakter",
       "letter": "En az bir harf",
-      "symbol": "En az bir sembol (! @ # $ % ^ & * ( ) - _ = + . , ? : [ ] { } ~)",
+      "symbol": "En az bir sembol (! @ # $ % ^ & * ( ) - _ = + . , ? : [ ] '{' '}' ~)",
       "allowedChars": "Boşluk, < > \" ' ` / \\ ; ve emoji içermez",
       "noPersonalInfo": "Adınızı, soyadınızı veya öğrenci numaranızı içermez"
     }
@@ -178,6 +188,185 @@
       "subject": "groupUp e-posta adresin değiştirildi",
       "intro": "Hesabının giriş e-postası {email} olarak değiştirildi.",
       "warning": "Bu işlemi sen yapmadıysan bizimle hemen iletişime geç."
+    }
+  },
+  "meta": {
+    "description": "Üniversite kulüpleri için etkinlik, başvuru, takım ve turnuva platformu"
+  },
+  "nav": {
+    "main": "Ana menü",
+    "mobile": "Alt menü",
+    "home": "Ana Sayfa",
+    "explore": "Keşfet",
+    "clubs": "Kulüpler",
+    "myEvents": "Etkinliklerim",
+    "profile": "Profil",
+    "search": "Ara",
+    "notifications": "Bildirimler",
+    "accountMenu": "Hesap menüsü",
+    "clubsMenu": "Kulüpler menüsü",
+    "myClubs": "Kulüplerim",
+    "noClubs": "Henüz bir kulübe üye değilsin.",
+    "noClubsHint": "Kulüp başkanından davet kodu iste ya da kulüpleri keşfet.",
+    "allClubs": "Tüm kulüpleri keşfet",
+    "account": "Hesabım",
+    "security": "Güvenlik",
+    "logout": "Çıkış yap",
+    "panels": "Paneller",
+    "platformPanel": "Platform Paneli",
+    "adminPanel": "Admin Paneli",
+    "clubPanel": "Kulüp Paneli",
+    "panelMenu": "Panel menüsü",
+    "backToApp": "Uygulamaya dön",
+    "roles": {
+      "student": "Öğrenci",
+      "alumni": "Mezun",
+      "president": "Başkan",
+      "staff": "Görevli",
+      "admin": "Üniversite Admini",
+      "platform": "Süper Admin"
+    }
+  },
+  "public": {
+    "howItWorks": "Nasıl çalışır",
+    "features": "Özellikler",
+    "forClubs": "Kulüpler için",
+    "faq": "SSS",
+    "login": "Giriş yap",
+    "register": "Kayıt ol",
+    "openMenu": "Menüyü aç",
+    "goToApp": "Uygulamaya git",
+    "homeLink": "groupUp ana sayfa"
+  },
+  "footer": {
+    "tagline": "Üniversite kulüplerinin etkinlik, başvuru, takım ve turnuva süreçleri tek platformda.",
+    "product": "Ürün",
+    "forClubs": "Kulüpler için",
+    "support": "Destek",
+    "legal": "Yasal",
+    "clubGuide": "Kulüp başkanı rehberi",
+    "adminGuide": "Üniversite admini rehberi",
+    "addUniversity": "Üniversiteni ekle",
+    "help": "Yardım merkezi",
+    "contact": "İletişim",
+    "kvkk": "KVKK aydınlatma metni",
+    "privacy": "Gizlilik politikası",
+    "terms": "Kullanım şartları",
+    "copyright": "groupUp · Üniversite kulüpleri için yapıldı"
+  },
+  "panel": {
+    "platformTitle": "Platform Paneli",
+    "overview": "Genel bakış",
+    "universities": "Üniversiteler",
+    "domains": "Domainler",
+    "admins": "Adminler",
+    "universityRequests": "Üniversite talepleri",
+    "categories": "Kategoriler",
+    "support": "Destek",
+    "systemStatus": "Sistem durumu"
+  },
+  "landing": {
+    "hero": {
+      "eyebrow": "Üniversite kulüpleri için",
+      "title": "Kulübün tüm etkinlikleri tek yerde.",
+      "body": "Başvuru formu, takım kurma, turnuva şeması ve yönetim onayı — Google Forms, e-tablo ve elle çizilen şemalar olmadan.",
+      "ctaPrimary": "Okul mailinle kayıt ol",
+      "ctaSecondary": "Nasıl çalışır",
+      "mockupLabel": "Örnek etkinlik kartı ve turnuva şeması"
+    },
+    "mockup": {
+      "category": "Turnuva",
+      "club": "Spor Kulübü",
+      "title": "Bahar Futbol Turnuvası",
+      "date": "Cmt 12 Nis · 14:00–18:00",
+      "place": "Kampüs Halı Saha",
+      "team": "Takım (5–7 kişi)",
+      "capacity": "12/16 takım",
+      "deadline": "Son 2 gün 4 saat",
+      "open": "Açık",
+      "apply": "Başvur",
+      "bracket": "Yarı final",
+      "final": "Final"
+    },
+    "trust": {
+      "title": "İstanbul Kent Üniversitesi kulüpleri ile tasarlandı",
+      "clubs": "kulüp",
+      "events": "etkinlik",
+      "applications": "başvuru",
+      "tournaments": "turnuva",
+      "demoNote": "Demo verisi"
+    },
+    "steps": {
+      "title": "Üç adımda başla",
+      "s1Title": "Okul mailinle kayıt ol",
+      "s1Body": "Üniversite e-postan seni doğrular; öğrenci ve mezun hesapları otomatik ayrılır.",
+      "s2Title": "Kulübüne kodla katıl",
+      "s2Body": "Kulüp başkanının paylaştığı davet koduyla ya da bağlantıyla anında üye ol.",
+      "s3Title": "Etkinliğe tek tıkla başvur",
+      "s3Body": "Profil bilgilerin hazır gelir; form birkaç saniyede biter, durumunu anlık izlersin."
+    },
+    "features": {
+      "title": "Kulüp işleri için gereken her şey",
+      "body": "Dağınık araçlar yerine tek akış: başvurudan turnuva finaline kadar.",
+      "f1Title": "Akıllı başvuru formu",
+      "f1Body": "Koşullu sorular, kontenjan ve otomatik yedek listesiyle kendi formunu kur.",
+      "f2Title": "Takım kur, kodla davet et",
+      "f2Body": "Takım kaptanı kodu paylaşır, arkadaşları tek adımda katılır.",
+      "f3Title": "Otomatik turnuva şeması",
+      "f3Body": "Eleme, lig ve grup formatlarında fikstür ve skorlar kendiliğinden ilerler.",
+      "f4Title": "Excel'e tek tık",
+      "f4Body": "Başvuruları ve takımları tek tıkla xlsx veya CSV olarak indir.",
+      "f5Title": "Admin onaylı güvenli yönetim",
+      "f5Body": "Kritik değişiklikler üniversite admininin onayından geçer, her adım kayıt altında.",
+      "f6Title": "TR/EN otomatik çeviri",
+      "f6Body": "Etkinlik metinleri onayda bir kez çevrilir; uluslararası öğrenciler de takip eder."
+    },
+    "forClubs": {
+      "title": "Kulüpler için: dağınık zincire son",
+      "body": "Bir etkinlik için dört farklı araç kullanmaya gerek yok.",
+      "before": "Eskiden",
+      "after": "groupUp ile",
+      "b1": "Google Forms ile başvuru toplamak",
+      "a1": "Kulüp sayfasında hazır başvuru formu",
+      "b2": "E-tabloda elle sıralama ve eleme",
+      "a2": "Kontenjan, yedek liste ve onay tek ekranda",
+      "b3": "Turnuva şemasını kâğıtta çizmek",
+      "a3": "Formatı seç, şema ve fikstür otomatik oluşsun",
+      "b4": "Sonuçlar için başka siteye yönlendirmek",
+      "a4": "Skorlar ve tablolar etkinlik sayfasında canlı"
+    },
+    "roles": {
+      "title": "Herkes kendi panelinde",
+      "body": "Her rolün kendi rengi ve menüsü var; kimin nerede olduğu bir bakışta belli.",
+      "studentBody": "Etkinlikleri keşfet, başvur, takım kur, maçlarını takip et.",
+      "alumniBody": "Mezun olduktan sonra da kulübünün etkinliklerine katıl.",
+      "presidentBody": "Etkinlik, başvuru, ekip ve turnuvaları tek panelden yönet.",
+      "adminBody": "Kulüpleri aç, talepleri onayla, üniversitedeki her şeyi denetle."
+    },
+    "showcase": {
+      "title": "Turnuva vitrini",
+      "body": "Skor girildiği anda şema ilerler. Katılımcılar maçlarını ve rakiplerini anında görür.",
+      "label": "Örnek dört takımlı eleme şeması"
+    },
+    "faq": {
+      "title": "Sık sorulan sorular",
+      "q1": "Hangi e-posta adresiyle kayıt olabilirim?",
+      "a1": "Üniversitenin öğrenci veya mezun e-posta adresiyle (ör. ogr.kent.edu.tr). Kişisel e-posta kabul edilmez; böylece herkesin gerçekten o üniversiteden olduğu bilinir.",
+      "q2": "Mezunum, yine de katılabilir miyim?",
+      "a2": "Evet. Mezun e-posta adresinle kayıt olabilirsin; mezun e-postan yoksa belge ile doğrulama yolu da var.",
+      "q3": "Bir kulübe nasıl katılırım?",
+      "a3": "Kulüp başkanı veya görevlilerinin paylaştığı davet koduyla ya da davet bağlantısıyla anında üye olursun.",
+      "q4": "groupUp ücretli mi?",
+      "a4": "Öğrenciler ve kulüpler için ücretsiz.",
+      "q5": "Verilerim güvende mi?",
+      "a5": "Veriler KVKK'ya uygun saklanır, yalnızca kendi üniversiten içinde görünür ve kritik işlemler kayıt altına alınır.",
+      "q6": "Üniversitem listede yok, ne yapmalıyım?",
+      "a6": "Kayıt ekranında okul e-postanı gir; üniversiten bulunamazsa ekleme talebi gönderebilirsin."
+    },
+    "cta": {
+      "title": "Kulübünün bir sonraki etkinliği groupUp'ta olsun.",
+      "body": "Okul e-postanla iki dakikada hesabını aç.",
+      "button": "Hemen kayıt ol"
     }
   }
 }

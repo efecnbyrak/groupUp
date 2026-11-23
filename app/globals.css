@@ -47,6 +47,11 @@
   --radius-badge: var(--corner-full);
 }
 
+/* Alt ağaçta arketip değişince gövde boyutu da değişsin (data-archetype yalnızca değişkeni ayarlar). */
+[data-archetype] {
+  font-size: var(--type-body);
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-text);

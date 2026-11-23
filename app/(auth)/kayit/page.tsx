@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { titled } from "@/app/_lib/metadata";
 import { getT } from "@/i18n/server";
 import { labelsFor, REGISTER_KEYS, RegisterForm } from "@/modules/identity";
 import { requestUniversityAction } from "@/modules/university";
 
 import { AuthCard, linkClass } from "../_components/auth-card";
 
-export const metadata = { title: "Kayıt ol — groupUp" };
+export const generateMetadata = titled("auth.register.title");
 
 async function RegisterContent() {
   const t = await getT();

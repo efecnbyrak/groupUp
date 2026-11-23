@@ -1,16 +1,19 @@
+import { createTranslator } from "next-intl";
+
 import en from "../../messages/en.json";
 import tr from "../../messages/tr.json";
 
-/**
- * Geçici çeviri yardımcısı (F2). F3'te next-intl ile değiştirilecek; anahtarlar aynı kalır.
- * Saf modül: hem sunucu hem test kullanır. Client bileşenlere metinler prop olarak geçer.
- */
-export const LOCALES = ["tr", "en"] as const;
-export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = "tr";
+import { DEFAULT_LOCALE, type Locale } from "./config";
 
-type Messages = typeof tr;
-const catalogs: Record<Locale, Messages> = { tr, en };
+export { DEFAULT_LOCALE, isLocale, LOCALES, toLocale, type Locale } from "./config";
+
+/**
+ * İstek bağlamı dışında çeviri (mail şablonları, action hata çevirisi, testler).
+ * next-intl'in `createTranslator`'ını kullanır → biçimlendirme (ICU) sayfalarla aynıdır.
+ * Client bileşenlere metinler prop olarak geçer (`pickMessages`), katalog gönderilmez.
+ */
+export type Messages = typeof tr;
+export const catalogs: Record<Locale, Messages> = { tr, en };
 
 type Leaves<T, P extends string = ""> = {
   [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Leaves<T[K], `${P}${K}.`>;
@@ -20,31 +23,30 @@ export type MessageKey = Leaves<Messages>;
 export type TranslateVars = Record<string, string | number>;
 export type Translate = (key: MessageKey, vars?: TranslateVars) => string;
 
-export function isLocale(value: unknown): value is Locale {
-  return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
+/** Eksik anahtar/biçim hatasında: önce varsayılan dil, o da yoksa anahtarın kendisi. */
+function rawTranslator(locale: Locale, fallback?: Translate): Translate {
+  const t = createTranslator({
+    locale,
+    messages: catalogs[locale],
+    timeZone: "Europe/Istanbul",
+    onError: () => {},
+    getMessageFallback: ({ key, namespace }) => {
+      const full = (namespace ? `${namespace}.${key}` : key) as MessageKey;
+      return fallback ? fallback(full) : full;
+    },
+  });
+  return (key, vars) => (t as unknown as (k: string, v?: TranslateVars) => string)(key, vars);
 }
 
-export function toLocale(value: unknown): Locale {
-  return isLocale(value) ? value : DEFAULT_LOCALE;
-}
-
-function lookup(messages: Messages, key: string): string | undefined {
-  let node: unknown = messages;
-  for (const part of key.split(".")) {
-    if (typeof node !== "object" || node === null) return undefined;
-    node = (node as Record<string, unknown>)[part];
-  }
-  return typeof node === "string" ? node : undefined;
-}
-
-function interpolate(template: string, vars?: TranslateVars): string {
-  if (!vars) return template;
-  return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match));
-}
+const defaultT = rawTranslator(DEFAULT_LOCALE);
+const translators: Record<Locale, Translate> = {
+  tr: defaultT,
+  en: rawTranslator("en", defaultT),
+};
 
 /** `t("auth.login.title")` — eksik anahtarda TR'ye, o da yoksa anahtarın kendisine düşer. */
 export function createT(locale: Locale): Translate {
-  return (key, vars) => interpolate(lookup(catalogs[locale], key) ?? lookup(tr, key) ?? key, vars);
+  return translators[locale];
 }
 
 /** Client bileşenlere geçirilecek metin alt kümesi (sunucuda çevrilir, prop olarak gider). */

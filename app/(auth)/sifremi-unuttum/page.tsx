@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { titled } from "@/app/_lib/metadata";
 import { getT } from "@/i18n/server";
 import { FORGOT_KEYS, ForgotPasswordForm, labelsFor } from "@/modules/identity";
 
 import { AuthCard, linkClass } from "../_components/auth-card";
 
-export const metadata = { title: "Şifremi unuttum — groupUp" };
+export const generateMetadata = titled("auth.forgot.title");
 
 async function ForgotContent() {
   const t = await getT();

@@ -29,7 +29,7 @@ Tek token seti; Tailwind v4 `@theme` ile `assets/tokens.css` eşlenir (`referenc
 | `platform` | Süper Admin | slate 800 | platform paneli |
 - Her panelin üstünde 4px renkli şerit + sidebar'da rol etiketi ("Kulüp Paneli · Başkan") → kullanıcı hangi panelde olduğunu anında görür.
 - Durum renkleri (başarı/uyarı/hata/bilgi) panelden bağımsız, sabit.
-- **Kontrol:** `node ~/.claude/skills/professional-design-system/scripts/contrast-check.mjs app/tokens.css` — tüm paneller ≥ 4.5:1 (metin) / ≥ 3:1 (UI) geçmeden F3 bitmez.
+- **Kontrol:** `npm run check:contrast` (`scripts/contrast-check.mjs`, skill scriptinin panel destekli hali) — tüm paneller ≥ 4.5:1 (metin) / ≥ 3:1 (UI) geçmeden F3 bitmez.
 - Karanlık mod: **kapsam dışı** (sonra eklenebilir; token yapısı hazır).
 
 ## 4. Header (giriş yapmış, `productive`, sticky 64px)

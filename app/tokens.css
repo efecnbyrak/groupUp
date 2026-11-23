@@ -224,6 +224,12 @@
   --header-height-compact: 3.5rem;/* 56 showcase / mobile */
   --sidebar-width: 16rem;         /* 256 app sidebar */
   --sidebar-width-collapsed: 4.5rem;
+  --popover-width-sm: 12rem;      /* 192 küçük menü */
+  --popover-width-md: 18rem;      /* 288 avatar / kulüpler menüsü */
+  --popover-width-lg: 22rem;      /* 352 bildirim paneli */
+  --drawer-width: 20rem;          /* 320 yan çekmece */
+  --bottom-bar-height: 4rem;      /* 64 mobil alt sekme çubuğu */
+  --panel-stripe-height: 0.25rem; /* 4 panel rol şeridi (DESIGN §3.2) */
   --filter-sidebar-width: 15rem;  /* 240 commerce filters */
 
   /* Breakpoints — intentionally NOT custom properties (var() does not work
@@ -346,12 +352,18 @@
   --section-y-md: var(--space-6);
 }
 
+/* groupUp: öğrenci uygulaması (feed, keşfet) Productive yapı + tüketici yoğunluğu (DESIGN §1, §4) */
+[data-archetype="productive"][data-density="comfortable"] {
+  --type-body: var(--font-size-md);
+  --header-height: 4rem;
+}
+
 
 
 /* ==========================================================================
    PANEL VURGU RENKLERİ (DESIGN §3.2) — <div data-panel="..."> alt ağacında
    birincil renk yeniden tanımlanır. Durum renkleri panelden bağımsızdır.
-   Tam kontrast doğrulaması F3 maddesidir.
+   Doğrulama: `npm run check:contrast` (scripts/contrast-check.mjs).
    ========================================================================== */
 [data-panel="student"] {
   --color-primary: var(--panel-blue-600);
@@ -359,6 +371,8 @@
   --color-primary-active: var(--panel-blue-800);
   --color-primary-subtle: var(--panel-blue-50);
   --color-focus: var(--panel-blue-600);
+  --color-link: var(--panel-blue-700);
+  --color-link-hover: var(--panel-blue-800);
 }
 [data-panel="alumni"] {
   --color-primary: var(--panel-amber-700);
@@ -366,6 +380,8 @@
   --color-primary-active: var(--panel-amber-900);
   --color-primary-subtle: var(--panel-amber-50);
   --color-focus: var(--panel-amber-700);
+  --color-link: var(--panel-amber-800);
+  --color-link-hover: var(--panel-amber-900);
 }
 [data-panel="president"] {
   --color-primary: var(--panel-emerald-700);
@@ -373,6 +389,8 @@
   --color-primary-active: var(--panel-emerald-900);
   --color-primary-subtle: var(--panel-emerald-50);
   --color-focus: var(--panel-emerald-700);
+  --color-link: var(--panel-emerald-800);
+  --color-link-hover: var(--panel-emerald-900);
 }
 [data-panel="staff"] {
   --color-primary: var(--panel-teal-700);
@@ -380,6 +398,8 @@
   --color-primary-active: var(--panel-teal-900);
   --color-primary-subtle: var(--panel-teal-50);
   --color-focus: var(--panel-teal-700);
+  --color-link: var(--panel-teal-800);
+  --color-link-hover: var(--panel-teal-900);
 }
 [data-panel="admin"] {
   --color-primary: var(--panel-violet-700);
@@ -387,6 +407,8 @@
   --color-primary-active: var(--panel-violet-900);
   --color-primary-subtle: var(--panel-violet-50);
   --color-focus: var(--panel-violet-700);
+  --color-link: var(--panel-violet-800);
+  --color-link-hover: var(--panel-violet-900);
 }
 [data-panel="platform"] {
   --color-primary: var(--panel-slate-800);
@@ -394,6 +416,8 @@
   --color-primary-active: var(--panel-slate-950);
   --color-primary-subtle: var(--panel-slate-50);
   --color-focus: var(--panel-slate-800);
+  --color-link: var(--panel-slate-900);
+  --color-link-hover: var(--panel-slate-950);
 }
 
 /* Motion safety: every animation must respect this. */
