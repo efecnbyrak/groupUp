@@ -28,7 +28,9 @@
     "save": "Save",
     "pagination": "Pages",
     "firstPage": "First page",
-    "nextPage": "Next"
+    "nextPage": "Next",
+    "yes": "Yes",
+    "no": "No"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",
@@ -57,7 +59,9 @@
     "slug": "Only lowercase letters, digits and hyphens.",
     "icon": "Icon name must use lowercase letters, digits and hyphens (e.g. trophy).",
     "number": "Enter a valid number.",
-    "instagram": "Instagram username: up to 30 letters, digits, dots and underscores."
+    "instagram": "Instagram username: up to 30 letters, digits, dots and underscores.",
+    "url": "Enter a valid link (https://…).",
+    "invalid": "Invalid value."
   },
   "password": {
     "rulesTitle": "Password rules",
@@ -756,7 +760,9 @@
         "APPROVED": "Approved on {date}",
         "REJECTED": "Rejected on {date}",
         "CANCELLED": "Withdrawn by the requester on {date}"
-      }
+      },
+      "eventPreview": "Review the full event content on its preview page.",
+      "openEvent": "Open event"
     },
     "diff": {
       "before": "Current",
@@ -776,7 +782,29 @@
         "permissions": "Permissions",
         "membership": "Membership",
         "bannedUntil": "Ban ends",
-        "accountStatus": "Account status"
+        "accountStatus": "Account status",
+        "categoryId": "Category",
+        "titleTr": "Title",
+        "summaryTr": "Summary",
+        "descriptionTr": "Description",
+        "images": "Gallery",
+        "locationName": "Venue",
+        "locationAddress": "Address",
+        "mapUrl": "Map link",
+        "isOnline": "Online",
+        "onlineUrl": "Online link",
+        "startAt": "Start",
+        "endAt": "End",
+        "applyOpensAt": "Applications open",
+        "applyClosesAt": "Deadline",
+        "capacity": "Capacity",
+        "waitlistEnabled": "Waitlist",
+        "autoPromoteWaitlist": "Auto-promote from waitlist",
+        "autoAccept": "Auto-accept",
+        "mode": "Participation",
+        "teamMinSize": "Min team size",
+        "teamMaxSize": "Max team size",
+        "eligibility": "Who can apply"
       },
       "values": {
         "ACTIVE": "Active",
@@ -860,7 +888,9 @@
       "staff": "Team",
       "invites": "Invite codes",
       "requests": "Requests",
-      "info": "Club info"
+      "info": "Club info",
+      "events": "Events",
+      "announcements": "Announcements"
     },
     "panel": {
       "title": "Club panel",
@@ -1008,7 +1038,9 @@
       "loginToJoin": "Sign in to see members and join.",
       "youAreMember": "You are a member of this club",
       "joinWithCode": "Enter the invite code you got from the club team to join.",
-      "moreMembers": "Showing the first 30 members."
+      "moreMembers": "Showing the first 30 members.",
+      "events": "Upcoming events",
+      "noEvents": "No upcoming events."
     },
     "requests": {
       "body": "Status of requests you sent for approval. You can withdraw a pending request.",
@@ -1091,6 +1123,203 @@
       "closed": "The ticket is closed; reopen it first.",
       "reopenExpired": "More than 7 days have passed since it was closed; open a new ticket.",
       "notClosed": "The ticket is already open."
+    }
+  },
+  "rte": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "h1": "Heading 1",
+    "h2": "Heading 2",
+    "h3": "Heading 3",
+    "bulletList": "Bullet list",
+    "orderedList": "Numbered list",
+    "quote": "Quote",
+    "link": "Link",
+    "linkPrompt": "Link URL (leave empty to remove)",
+    "image": "Insert image",
+    "rule": "Horizontal rule",
+    "undo": "Undo",
+    "redo": "Redo",
+    "toolbar": "Formatting tools",
+    "uploading": "Uploading…"
+  },
+  "feed": {
+    "title": "Feed",
+    "body": "Events and announcements from your clubs.",
+    "events": "Events from my clubs",
+    "announcements": "Announcements",
+    "deadlineSoon": "{count, plural, one {# event deadline is} other {# event deadlines are}} coming up.",
+    "empty": "No events yet",
+    "emptyBody": "Join clubs to see their events here. Find clubs on Explore."
+  },
+  "explore": {
+    "body": "Events and clubs at your university.",
+    "events": "Events",
+    "clubs": "Clubs",
+    "search": "Search",
+    "searchPlaceholder": "Event or club name",
+    "from": "Starts after",
+    "to": "Starts before",
+    "openOnly": "Open for applications only",
+    "emptyEvents": "No events found",
+    "emptyEventsBody": "Try changing the filters."
+  },
+  "event": {
+    "status": {
+      "DRAFT": "Draft",
+      "PENDING": "Awaiting approval",
+      "PUBLISHED": "Published",
+      "CANCELLED": "Cancelled",
+      "COMPLETED": "Completed"
+    },
+    "registration": {
+      "NOT_OPEN": "Opens soon",
+      "OPEN": "Open",
+      "CLOSING_SOON": "Last 2 days",
+      "FULL": "Full",
+      "WAITLIST": "Full · waitlist",
+      "CLOSED": "Closed"
+    },
+    "mode": {
+      "INDIVIDUAL": "Individual",
+      "TEAM": "Team"
+    },
+    "eligibility": {
+      "ALL_MEMBERS": "All members",
+      "STUDENTS_ONLY": "Students only",
+      "ALUMNI_ONLY": "Alumni only"
+    },
+    "countdown": {
+      "days": "{days} d {hours} h left",
+      "hours": "{hours} h {minutes} min left"
+    },
+    "noDate": "Date not set",
+    "online": "Online",
+    "create": {
+      "button": "New event",
+      "title": "New event",
+      "body": "Create a draft with a category and title; fill in the rest in the wizard.",
+      "submit": "Create draft"
+    },
+    "panel": {
+      "body": "Drafts are saved automatically; publishing and changes need Admin approval.",
+      "empty": "No events yet",
+      "emptyBody": "Create your first event."
+    },
+    "wizard": {
+      "steps": {
+        "basics": "Basics",
+        "description": "Description",
+        "time": "Time and place",
+        "participation": "Participation",
+        "review": "Review and submit"
+      },
+      "next": "Next",
+      "back": "Back"
+    },
+    "fields": {
+      "category": "Category",
+      "title": "Title",
+      "summary": "Short summary",
+      "summaryHint": "Shown on cards, up to 280 characters.",
+      "cover": "Cover image",
+      "coverHint": "Cropped to 16:9. JPG, PNG or WebP, up to 10 MB.",
+      "gallery": "Gallery",
+      "galleryHint": "Up to 8 images.",
+      "description": "Description",
+      "isOnline": "Online event",
+      "locationName": "Venue",
+      "locationAddress": "Address",
+      "mapUrl": "Map link",
+      "onlineUrl": "Online meeting link",
+      "startAt": "Start",
+      "endAt": "End",
+      "applyOpensAt": "Applications open",
+      "applyClosesAt": "Application deadline",
+      "timeHint": "Times are in Türkiye time (UTC+3).",
+      "mode": "Participation",
+      "teamMinSize": "Min members",
+      "teamMaxSize": "Max members",
+      "capacity": "Capacity",
+      "capacityHint": "People (teams in team mode). Empty = unlimited.",
+      "waitlistEnabled": "Open a waitlist when full",
+      "autoPromoteWaitlist": "Auto-promote from waitlist",
+      "autoAccept": "Accept applications automatically",
+      "eligibility": "Who can apply"
+    },
+    "editor": {
+      "title": "Event",
+      "upload": "Upload image",
+      "uploading": "Uploading…",
+      "remove": "Remove",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "saveFailed": "Could not save",
+      "unsaved": "Unsaved changes",
+      "formNote": "Application form fields are coming in the next release.",
+      "problems": "Complete these before submitting:",
+      "ready": "The event is ready to submit.",
+      "preview": "Preview",
+      "submit": "Submit for approval",
+      "submitUpdate": "Submit changes for approval",
+      "updateNote": "The event is live. Changes apply after Admin approval; until then the published version stays visible.",
+      "readonly": "This event cannot be edited right now.",
+      "pendingPublish": "The event is awaiting Admin approval.",
+      "pendingUpdate": "A change request is pending; submitting again updates it.",
+      "pendingCancel": "The cancellation request is awaiting Admin approval.",
+      "withdraw": "Withdraw request",
+      "withdrawTitle": "Withdraw the request?",
+      "withdrawBody": "The event returns to draft and you can edit it again.",
+      "deleteDraft": "Delete draft",
+      "deleteDraftTitle": "Delete this draft?",
+      "deleteDraftBody": "This cannot be undone."
+    },
+    "cancel": {
+      "button": "Cancel event",
+      "title": "Cancel event",
+      "body": "Cancellation applies after Admin approval. A reason is required."
+    },
+    "detail": {
+      "previewNote": "Preview: this event is not published yet; only the club team and Admins can see it.",
+      "cancelled": "This event has been cancelled.",
+      "translationPending": "Translation pending",
+      "manage": "Manage event",
+      "about": "About the event",
+      "when": "When and where",
+      "join": "Meeting link",
+      "map": "Open in maps",
+      "teamSize": "Team: {min}–{max} people",
+      "registration": "Applications",
+      "window": "{from} – {to}",
+      "capacity": "Capacity: {count}",
+      "unlimited": "Unlimited capacity",
+      "joinClubFirst": "Join the club first to apply.",
+      "joinClub": "Join the club"
+    },
+    "announcements": {
+      "body": "Announcements are published without approval and appear in members' feeds and on the club page.",
+      "titleField": "Title",
+      "bodyField": "Text",
+      "bodyHint": "A blank line starts a new paragraph.",
+      "pinned": "Pinned",
+      "publish": "Publish",
+      "created": "Announcement published.",
+      "deleted": "Announcement deleted.",
+      "deleteTitle": "Delete this announcement?",
+      "empty": "No announcements yet"
+    },
+    "errors": {
+      "notEditable": "The event cannot be edited in this state.",
+      "incomplete": "The event has missing or invalid fields.",
+      "coverRequired": "A cover image is required.",
+      "endBeforeStart": "End must be after start.",
+      "closeBeforeOpen": "Deadline must be after the opening.",
+      "closeAfterEnd": "Deadline must be before the event ends.",
+      "inPast": "The event cannot be in the past.",
+      "teamRange": "Max members cannot be less than min members.",
+      "categoryLeaf": "Pick a subcategory.",
+      "galleryMax": "Up to 8 images."
     }
   }
 }

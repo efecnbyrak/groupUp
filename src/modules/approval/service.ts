@@ -133,6 +133,12 @@ export async function decideRequest(actor: { id: string }, universityId: string,
     const recipient = await getMailRecipient(tx, req.requestedById);
     return { req, recipient };
   });
+  if (decision === "APPROVE") {
+    await handlers
+      .get(decided.req.type)
+      .afterCommit(decided.req, decided.req.payload)
+      .catch((err: unknown) => console.error("[approval] afterCommit", decided.req.type, err));
+  }
   await notifyDecision(decided.req, decided.recipient, decision === "APPROVE", reason?.trim() ?? null);
 }
 
@@ -153,12 +159,16 @@ async function notifyDecision(
 /** Talep sahibi (veya aynı kulübün Başkanı) bekleyen talebi geri çeker. */
 export async function cancelRequest(actor: { id: string }, requestId: string): Promise<void> {
   await db.$transaction(async (tx) => {
-    const req = await tx.changeRequest.findUnique({ where: { id: requestId }, select: { id: true, status: true, requestedById: true, universityId: true, type: true, club: { select: { presidentId: true } } } });
+    const req = await tx.changeRequest.findUnique({
+      where: { id: requestId },
+      select: { id: true, status: true, requestedById: true, universityId: true, clubId: true, targetId: true, payload: true, type: true, club: { select: { presidentId: true } } },
+    });
     if (!req) throw approvalError("NOT_FOUND");
     if (req.requestedById !== actor.id && req.club?.presidentId !== actor.id) throw approvalError("NOT_OWNER");
     if (req.type === "ALUMNI_VERIFY") throw approvalError("NOT_OWNER");
     const { count } = await tx.changeRequest.updateMany({ where: { id: requestId, status: "PENDING" }, data: { status: "CANCELLED", decidedAt: new Date() } });
     if (count === 0) throw approvalError("ALREADY_DECIDED");
+    await handlers.get(req.type).onCancel(tx, req, req.payload);
     await audit({ action: "approval.request.cancelled", targetType: "ChangeRequest", targetId: requestId, actorId: actor.id, universityId: req.universityId, meta: { type: req.type } }, tx);
   });
 }

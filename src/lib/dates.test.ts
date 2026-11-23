@@ -13,3 +13,14 @@ describe("tarih gösterimi", () => {
     expect(formatDate(d, "en")).toBe("2 Mar 2026");
   });
 });
+
+import { fromIstanbulLocalInput, toIstanbulLocalInput } from "./dates";
+
+describe("datetime-local (İstanbul)", () => {
+  it("gidiş-dönüş", () => {
+    const d = new Date("2026-03-01T21:30:00Z");
+    expect(toIstanbulLocalInput(d)).toBe("2026-03-02T00:30");
+    expect(fromIstanbulLocalInput("2026-03-02T00:30")?.toISOString()).toBe(d.toISOString());
+    expect(fromIstanbulLocalInput("bozuk")).toBeNull();
+  });
+});

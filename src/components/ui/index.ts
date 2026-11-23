@@ -29,3 +29,6 @@ export { sortRows } from "./table-sort";
 export { Tabs, type TabItem } from "./tabs";
 export { ToastProvider, useOptionalToast, useToast } from "./toast";
 export { useFormAction, type FormAction } from "./use-form-action";
+export { RichText } from "./rich-text";
+export { RichTextEditor, type RichTextEditorLabels } from "./rich-text-editor";
+export { EventCard } from "./event-card";

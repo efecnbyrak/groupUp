@@ -99,6 +99,25 @@ enum ChangeRequestType {
   ELECTION_RESULT
 }
 
+enum EventStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum ParticipationMode {
+  INDIVIDUAL
+  TEAM
+}
+
+enum Eligibility {
+  ALL_MEMBERS
+  STUDENTS_ONLY
+  ALUMNI_ONLY
+}
+
 enum TicketStatus {
   OPEN
   ANSWERED
@@ -138,6 +157,7 @@ model University {
   admins    UniversityAdmin[]
   users     User[]
   clubs     Club[]
+  events    Event[]
 }
 
 model UniversityDomain {
@@ -243,6 +263,7 @@ model User {
   presidentOf        Club?               @relation("ClubPresident")
   memberships        Membership[]
   staffRoles         StaffAssignment[]
+  eventsCreated      Event[]             @relation("EventCreator")
   changeRequests     ChangeRequest[]     @relation("ChangeRequestRequester")
 
   @@index([universityId, type])
@@ -354,12 +375,13 @@ model EventCategory {
 
   parent   EventCategory?  @relation("EventCategoryTree", fields: [parentId], references: [id])
   children EventCategory[] @relation("EventCategoryTree")
+  events   Event[]
 
   @@index([parentId, order])
 }
 
 // ============================================================
-// Kulüp, onay, ticket (F5) — sahip: club (Club..Announcement), approval (ChangeRequest, Attachment), ticket
+// Kulüp, onay, ticket (F5) — sahip: club (Club..StaffAssignment), event (Announcement — F6), approval (ChangeRequest, Attachment), ticket
 // ============================================================
 model Club {
   id              String     @id @default(cuid())
@@ -391,6 +413,7 @@ model Club {
   announcements  Announcement[]
   changeRequests ChangeRequest[]
   tickets        Ticket[]
+  events         Event[]
 
   @@index([universityId, categoryId])
   @@index([universityId, status, name])
@@ -449,15 +472,16 @@ model StaffAssignment {
 }
 
 model Announcement {
-  id        String   @id @default(cuid())
-  clubId    String
-  authorId  String
-  titleTr   String
-  titleEn   String?
-  bodyTr    Json
-  bodyEn    Json?
-  pinned    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  clubId          String
+  authorId        String
+  titleTr         String
+  titleEn         String?
+  bodyTr          Json
+  bodyEn          Json?
+  pinned          Boolean  @default(false)
+  translationHash String?
+  createdAt       DateTime @default(now())
 
   club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
@@ -546,4 +570,73 @@ model TicketMessage {
 
   @@index([ticketId, createdAt])
   @@index([authorId])
+}
+
+// ============================================================
+// Etkinlik (F6) — sahip: event
+// ============================================================
+model Event {
+  id                  String            @id @default(cuid())
+  universityId        String
+  clubId              String
+  categoryId          String
+  slug                String
+  status              EventStatus       @default(DRAFT)
+  titleTr             String            @db.VarChar(120)
+  titleEn             String?           @db.VarChar(200)
+  summaryTr           String            @db.VarChar(280)
+  summaryEn           String?           @db.VarChar(500)
+  descriptionTr       Json // Tiptap JSON
+  descriptionEn       Json?
+  translationHash     String?
+  translatedAt        DateTime?
+  enManual            Boolean           @default(false) // başkan EN'i elle düzeltti
+  coverKey            String?
+  locationName        String?           @db.VarChar(120)
+  locationAddress     String?           @db.VarChar(300)
+  mapUrl              String?           @db.VarChar(500)
+  isOnline            Boolean           @default(false)
+  onlineUrl           String?           @db.VarChar(500)
+  startAt             DateTime?
+  endAt               DateTime?
+  applyOpensAt        DateTime?
+  applyClosesAt       DateTime? // deadline (taslakta boş olabilir; onaya gönderirken zorunlu)
+  capacity            Int? // null = sınırsız
+  waitlistEnabled     Boolean           @default(true)
+  autoPromoteWaitlist Boolean           @default(true)
+  autoAccept          Boolean           @default(true)
+  mode                ParticipationMode @default(INDIVIDUAL)
+  teamMinSize         Int?
+  teamMaxSize         Int?
+  eligibility         Eligibility       @default(ALL_MEMBERS)
+  publishedAt         DateTime?
+  cancelledAt         DateTime?
+  createdById         String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  university University    @relation(fields: [universityId], references: [id])
+  club       Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  category   EventCategory @relation(fields: [categoryId], references: [id])
+  createdBy  User          @relation("EventCreator", fields: [createdById], references: [id])
+  images     EventImage[]
+
+  @@unique([clubId, slug])
+  @@index([universityId, status, startAt])
+  @@index([universityId, status, applyClosesAt])
+  @@index([clubId, status, applyClosesAt])
+  @@index([categoryId])
+  @@index([createdById])
+}
+
+model EventImage {
+  id      String  @id @default(cuid())
+  eventId String
+  key     String
+  alt     String? @db.VarChar(200)
+  order   Int     @default(0)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, order])
 }

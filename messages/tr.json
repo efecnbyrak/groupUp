@@ -28,7 +28,9 @@
     "save": "Kaydet",
     "pagination": "Sayfalar",
     "firstPage": "İlk sayfa",
-    "nextPage": "Sonraki"
+    "nextPage": "Sonraki",
+    "yes": "Evet",
+    "no": "Hayır"
   },
   "errors": {
     "generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
@@ -57,7 +59,9 @@
     "slug": "Yalnızca küçük harf, rakam ve tire kullanılabilir.",
     "icon": "İkon adı küçük harf, rakam ve tireden oluşmalı (ör. trophy).",
     "number": "Geçerli bir sayı girin.",
-    "instagram": "Instagram kullanıcı adı en fazla 30 karakter; harf, rakam, nokta ve alt çizgi."
+    "instagram": "Instagram kullanıcı adı en fazla 30 karakter; harf, rakam, nokta ve alt çizgi.",
+    "url": "Geçerli bir bağlantı girin (https://…).",
+    "invalid": "Geçersiz değer."
   },
   "password": {
     "rulesTitle": "Şifre kuralları",
@@ -756,7 +760,9 @@
         "APPROVED": "{date} tarihinde onaylandı",
         "REJECTED": "{date} tarihinde reddedildi",
         "CANCELLED": "{date} tarihinde talep sahibi geri çekti"
-      }
+      },
+      "eventPreview": "Etkinliğin tam içeriğini önizleme sayfasında inceleyin.",
+      "openEvent": "Etkinliği aç"
     },
     "diff": {
       "before": "Mevcut",
@@ -776,7 +782,29 @@
         "permissions": "Yetkiler",
         "membership": "Üyelik",
         "bannedUntil": "Engel bitişi",
-        "accountStatus": "Hesap durumu"
+        "accountStatus": "Hesap durumu",
+        "categoryId": "Kategori",
+        "titleTr": "Başlık",
+        "summaryTr": "Özet",
+        "descriptionTr": "Açıklama",
+        "images": "Galeri",
+        "locationName": "Yer",
+        "locationAddress": "Adres",
+        "mapUrl": "Harita bağlantısı",
+        "isOnline": "Online",
+        "onlineUrl": "Online bağlantı",
+        "startAt": "Başlangıç",
+        "endAt": "Bitiş",
+        "applyOpensAt": "Başvuru açılışı",
+        "applyClosesAt": "Son başvuru",
+        "capacity": "Kontenjan",
+        "waitlistEnabled": "Yedek liste",
+        "autoPromoteWaitlist": "Yedekten otomatik terfi",
+        "autoAccept": "Otomatik kabul",
+        "mode": "Katılım türü",
+        "teamMinSize": "En az takım üyesi",
+        "teamMaxSize": "En çok takım üyesi",
+        "eligibility": "Kimler başvurabilir"
       },
       "values": {
         "ACTIVE": "Aktif",
@@ -860,7 +888,9 @@
       "staff": "Ekip",
       "invites": "Davet kodları",
       "requests": "Talepler",
-      "info": "Kulüp bilgileri"
+      "info": "Kulüp bilgileri",
+      "events": "Etkinlikler",
+      "announcements": "Duyurular"
     },
     "panel": {
       "title": "Kulüp paneli",
@@ -1008,7 +1038,9 @@
       "loginToJoin": "Üyeleri görmek ve katılmak için giriş yap.",
       "youAreMember": "Bu kulübün üyesisin",
       "joinWithCode": "Kulübe katılmak için kulüp ekibinden aldığın davet kodunu gir.",
-      "moreMembers": "İlk 30 üye gösteriliyor."
+      "moreMembers": "İlk 30 üye gösteriliyor.",
+      "events": "Yaklaşan etkinlikler",
+      "noEvents": "Yaklaşan etkinlik yok."
     },
     "requests": {
       "body": "Onaya gönderdiğin taleplerin durumu. Bekleyen talebi geri çekebilirsin.",
@@ -1091,6 +1123,203 @@
       "closed": "Talep kapalı; önce yeniden açın.",
       "reopenExpired": "Kapatıldıktan sonra 7 gün geçti; yeni talep açın.",
       "notClosed": "Talep zaten açık."
+    }
+  },
+  "rte": {
+    "bold": "Kalın",
+    "italic": "İtalik",
+    "underline": "Altı çizili",
+    "h1": "Başlık 1",
+    "h2": "Başlık 2",
+    "h3": "Başlık 3",
+    "bulletList": "Madde listesi",
+    "orderedList": "Numaralı liste",
+    "quote": "Alıntı",
+    "link": "Bağlantı",
+    "linkPrompt": "Bağlantı adresi (boş bırakırsanız kaldırılır)",
+    "image": "Görsel ekle",
+    "rule": "Yatay çizgi",
+    "undo": "Geri al",
+    "redo": "Yinele",
+    "toolbar": "Biçimlendirme araçları",
+    "uploading": "Yükleniyor…"
+  },
+  "feed": {
+    "title": "Akış",
+    "body": "Kulüplerinin etkinlikleri ve duyuruları.",
+    "events": "Kulüplerimin etkinlikleri",
+    "announcements": "Duyurular",
+    "deadlineSoon": "{count, plural, one {# etkinliğin} other {# etkinliğin}} son başvuru tarihi yaklaşıyor.",
+    "empty": "Henüz etkinlik yok",
+    "emptyBody": "Kulüplere katıldıkça etkinlikleri burada görürsün. Keşfet'ten kulüp bul."
+  },
+  "explore": {
+    "body": "Üniversitendeki etkinlikler ve kulüpler.",
+    "events": "Etkinlikler",
+    "clubs": "Kulüpler",
+    "search": "Ara",
+    "searchPlaceholder": "Etkinlik veya kulüp adı",
+    "from": "Başlangıç (en erken)",
+    "to": "Başlangıç (en geç)",
+    "openOnly": "Yalnızca başvurusu açık olanlar",
+    "emptyEvents": "Etkinlik bulunamadı",
+    "emptyEventsBody": "Filtreleri değiştirmeyi dene."
+  },
+  "event": {
+    "status": {
+      "DRAFT": "Taslak",
+      "PENDING": "Onay bekliyor",
+      "PUBLISHED": "Yayında",
+      "CANCELLED": "İptal edildi",
+      "COMPLETED": "Tamamlandı"
+    },
+    "registration": {
+      "NOT_OPEN": "Başvuru yakında",
+      "OPEN": "Başvuru açık",
+      "CLOSING_SOON": "Son 2 gün",
+      "FULL": "Doldu",
+      "WAITLIST": "Doldu · yedek",
+      "CLOSED": "Başvuru kapandı"
+    },
+    "mode": {
+      "INDIVIDUAL": "Bireysel",
+      "TEAM": "Takım"
+    },
+    "eligibility": {
+      "ALL_MEMBERS": "Tüm üyeler",
+      "STUDENTS_ONLY": "Yalnızca öğrenciler",
+      "ALUMNI_ONLY": "Yalnızca mezunlar"
+    },
+    "countdown": {
+      "days": "{days} gün {hours} saat kaldı",
+      "hours": "{hours} saat {minutes} dk kaldı"
+    },
+    "noDate": "Tarih belirlenmedi",
+    "online": "Online",
+    "create": {
+      "button": "Yeni etkinlik",
+      "title": "Yeni etkinlik",
+      "body": "Kategori ve başlıkla taslak oluştur; diğer adımları sihirbazda doldurursun.",
+      "submit": "Taslak oluştur"
+    },
+    "panel": {
+      "body": "Taslaklar otomatik kaydedilir; yayın ve değişiklikler Admin onayından geçer.",
+      "empty": "Henüz etkinlik yok",
+      "emptyBody": "İlk etkinliğini oluştur."
+    },
+    "wizard": {
+      "steps": {
+        "basics": "Temel",
+        "description": "Açıklama",
+        "time": "Zaman ve yer",
+        "participation": "Katılım",
+        "review": "Önizleme ve gönder"
+      },
+      "next": "İleri",
+      "back": "Geri"
+    },
+    "fields": {
+      "category": "Kategori",
+      "title": "Başlık",
+      "summary": "Kısa özet",
+      "summaryHint": "Kartlarda görünür, en çok 280 karakter.",
+      "cover": "Kapak görseli",
+      "coverHint": "16:9 oranında kırpılır. JPG, PNG veya WebP, en çok 10 MB.",
+      "gallery": "Galeri",
+      "galleryHint": "En çok 8 görsel.",
+      "description": "Açıklama",
+      "isOnline": "Online etkinlik",
+      "locationName": "Yer adı",
+      "locationAddress": "Adres",
+      "mapUrl": "Harita bağlantısı",
+      "onlineUrl": "Online katılım bağlantısı",
+      "startAt": "Başlangıç",
+      "endAt": "Bitiş",
+      "applyOpensAt": "Başvuru açılışı",
+      "applyClosesAt": "Son başvuru (deadline)",
+      "timeHint": "Saatler Türkiye saatiyle (UTC+3).",
+      "mode": "Katılım türü",
+      "teamMinSize": "En az üye",
+      "teamMaxSize": "En çok üye",
+      "capacity": "Kontenjan",
+      "capacityHint": "Kişi (takım modunda takım) sayısı. Boş = sınırsız.",
+      "waitlistEnabled": "Kontenjan dolunca yedek liste aç",
+      "autoPromoteWaitlist": "Yer açılınca yedekten otomatik al",
+      "autoAccept": "Başvuruları otomatik kabul et",
+      "eligibility": "Kimler başvurabilir"
+    },
+    "editor": {
+      "title": "Etkinlik",
+      "upload": "Görsel yükle",
+      "uploading": "Yükleniyor…",
+      "remove": "Kaldır",
+      "saving": "Kaydediliyor…",
+      "saved": "Kaydedildi",
+      "saveFailed": "Kaydedilemedi",
+      "unsaved": "Kaydedilmemiş değişiklikler",
+      "formNote": "Başvuru formu alanları bir sonraki sürümde eklenecek.",
+      "problems": "Onaya göndermeden önce şunları tamamla:",
+      "ready": "Etkinlik onaya gönderilmeye hazır.",
+      "preview": "Önizle",
+      "submit": "Onaya gönder",
+      "submitUpdate": "Değişiklikleri onaya gönder",
+      "updateNote": "Etkinlik yayında. Değişiklikler Admin onayından sonra uygulanır; o zamana kadar yayındaki hali görünür.",
+      "readonly": "Bu etkinlik şu anda düzenlenemez.",
+      "pendingPublish": "Etkinlik Admin onayı bekliyor.",
+      "pendingUpdate": "Bekleyen bir değişiklik talebi var; yeni gönderim onu günceller.",
+      "pendingCancel": "İptal talebi Admin onayı bekliyor.",
+      "withdraw": "Talebi geri çek",
+      "withdrawTitle": "Talep geri çekilsin mi?",
+      "withdrawBody": "Etkinlik taslağa döner ve yeniden düzenleyebilirsin.",
+      "deleteDraft": "Taslağı sil",
+      "deleteDraftTitle": "Taslak silinsin mi?",
+      "deleteDraftBody": "Bu işlem geri alınamaz."
+    },
+    "cancel": {
+      "button": "Etkinliği iptal et",
+      "title": "Etkinlik iptali",
+      "body": "İptal Admin onayından sonra uygulanır. Gerekçe zorunludur."
+    },
+    "detail": {
+      "previewNote": "Önizleme: bu etkinlik henüz yayında değil, yalnızca kulüp ekibi ve Admin görebilir.",
+      "cancelled": "Bu etkinlik iptal edildi.",
+      "translationPending": "Translation pending",
+      "manage": "Etkinliği yönet",
+      "about": "Etkinlik hakkında",
+      "when": "Ne zaman, nerede",
+      "join": "Katılım bağlantısı",
+      "map": "Haritada aç",
+      "teamSize": "Takım: {min}–{max} kişi",
+      "registration": "Başvuru",
+      "window": "{from} – {to}",
+      "capacity": "Kontenjan: {count}",
+      "unlimited": "Sınırsız kontenjan",
+      "joinClubFirst": "Başvurmak için önce kulübe katılmalısın.",
+      "joinClub": "Kulübe katıl"
+    },
+    "announcements": {
+      "body": "Duyurular onaysız yayınlanır, üyelerin akışında ve kulüp sayfasında görünür.",
+      "titleField": "Başlık",
+      "bodyField": "Metin",
+      "bodyHint": "Boş satır yeni paragraf başlatır.",
+      "pinned": "Sabitlenmiş",
+      "publish": "Yayınla",
+      "created": "Duyuru yayınlandı.",
+      "deleted": "Duyuru silindi.",
+      "deleteTitle": "Duyuru silinsin mi?",
+      "empty": "Henüz duyuru yok"
+    },
+    "errors": {
+      "notEditable": "Etkinlik bu durumda düzenlenemez.",
+      "incomplete": "Etkinlikte eksik veya hatalı alanlar var.",
+      "coverRequired": "Kapak görseli gerekli.",
+      "endBeforeStart": "Bitiş başlangıçtan sonra olmalı.",
+      "closeBeforeOpen": "Son başvuru açılıştan sonra olmalı.",
+      "closeAfterEnd": "Son başvuru etkinlik bitişinden önce olmalı.",
+      "inPast": "Etkinlik geçmişte olamaz.",
+      "teamRange": "En çok üye, en az üyeden küçük olamaz.",
+      "categoryLeaf": "Bir alt kategori seçin.",
+      "galleryMax": "En çok 8 görsel eklenebilir."
     }
   }
 }

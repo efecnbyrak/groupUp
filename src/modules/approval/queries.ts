@@ -91,8 +91,8 @@ export async function listClubRequests(clubId: string, cursor?: string) {
 }
 
 /** Kulübün bekleyen talep hedefleri (UI'da "talep bekliyor" rozeti). */
-export async function pendingTargetsForClub(clubId: string): Promise<{ type: ChangeRequestType; targetId: string }[]> {
-  return db.changeRequest.findMany({ where: { clubId, status: "PENDING" }, select: { type: true, targetId: true } });
+export async function pendingTargetsForClub(clubId: string): Promise<{ id: string; type: ChangeRequestType; targetId: string }[]> {
+  return db.changeRequest.findMany({ where: { clubId, status: "PENDING" }, select: { id: true, type: true, targetId: true } });
 }
 
 /** Mezun başvurusu son talebin ekleri (kullanıcının kendi ekranı). */

@@ -1,4 +1,4 @@
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileText } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -7,7 +7,7 @@ import { diffRows, personName, RequestStatusBadge, requestTypeLabel } from "@/ap
 import { confirmLabels, formLabels } from "@/app/_lib/form-labels";
 import { titled } from "@/app/_lib/metadata";
 import { PageHeader } from "@/components/shell";
-import { ActionDialog, Alert, Avatar, Card, CardHeader, ConfirmAction, DiffView, Skeleton } from "@/components/ui";
+import { ActionDialog, Alert, Avatar, ButtonLink, Card, CardHeader, ConfirmAction, DiffView, Skeleton } from "@/components/ui";
 import { getLocale, getT } from "@/i18n/server";
 import { formatDateTime } from "@/lib/dates";
 import { publicFileUrl } from "@/lib/storage";
@@ -43,6 +43,14 @@ async function Content({ params }: PageProps<"/panel/admin/onay-kuyrugu/[id]">) 
 
       <div className="grid gap-(--space-6) lg:grid-cols-3">
         <div className="flex flex-col gap-(--space-6) lg:col-span-2">
+          {req.type.startsWith("EVENT_") ? (
+            <Card className="flex flex-wrap items-center justify-between gap-(--space-3)">
+              <p className="text-(length:--type-body-sm) text-fg-secondary">{t("approval.detail.eventPreview")}</p>
+              <ButtonLink href={`/etkinlikler/${req.targetId}`} target="_blank" variant="secondary" size="sm" icon={<ExternalLink aria-hidden="true" className="size-(--icon-size-sm)" />}>
+                {t("approval.detail.openEvent")}
+              </ButtonLink>
+            </Card>
+          ) : null}
           <section className="flex flex-col gap-(--space-3)">
             <h2 className="text-(length:--type-heading-sm) font-semibold text-fg">{t("approval.detail.changes")}</h2>
             <DiffView rows={diffRows(t, locale, req.diff)} labels={{ before: t("approval.diff.before"), after: t("approval.diff.after") }} empty={t("approval.diff.noRows")} />

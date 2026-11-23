@@ -1,6 +1,7 @@
 import type { MessageKey } from "@/i18n/messages";
 import type { AttachmentErrorCode } from "@/lib/attachments";
 import { CLUB_ERROR_KEYS } from "@/modules/club";
+import { EVENT_ERROR_KEYS } from "@/modules/event";
 import { PROFILE_ERROR_KEYS } from "@/modules/profile";
 
 import type { ApprovalErrorCode } from "./handlers/common";
@@ -8,6 +9,7 @@ import type { ApprovalErrorCode } from "./handlers/common";
 export const APPROVAL_ERROR_KEYS: Partial<Record<string, MessageKey>> = {
   ...PROFILE_ERROR_KEYS,
   ...CLUB_ERROR_KEYS,
+  ...EVENT_ERROR_KEYS,
   NOT_FOUND: "university.errors.notFound",
   ALREADY_DECIDED: "approval.errors.alreadyDecided",
   REASON_REQUIRED: "approval.errors.reasonRequired",

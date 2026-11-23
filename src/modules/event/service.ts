@@ -8,11 +8,19 @@ import { slugify } from "@/lib/slug";
 import type { EventCategoryInput, EventCategoryUpdateInput } from "./schemas";
 
 /**
- * event modülü — F4'te yalnızca kategori ağacı (iki seviye). Etkinlikler F6'da;
- * o zaman silmede etkinlik kullanımı da kontrol edilecek.
+ * event modülü — kategori ağacı (iki seviye). Etkinlik kullanılan kategori silinmez.
  */
-export type EventErrorCode = "NOT_FOUND" | "SLUG_TAKEN" | "IN_USE" | "PARENT_INVALID";
-const fail = (code: EventErrorCode, fields?: Record<string, string>) => new ServiceError(code, fields);
+export type EventErrorCode =
+  | "NOT_FOUND"
+  | "SLUG_TAKEN"
+  | "IN_USE"
+  | "PARENT_INVALID"
+  | "NOT_EDITABLE"
+  | "INCOMPLETE"
+  | "FILE_INVALID"
+  | "FILE_TYPE"
+  | "FILE_TOO_LARGE";
+export const fail = (code: EventErrorCode, fields?: Record<string, string>) => new ServiceError(code, fields);
 const isUniqueViolation = (err: unknown) => typeof err === "object" && err !== null && "code" in err && (err as { code: unknown }).code === "P2002";
 
 interface Actor {
@@ -69,9 +77,9 @@ export function updateEventCategory(actor: Actor, input: EventCategoryUpdateInpu
 /** Alt kategorisi olan üst kategori silinmez. */
 export async function deleteEventCategory(actor: Actor, id: string): Promise<void> {
   await db.$transaction(async (tx) => {
-    const row = await tx.eventCategory.findUnique({ where: { id }, select: { slug: true, _count: { select: { children: true } } } });
+    const row = await tx.eventCategory.findUnique({ where: { id }, select: { slug: true, _count: { select: { children: true, events: true } } } });
     if (!row) throw fail("NOT_FOUND");
-    if (row._count.children > 0) throw fail("IN_USE");
+    if (row._count.children > 0 || row._count.events > 0) throw fail("IN_USE");
     await tx.eventCategory.delete({ where: { id } });
     await audit({ action: "event.category.deleted", targetType: "EventCategory", targetId: id, actorId: actor.id, meta: { slug: row.slug } }, tx);
   });

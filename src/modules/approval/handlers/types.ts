@@ -35,6 +35,10 @@ export interface ApprovalHandler<P = unknown> {
   afterCreate?(tx: Tx, request: StoredRequest, payload: P): Promise<void>;
   apply(tx: Tx, request: StoredRequest, payload: P): Promise<void>;
   onReject?(tx: Tx, request: StoredRequest, payload: P, reason: string): Promise<void>;
+  /** Talep sahibi geri çektiğinde (ör. etkinlik PENDING → DRAFT). Transaction içinde. */
+  onCancel?(tx: Tx, request: StoredRequest, payload: P): Promise<void>;
+  /** Onay commit edildikten sonra (dış servis çağrıları: çeviri). Hata yutulur, loglanır. */
+  afterCommit?(request: StoredRequest, payload: P): Promise<void>;
   /** Admin fark görünümü (yalnızca değişen alanlar). */
   describe(payload: P): DiffRow[];
 }
@@ -54,6 +58,8 @@ export interface RegisteredHandler {
   afterCreate(tx: Tx, request: StoredRequest, raw: unknown): Promise<void>;
   apply(tx: Tx, request: StoredRequest, raw: unknown): Promise<void>;
   onReject(tx: Tx, request: StoredRequest, raw: unknown, reason: string): Promise<void>;
+  onCancel(tx: Tx, request: StoredRequest, raw: unknown): Promise<void>;
+  afterCommit(request: StoredRequest, raw: unknown): Promise<void>;
   describe(raw: unknown): DiffRow[];
 }
 
@@ -72,6 +78,12 @@ export function defineHandler<P>(h: ApprovalHandler<P>): RegisteredHandler {
     apply: (tx, req, raw) => h.apply(tx, req, parse(raw)),
     onReject: async (tx, req, raw, reason) => {
       await h.onReject?.(tx, req, parse(raw), reason);
+    },
+    onCancel: async (tx, req, raw) => {
+      await h.onCancel?.(tx, req, parse(raw));
+    },
+    afterCommit: async (req, raw) => {
+      await h.afterCommit?.(req, parse(raw));
     },
     describe: (raw) => h.describe(parse(raw)),
   };

@@ -1,4 +1,4 @@
-import { ClipboardList, Info, LayoutGrid, LifeBuoy, Ticket, UserCog, Users } from "lucide-react";
+import { CalendarDays, ClipboardList, Info, LayoutGrid, LifeBuoy, Megaphone, Ticket, UserCog, Users } from "lucide-react";
 import { Suspense } from "react";
 
 import { PanelShell, type PanelNavItem } from "@/components/shell";
@@ -17,6 +17,8 @@ async function ClubFrame({ slug, children }: { slug: string; children: React.Rea
     { href: `${base}/uyeler`, label: t("club.nav.members"), icon: <Users aria-hidden="true" className={icon} /> },
     { href: `${base}/ekip`, label: t("club.nav.staff"), icon: <UserCog aria-hidden="true" className={icon} /> },
   ];
+  if (can("EVENT_MANAGE")) items.push({ href: `${base}/etkinlikler`, label: t("club.nav.events"), icon: <CalendarDays aria-hidden="true" className={icon} /> });
+  if (can("ANNOUNCEMENT_POST")) items.push({ href: `${base}/duyurular`, label: t("club.nav.announcements"), icon: <Megaphone aria-hidden="true" className={icon} /> });
   if (can("MEMBER_INVITE")) items.push({ href: `${base}/davetler`, label: t("club.nav.invites"), icon: <Ticket aria-hidden="true" className={icon} /> });
   if (can("PRESIDENT")) {
     items.push({ href: `${base}/talepler`, label: t("club.nav.requests"), icon: <ClipboardList aria-hidden="true" className={icon} /> });

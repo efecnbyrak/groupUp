@@ -50,6 +50,15 @@ Tek platform: doğrulanmış okul maili ile kayıt → kulübe kod/link ile kat�
 - Onay motorundaki her ret (mezun belgesi dahil) gerekçe ister (10–500 karakter); gerekçe talep sahibine e-postayla gider.
 - Öğrenci aynı anda sınırsız kulübe üye olabilir; Başkan başka kulüplerde üye/görevli olabilir (yalnızca tek kulüpte Başkan).
 
+**Varsayım (Claude, 2026-11-23, F6):**
+- Etkinlik adresi `/etkinlikler/[id]`. Yayındaki/geçmiş/iptal etkinlik herkese açık; taslak ve onay bekleyen yalnızca kulüp ekibi + Admin'e önizleme.
+- Taslağı Başkan ve `EVENT_MANAGE` görevlisi oluşturur/düzenler ve onaya gönderir; iptal talebini yalnızca Başkan açar (gerekçe ≥ 10 karakter).
+- Onaya gönderim için zorunlu: alt kategori, başlık, özet, açıklama, kapak, yer (veya online link), dört tarih; son başvuru ≤ bitiş, etkinlik geçmişte olamaz.
+- Saatler Türkiye saatiyle (UTC+3, yaz saati yok) girilir.
+- Çeviri blok bazında (paragraf/başlık içi HTML) DeepL'e gider; sağlayıcı kapalıyken EN boş kalır, arayüz TR + "Translation pending". EN'in elle düzeltilmesi ve başarısız çevirinin tekrar denenmesi (cron) F10'a kaldı.
+- Duyurular onaysız yayınlanır (`ANNOUNCEMENT_POST`), düz metin (boş satır = paragraf); üyelerin akışında ve kulüp sayfasında (yalnızca üyelere) görünür.
+- Arama `ILIKE` (pg_trgm indeksi MVP sonrası).
+
 **Varsayımlar (kullanıcı aksini söyleyene kadar geçerli):**
 - Görevli aynı kulübün üyesi olmak zorundadır.
 - Bir üniversitenin birden fazla Admini olabilir.
