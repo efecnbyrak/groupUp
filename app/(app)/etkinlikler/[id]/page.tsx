@@ -15,6 +15,27 @@ import { formatEventDateTime } from "@/lib/dates";
 import { renderRichText } from "@/lib/rich-text/sanitize";
 import { publicFileUrl } from "@/lib/storage";
 import { getEventDetail, pick, registrationState } from "@/modules/event";
+import {
+  applyToEventAction,
+  cancelRegistrationAction,
+  completeTeamAction,
+  createTeamAction,
+  disbandTeamAction,
+  EventRegistrationPanel,
+  getMyRegistration,
+  getMyTeam,
+  joinTeamAction,
+  leaveTeamAction,
+  listFieldsPublic,
+  removeTeamMemberAction,
+  toFieldDef,
+  transferCaptainAction,
+  updateMyAnswersAction,
+  uploadRegistrationFileAction,
+  type EventPanelLabels,
+  type MyRegistration,
+  type MyTeam,
+} from "@/modules/registration";
 
 const PUBLIC = new Set(["PUBLISHED", "COMPLETED", "CANCELLED"]);
 
@@ -47,6 +68,76 @@ async function Content({ params }: PageProps<"/etkinlikler/[id]">) {
   const translationPending = en && !e.titleEn;
   const cover = publicFileUrl(e.coverKey);
   const icon = "size-(--icon-size-sm) shrink-0 text-fg-secondary";
+  const isMember = Boolean(user && access?.role);
+  const [fieldRows, myRegistrationRow, myTeamRow] = await Promise.all([
+    e.status === "PUBLISHED" ? listFieldsPublic(e.id) : Promise.resolve([]),
+    isMember && e.mode === "INDIVIDUAL" ? getMyRegistration(e.id, user!.id) : Promise.resolve(null),
+    isMember && e.mode === "TEAM" ? getMyTeam(e.id, user!.id) : Promise.resolve(null),
+  ]);
+  const fields = fieldRows.map(toFieldDef);
+  const myRegistration: MyRegistration | null = myRegistrationRow
+    ? { id: myRegistrationRow.id, status: myRegistrationRow.status, answers: (myRegistrationRow.answers as Record<string, unknown>) ?? {}, waitlistPos: myRegistrationRow.waitlistPos }
+    : null;
+  const myTeam: MyTeam | null = myTeamRow
+    ? {
+        id: myTeamRow.id,
+        name: myTeamRow.name,
+        code: myTeamRow.code,
+        status: myTeamRow.status,
+        lockedAt: myTeamRow.lockedAt ? myTeamRow.lockedAt.toISOString() : null,
+        captainId: myTeamRow.captainId,
+        members: myTeamRow.members.map((m) => ({
+          userId: m.userId,
+          name: [m.user.profile?.firstName, m.user.profile?.lastName].filter(Boolean).join(" ") || m.user.email,
+          isMe: m.userId === user!.id,
+        })),
+      }
+    : null;
+  const regOpen = state === "OPEN" || state === "CLOSING_SOON" || state === "WAITLIST";
+  const panelLabels: EventPanelLabels = {
+    uploadFile: t("event.editor.upload"),
+    uploading: t("common.loading"),
+    fileSelected: t("registration.apply.fileSelected"),
+    optional: t("common.optional"),
+    submit: t("registration.apply.submit"),
+    cancel: t("common.cancel"),
+    cancelApplication: t("registration.apply.cancel"),
+    cancelConfirm: t("registration.apply.cancelBody"),
+    editAnswers: t("registration.apply.editAnswers"),
+    save: t("common.save"),
+    myAnswers: t("registration.apply.myAnswers"),
+    status: {
+      APPLIED: t("registration.apply.status.APPLIED"),
+      ACCEPTED: t("registration.apply.status.ACCEPTED"),
+      WAITLISTED: t("registration.apply.status.WAITLISTED"),
+      REJECTED: t("registration.apply.status.REJECTED"),
+      CANCELLED: t("registration.apply.status.CANCELLED"),
+    },
+    waitlistPosition: t("registration.apply.waitlistPosition", { pos: "{pos}" }),
+    createTeam: t("registration.team.create"),
+    teamName: t("registration.team.teamName"),
+    teamDetails: t("registration.team.teamAnswers"),
+    yourDetails: t("registration.team.memberAnswers"),
+    createSubmit: t("registration.team.createSubmit"),
+    joinTeam: t("registration.team.join"),
+    code: t("registration.team.code"),
+    joinSubmit: t("registration.team.joinSubmit"),
+    members: t("registration.team.members"),
+    captain: t("registration.team.captain"),
+    you: t("registration.team.you"),
+    remove: t("registration.team.remove"),
+    transferCaptain: t("registration.team.transferCaptain"),
+    disband: t("registration.team.disband"),
+    disbandConfirm: t("registration.team.disbandBody"),
+    complete: t("registration.team.complete"),
+    completeHint: t("registration.team.completeHint"),
+    leaveTeam: t("registration.team.leave"),
+    leaveConfirm: t("registration.team.leaveTitle"),
+    codeHint: t("registration.team.codeHint"),
+    codeCopy: t("registration.team.codeCopy"),
+    codeCopied: t("common.copied"),
+    notOpen: t("registration.apply.closed"),
+  };
 
   return (
     <article className="flex flex-col gap-(--space-6)">
@@ -168,6 +259,32 @@ async function Content({ params }: PageProps<"/etkinlikler/[id]">) {
                   {t("event.detail.joinClub")}
                 </ButtonLink>
               </>
+            ) : null}
+            {isMember && e.status === "PUBLISHED" ? (
+              <div className="border-t border-line pt-(--space-3)">
+                <EventRegistrationPanel
+                  eventId={e.id}
+                  mode={e.mode}
+                  open={regOpen}
+                  fields={fields}
+                  myRegistration={myRegistration}
+                  myTeam={myTeam}
+                  teamMin={e.teamMinSize ?? 1}
+                  teamMax={e.teamMaxSize ?? 999}
+                  labels={panelLabels}
+                  applyAction={applyToEventAction}
+                  updateAnswersAction={updateMyAnswersAction}
+                  cancelAction={cancelRegistrationAction}
+                  createTeamAction={createTeamAction}
+                  joinTeamAction={joinTeamAction}
+                  leaveTeamAction={leaveTeamAction}
+                  removeTeamMemberAction={removeTeamMemberAction}
+                  transferCaptainAction={transferCaptainAction}
+                  disbandTeamAction={disbandTeamAction}
+                  completeTeamAction={completeTeamAction}
+                  uploadAction={uploadRegistrationFileAction}
+                />
+              </div>
             ) : null}
           </Card>
         </aside>

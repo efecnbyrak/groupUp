@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
@@ -8,7 +8,7 @@ import { EventStatusBadge, eventCategoryOptions } from "@/app/_components/events
 import { confirmLabels, formLabels } from "@/app/_lib/form-labels";
 import { titled } from "@/app/_lib/metadata";
 import { PageHeader } from "@/components/shell";
-import { ActionDialog, Alert, ConfirmAction, Skeleton } from "@/components/ui";
+import { ActionDialog, Alert, ButtonLink, ConfirmAction, Skeleton } from "@/components/ui";
 import { pickMessages } from "@/i18n/messages";
 import { getLocale, getT } from "@/i18n/server";
 import { toIstanbulLocalInput } from "@/lib/dates";
@@ -83,7 +83,20 @@ async function Content({ params }: PageProps<"/panel/kulup/[slug]/etkinlikler/[i
         <ArrowLeft aria-hidden="true" className="size-(--icon-size-sm)" />
         {t("club.nav.events")}
       </Link>
-      <PageHeader title={event.content.titleTr || t("event.editor.title")} action={<EventStatusBadge status={event.status} t={t} />} />
+      <PageHeader
+        title={event.content.titleTr || t("event.editor.title")}
+        action={
+          <div className="flex flex-wrap items-center gap-(--space-3)">
+            <ButtonLink href={`${base}/${event.id}/form`} variant="secondary" size="sm" icon={<ClipboardList aria-hidden="true" className="size-(--icon-size-sm)" />}>
+              {t("registration.builder.title")}
+            </ButtonLink>
+            <ButtonLink href={`${base}/${event.id}/basvurular`} variant="secondary" size="sm" icon={<ListChecks aria-hidden="true" className="size-(--icon-size-sm)" />}>
+              {t("registration.manage.title")}
+            </ButtonLink>
+            <EventStatusBadge status={event.status} t={t} />
+          </div>
+        }
+      />
       <EventWizard
         clubId={club.id}
         eventId={event.id}
