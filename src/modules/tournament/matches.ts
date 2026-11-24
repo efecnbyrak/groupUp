@@ -2,6 +2,10 @@ import "server-only";
 
 import { audit } from "@/lib/audit";
 import { db, type Tx } from "@/lib/db";
+import { formatDateTime } from "@/lib/dates";
+import { env } from "@/lib/env";
+import { getMailRecipient } from "@/modules/identity";
+import { notify, sendEmailSafe } from "@/modules/notification";
 
 import type { TournamentSettings } from "./schemas";
 import { fail } from "./service";
@@ -149,6 +153,53 @@ export async function postponeMatch(actor: Actor, clubId: string, matchId: strin
     await tx.match.update({ where: { id: matchId }, data: { status: "POSTPONED", note, updatedById: actor.id } });
     await audit({ action: "tournament.postponed", targetType: "Match", targetId: matchId, actorId: actor.id, universityId: match.stage.tournament.event.universityId, meta: {} }, tx);
   });
+}
+
+/** Katılımcının (bireysel veya takım) tüm üyelerinin kullanıcı id'leri. */
+async function participantUserIds(tx: Tx | typeof db, participantId: string): Promise<string[]> {
+  const p = await tx.participant.findUnique({ where: { id: participantId }, select: { userId: true, teamId: true, displayName: true } });
+  if (!p) return [];
+  if (p.teamId) {
+    const members = await tx.teamMember.findMany({ where: { teamId: p.teamId }, select: { userId: true } });
+    return members.map((m) => m.userId);
+  }
+  return p.userId ? [p.userId] : [];
+}
+
+/** Maç saati belirler/değiştirir, her iki tarafın üyelerine mail + bildirim gönderir. */
+export async function scheduleMatch(actor: Actor, clubId: string, matchId: string, scheduledAt: Date): Promise<void> {
+  const match = await db.$transaction(async (tx) => {
+    const match = await loadMatchInClub(tx, clubId, matchId);
+    if (!match.homeId || !match.awayId) throw fail("MATCH_NOT_EDITABLE");
+    await tx.match.update({ where: { id: matchId }, data: { scheduledAt, updatedById: actor.id } });
+    await audit({ action: "tournament.scheduled", targetType: "Match", targetId: matchId, actorId: actor.id, universityId: match.stage.tournament.event.universityId, meta: { scheduledAt: scheduledAt.toISOString() } }, tx);
+    return match;
+  });
+  const [home, away] = await Promise.all([participantUserIds(db, match.homeId!), participantUserIds(db, match.awayId!)]);
+  const homeDisplay = await db.participant.findUnique({ where: { id: match.homeId! }, select: { displayName: true } });
+  const awayDisplay = await db.participant.findUnique({ where: { id: match.awayId! }, select: { displayName: true } });
+  const event = await db.tournament.findUnique({ where: { id: match.stage.tournamentId }, select: { event: { select: { titleTr: true } } } });
+  const eventTitle = event?.event.titleTr ?? "";
+  await Promise.all([
+    ...home.map((userId) => notifyMatchScheduled(userId, eventTitle, awayDisplay?.displayName ?? "", scheduledAt)),
+    ...away.map((userId) => notifyMatchScheduled(userId, eventTitle, homeDisplay?.displayName ?? "", scheduledAt)),
+  ]);
+}
+
+async function notifyMatchScheduled(userId: string, eventTitle: string, opponent: string, scheduledAt: Date): Promise<void> {
+  const recipient = await getMailRecipient(db, userId);
+  const when = formatDateTime(scheduledAt, recipient?.locale ?? "tr");
+  await notify({
+    userId,
+    type: "MATCH_UPDATE",
+    titleTr: "Maç saati belirlendi",
+    titleEn: "Match scheduled",
+    bodyTr: `${opponent} — ${when}`,
+    bodyEn: `${opponent} — ${when}`,
+    href: "/maclarim",
+  });
+  if (!recipient) return;
+  await sendEmailSafe(recipient.email, "match-scheduled", recipient.locale, { name: recipient.name, eventTitle, opponent, scheduledAt: when, url: `${env.APP_URL}/maclarim` });
 }
 
 /** İlk skor girilince SEEDED → IN_PROGRESS (TOURNAMENTS §7: "başladıktan sonra" katılımcı kilitlenir); son maç bitince COMPLETED. */

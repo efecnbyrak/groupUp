@@ -237,3 +237,9 @@ export async function adminRemoveStaff(actor: { id: string }, universityId: stri
     await audit({ action: "club.staff.removedDirect", targetType: "Club", targetId: clubId, actorId: actor.id, universityId, meta: { userId } }, tx);
   });
 }
+
+/** F10 cron (deadline-reminder): kulübün aktif üyelerinin kullanıcı id'leri. */
+export async function listActiveMemberIds(clubId: string): Promise<string[]> {
+  const rows = await db.membership.findMany({ where: { clubId, status: "ACTIVE" }, select: { userId: true } });
+  return rows.map((r) => r.userId);
+}

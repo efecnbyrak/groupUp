@@ -6,7 +6,7 @@ import type { Prisma } from "@/lib/db-types";
 import { env } from "@/lib/env";
 import { normalizeCode, randomCode } from "@/lib/ids";
 import { getMailRecipient } from "@/modules/identity";
-import { sendEmailSafe } from "@/modules/notification";
+import { notify, sendEmailSafe } from "@/modules/notification";
 
 import { toFieldDef } from "./fields";
 import { canCompleteTeam, decideCapacity, teamSizeProblem, validateAnswers } from "./rules";
@@ -130,7 +130,7 @@ export async function joinTeam(actor: Actor, eventId: string, rawCode: string, m
 
     const code = normalizeCode(rawCode, TEAM_CODE_LENGTH);
     if (!code) throw fail("CODE_INVALID");
-    const team = await tx.team.findFirst({ where: { code, eventId }, select: { id: true, lockedAt: true, members: { select: { userId: true } } } });
+    const team = await tx.team.findFirst({ where: { code, eventId }, select: { id: true, name: true, captainId: true, lockedAt: true, members: { select: { userId: true } } } });
     if (!team) throw fail("CODE_INVALID");
     if (team.lockedAt) throw fail("TEAM_FULL");
     if (team.members.length >= (event.teamMaxSize ?? Number.MAX_SAFE_INTEGER)) throw fail("TEAM_FULL");
@@ -147,6 +147,18 @@ export async function joinTeam(actor: Actor, eventId: string, rawCode: string, m
       select: { id: true },
     });
     await audit({ action: "registration.team.joined", targetType: "Team", targetId: team.id, actorId: actor.id, universityId: event.universityId, meta: { eventId } }, tx);
+    await notify(
+      {
+        userId: team.captainId,
+        type: "TEAM_UPDATE",
+        titleTr: "Takımına yeni üye katıldı",
+        titleEn: "A new member joined your team",
+        bodyTr: team.name,
+        bodyEn: team.name,
+        href: "/etkinliklerim",
+      },
+      tx,
+    );
     return reg;
   });
 }
@@ -234,7 +246,7 @@ export async function completeTeam(actor: Actor, eventId: string, teamId: string
     const recipients = [];
     for (const m of team.members) {
       const r = await getMailRecipient(tx, m.userId);
-      if (r) recipients.push(r);
+      if (r) recipients.push({ ...r, userId: m.userId });
     }
     return { event, recipients, outcome: decision.status === "ACCEPTED" ? ("accepted" as const) : decision.status === "WAITLISTED" ? ("waitlisted" as const) : null };
   });
@@ -247,8 +259,18 @@ export async function completeTeam(actor: Actor, eventId: string, teamId: string
         outcome: result.outcome,
         url: `${env.APP_URL}/etkinliklerim`,
       });
+      await notifyTeamOutcome(r.userId, result.event.titleTr, result.outcome);
     }
   }
+}
+
+async function notifyTeamOutcome(userId: string, eventTitle: string, outcome: "accepted" | "waitlisted" | "rejected"): Promise<void> {
+  const titles: Record<typeof outcome, { tr: string; en: string }> = {
+    accepted: { tr: "Takımının başvurusu kabul edildi", en: "Your team's application was accepted" },
+    waitlisted: { tr: "Takımın yedek listede", en: "Your team is on the waitlist" },
+    rejected: { tr: "Takımının başvurusu reddedildi", en: "Your team's application was rejected" },
+  };
+  await notify({ userId, type: "TEAM_UPDATE", titleTr: titles[outcome].tr, titleEn: titles[outcome].en, bodyTr: eventTitle, bodyEn: eventTitle, href: "/etkinliklerim" });
 }
 
 export async function getMyTeam(eventId: string, userId: string) {
@@ -277,7 +299,7 @@ export async function decideTeam(actor: Actor, clubId: string, eventId: string, 
     const recipients = [];
     for (const m of team.members) {
       const r = await getMailRecipient(tx, m.userId);
-      if (r) recipients.push(r);
+      if (r) recipients.push({ ...r, userId: m.userId });
     }
     return { event, recipients };
   });
@@ -289,6 +311,7 @@ export async function decideTeam(actor: Actor, clubId: string, eventId: string, 
       outcome: decision === "ACCEPT" ? "accepted" : "rejected",
       url: `${env.APP_URL}/etkinliklerim`,
     });
+    await notifyTeamOutcome(r.userId, result.event.titleTr, decision === "ACCEPT" ? "accepted" : "rejected");
   }
 }
 

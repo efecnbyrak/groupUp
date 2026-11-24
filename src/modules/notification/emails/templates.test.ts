@@ -49,4 +49,28 @@ describe("mail şablonları", () => {
     expect(rej.html).toContain('href="http://x/mezun-dogrulama"');
     expect(renderTemplate("alumni-result", "en", { name: "A", approved: true, reason: null, url: "http://x/giris" }).subject).toMatch(/approved|verified/i);
   });
+
+  it("F10 şablonları: konu/metin değişkenleri taşır ve escape edilir", () => {
+    const pending = renderTemplate("approval-pending", "tr", { name: "A", clubName: "Satranç <K>", type: "CLUB_UPDATE", url: "http://x/talep" });
+    expect(pending.html).toContain("&lt;K&gt;");
+    expect(pending.html).toContain('href="http://x/talep"');
+
+    const reply = renderTemplate("ticket-reply", "en", { name: "A", subject: "Help", url: "http://x/t/1" });
+    expect(reply.subject).toMatch(/Help/);
+
+    const role = renderTemplate("club-role", "tr", { name: "A", clubName: "Robotik", title: "Etkinlik Sorumlusu", url: "http://x/k" });
+    expect(role.text).toContain("Etkinlik Sorumlusu");
+
+    const team = renderTemplate("team-update", "tr", { name: "A", teamName: "Takım 1", eventTitle: "Hackathon", url: "http://x/t" });
+    expect(team.text).toContain("Takım 1");
+
+    const match = renderTemplate("match-scheduled", "tr", { name: "A", eventTitle: "Turnuva", opponent: "Rakip", scheduledAt: "25 Kasım 14:00", url: "http://x/m" });
+    expect(match.text).toContain("Rakip");
+
+    const deadline = renderTemplate("deadline-reminder", "tr", { name: "A", eventTitle: "Hackathon", clubName: "Kodcular", url: "http://x/e" });
+    expect(deadline.text).toContain("Hackathon");
+
+    const reminder = renderTemplate("event-reminder", "en", { name: "A", eventTitle: "Hackathon", startAt: "Nov 25, 14:00", url: "http://x/e" });
+    expect(reminder.html).toContain('href="http://x/e"');
+  });
 });

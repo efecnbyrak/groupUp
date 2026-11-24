@@ -7,11 +7,11 @@ import { Badge, type BadgeTone } from "@/components/ui";
 import type { ActionResult } from "@/lib/errors";
 
 import type { MatchView } from "../queries";
-import { ScoreForm, type ScoreFormLabels } from "./score-form";
+import { ScheduleMatchForm, ScoreForm, type ScheduleFormLabels, type ScoreFormLabels } from "./score-form";
 
 type Action = (prev: ActionResult | null, fd: FormData) => Promise<ActionResult>;
 
-export interface FixtureListLabels extends ScoreFormLabels {
+export interface FixtureListLabels extends ScoreFormLabels, ScheduleFormLabels {
   pending: string;
   /** "{n}" yer tutucusunu içerir ("Tur {n}"), istemci değiştirir. */
   roundLabel: string;
@@ -26,6 +26,7 @@ export function FixtureList({
   canManage,
   clubId,
   recordScoreAction,
+  scheduleMatchAction,
   labels,
 }: {
   matches: MatchView[];
@@ -33,6 +34,7 @@ export function FixtureList({
   canManage?: boolean;
   clubId?: string;
   recordScoreAction?: Action;
+  scheduleMatchAction?: Action;
   labels: FixtureListLabels;
 }) {
   const router = useRouter();
@@ -83,6 +85,11 @@ export function FixtureList({
                           router.refresh();
                         }}
                       />
+                      {scheduleMatchAction ? (
+                        <div className="mt-(--space-3) border-t border-line pt-(--space-3)">
+                          <ScheduleMatchForm matchId={m.id} clubId={clubId!} action={scheduleMatchAction} labels={labels} onDone={() => router.refresh()} />
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                 </li>

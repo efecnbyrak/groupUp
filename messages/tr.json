@@ -258,6 +258,41 @@
         "rejected": "{club} kulübünün \"{event}\" etkinliğine başvurun değerlendirildi ve kabul edilmedi."
       },
       "button": "Başvurularımı gör"
+    },
+    "approvalPending": {
+      "subject": "Yeni bekleyen talep: {club}",
+      "intro": "{club} kulübünden \"{type}\" talebi onayını bekliyor.",
+      "button": "Talebi gör"
+    },
+    "ticketReply": {
+      "subject": "Destek talebine yanıt: {subject}",
+      "intro": "\"{subject}\" konulu destek talebine yeni bir yanıt geldi.",
+      "button": "Talebi gör"
+    },
+    "clubRole": {
+      "subject": "{club} kulübünde göreve atandın",
+      "intro": "{club} kulübünde \"{title}\" unvanıyla görevli olarak atandın.",
+      "button": "Kulübe git"
+    },
+    "teamUpdate": {
+      "subject": "Takım güncellemesi: {team}",
+      "intro": "\"{event}\" etkinliği için \"{team}\" takımına bir güncelleme oldu.",
+      "button": "Takımı gör"
+    },
+    "matchScheduled": {
+      "subject": "Maç saati belirlendi: {event}",
+      "intro": "\"{event}\" turnuvasında {opponent} ile maçın {time} tarihine planlandı.",
+      "button": "Maçı gör"
+    },
+    "deadlineReminder": {
+      "subject": "Başvuru kapanıyor: {event}",
+      "intro": "{club} kulübünün \"{event}\" etkinliğine başvuru süresi 24 saat içinde kapanıyor. Henüz başvurmadın.",
+      "button": "Başvur"
+    },
+    "eventReminder": {
+      "subject": "Etkinlik yaklaşıyor: {event}",
+      "intro": "\"{event}\" etkinliği {time} tarihinde başlıyor. Başvurun kabul edildi.",
+      "button": "Etkinliği gör"
     }
   },
   "meta": {
@@ -1633,7 +1668,8 @@
       "postponeTitle": "Maç ertelensin mi?",
       "note": "Not (opsiyonel)",
       "pending": "Oynanmadı",
-      "scheduledAt": "Tarih"
+      "scheduledAt": "Tarih",
+      "scheduled": "Maç saati güncellendi."
     },
     "myMatches": {
       "title": "Maçlarım",
@@ -1654,5 +1690,13 @@
     "participants": {
       "added": "Katılımcı eklendi."
     }
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "empty": "Henüz bildirimin yok",
+    "emptyBody": "Yeni bildirimler burada görünecek.",
+    "markAllRead": "Tümünü okundu say",
+    "viewAll": "Tüm bildirimleri gör",
+    "unreadBadge": "{count} okunmamış"
   }
 }

@@ -10,6 +10,7 @@ export {
   recordWalkoverAction,
   removeParticipantAction,
   renameParticipantAction,
+  scheduleMatchAction,
   updateGroupsSettingsAction,
   updateSeedsAction,
   updateSettingsAction,
@@ -42,8 +43,8 @@ export {
   updateSettings,
   type CreateTournamentInput,
 } from "./tournaments";
-export { postponeMatch, recordScore, recordWalkover, type ScoreInput } from "./matches";
+export { postponeMatch, recordScore, recordWalkover, scheduleMatch, type ScoreInput } from "./matches";
 export { BracketView, type BracketLabels } from "./components/bracket-view";
 export { FixtureList, type FixtureListLabels } from "./components/fixture-list";
 export { StandingsTable, type StandingsTableLabels } from "./components/standings-table";
-export { ScoreForm, type ScoreFormLabels } from "./components/score-form";
+export { ScheduleMatchForm, ScoreForm, type ScheduleFormLabels, type ScoreFormLabels } from "./components/score-form";

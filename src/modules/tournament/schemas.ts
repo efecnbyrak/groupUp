@@ -76,6 +76,7 @@ export const recordScoreSchema = z.object({
 });
 export const walkoverSchema = z.object({ matchId: id, winner: z.enum(["home", "away"]), reason: text(300) });
 export const postponeSchema = z.object({ matchId: id, note: z.string().trim().max(300).optional() });
+export const scheduleSchema = z.object({ matchId: id, scheduledAt: z.string().trim().min(1) });
 export const matchIdSchema = z.object({ matchId: id });
 
 export const participantNameSchema = z.object({ participantId: id, displayName: text(80) });

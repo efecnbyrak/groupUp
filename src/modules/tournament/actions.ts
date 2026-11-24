@@ -8,8 +8,10 @@ import { requireClubPermission } from "@/lib/authz";
 import type { ActionResult } from "@/lib/errors";
 import { enforceRateLimits } from "@/lib/rate-limit";
 
+import { fromIstanbulLocalInput } from "@/lib/dates";
+
 import { addParticipant, createTournament, generateBracket, generateKnockoutStage, removeParticipant, renameParticipant, updateGroupsSettings, updateSeeds, updateSettings } from "./tournaments";
-import { postponeMatch, recordScore, recordWalkover } from "./matches";
+import { postponeMatch, recordScore, recordWalkover, scheduleMatch } from "./matches";
 import { TOURNAMENT_ERROR_KEYS as errors } from "./errors";
 import {
   addParticipantSchema,
@@ -21,6 +23,7 @@ import {
   postponeSchema,
   recordScoreSchema,
   removeParticipantSchema,
+  scheduleSchema,
   seedSchema,
   updateSettingsSchema,
   walkoverSchema,
@@ -200,6 +203,22 @@ export async function postponeMatchAction(_prev: Prev, formData: FormData) {
       await postponeMatch(user, clubId, data.matchId, data.note);
       refresh();
       return { ok: true, message: t("tournament.match.postponed") };
+    },
+  });
+}
+
+export async function scheduleMatchAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: scheduleSchema,
+    errors,
+    run: async (user, data, t) => {
+      const parsed = fromIstanbulLocalInput(data.scheduledAt);
+      if (!parsed) return { ok: false, error: t("errors.invalidForm"), fieldErrors: { scheduledAt: t("validation.required") } };
+      await scheduleMatch(user, clubId, data.matchId, parsed);
+      refresh();
+      return { ok: true, message: t("tournament.match.scheduled") };
     },
   });
 }

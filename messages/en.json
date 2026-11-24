@@ -258,6 +258,41 @@
         "rejected": "Your application to {club}'s \"{event}\" was reviewed and not accepted."
       },
       "button": "View my applications"
+    },
+    "approvalPending": {
+      "subject": "New pending request: {club}",
+      "intro": "{club} submitted a \"{type}\" request awaiting your review.",
+      "button": "View request"
+    },
+    "ticketReply": {
+      "subject": "Reply to your support ticket: {subject}",
+      "intro": "Your support ticket \"{subject}\" received a new reply.",
+      "button": "View ticket"
+    },
+    "clubRole": {
+      "subject": "You were assigned a role at {club}",
+      "intro": "You were assigned as staff at {club} with the title \"{title}\".",
+      "button": "Go to club"
+    },
+    "teamUpdate": {
+      "subject": "Team update: {team}",
+      "intro": "There's an update for your team \"{team}\" in \"{event}\".",
+      "button": "View team"
+    },
+    "matchScheduled": {
+      "subject": "Match scheduled: {event}",
+      "intro": "Your match against {opponent} in \"{event}\" is scheduled for {time}.",
+      "button": "View match"
+    },
+    "deadlineReminder": {
+      "subject": "Application closing: {event}",
+      "intro": "Applications for the \"{event}\" event by {club} close in 24 hours. You have not applied yet.",
+      "button": "Apply now"
+    },
+    "eventReminder": {
+      "subject": "Event coming up: {event}",
+      "intro": "\"{event}\" starts at {time}. Your application was accepted.",
+      "button": "View event"
     }
   },
   "meta": {
@@ -1633,7 +1668,8 @@
       "postponeTitle": "Postpone this match?",
       "note": "Note (optional)",
       "pending": "Not played",
-      "scheduledAt": "Date"
+      "scheduledAt": "Date",
+      "scheduled": "Match time updated."
     },
     "myMatches": {
       "title": "My matches",
@@ -1654,5 +1690,13 @@
     "participants": {
       "added": "Participant added."
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "emptyBody": "New notifications will appear here.",
+    "markAllRead": "Mark all as read",
+    "viewAll": "View all notifications",
+    "unreadBadge": "{count} unread"
   }
 }

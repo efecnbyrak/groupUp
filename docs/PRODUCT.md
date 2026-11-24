@@ -72,6 +72,13 @@ Tek platform: doğrulanmış okul maili ile kayıt → kulübe kod/link ile kat�
 - Turnuva/maç silinemez veya iptal edilemez (yalnızca düzeltme ve zincirleme sıfırlama var); yanlışlıkla oluşturulan bir turnuvanın kaldırılması MVP sonrasına kaldı.
 - Eleme maçlarında beraberlik kabul edilmez (skor girerken penaltı/uzatma sonucu doğrudan skora yansıtılır, ayrı bir alan yok); lig/grup maçlarında beraberlik `allowDraws` ayarına bağlı (varsayılan açık).
 
+**Varsayım (Claude, 2026-11-24, F10):**
+- `election` mail şablonu eklenmedi — seçim modülü (F11) henüz yok, şablonu şimdiden eklemek tahmine dayalı olurdu.
+- Bildirim tercihleri (hangi tür için mail/uygulama içi istiyorum, opt-out) MVP'de yok — tüm bildirim türleri varsayılan açık ve zorunlu. AUTH-EMAIL §9'daki "opt-out edilebilir" notu `deadline-reminder` için ileride eklenecek bir profil tercihine işaret ediyor, MVP'de uygulanmadı.
+- Silinmiş kullanıcıların private ekleri (mezun belgesi, ticket ekleri) hesap silindikten **30 gün** sonra cron ile kalıcı silinir (KVKK'da somut bir süre verilmemişti, makul bir bekleme süresi olarak seçildi — `DELETED_ATTACHMENT_RETENTION_DAYS`, `src/modules/identity/account.ts`, tek satırlık değişiklik).
+- CLUB_UPDATE'in yetim logo/kapak dosyaları cron ile değil, onay/ret/iptal kararı anında siliniyor (ROADMAP'te "cron" diye geçiyordu ama karar anında yapmak gecikmesiz ve daha basit; cron'a bırakmak "hangi dosya ne zaman yetim kaldı" ayrıca izlemeyi gerektirirdi).
+- Turnuva maç saati belirleme (`scheduledAt`) F8'de şema vardı ama hiç kullanılmıyordu; F10'da gerçek bir akışa bağlandı (yönetici saat seçer, katılımcılara mail+bildirim gider) — bu F8'in değil F10'un parçası sayıldı çünkü tetikleyici bildirim sistemidir.
+
 **Varsayımlar (kullanıcı aksini söyleyene kadar geçerli):**
 - Görevli aynı kulübün üyesi olmak zorundadır.
 - Bir üniversitenin birden fazla Admini olabilir.

@@ -326,6 +326,7 @@ model User {
   teamMemberships    TeamMember[]
   participantAs      Participant[]
   matchesUpdated     Match[]             @relation("MatchUpdatedBy")
+  notifications      Notification[]
 
   @@index([universityId, type])
 }
@@ -672,6 +673,8 @@ model Event {
   eligibility         Eligibility       @default(ALL_MEMBERS)
   publishedAt         DateTime?
   cancelledAt         DateTime?
+  applyReminderSentAt DateTime? // F10 cron: deadline-reminder tekrar gönderilmesin
+  startReminderSentAt DateTime? // F10 cron: event-reminder tekrar gönderilmesin
   createdById         String
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
@@ -891,4 +894,34 @@ model Match {
   @@index([stageId, round])
   @@index([groupId])
   @@index([nextMatchId])
+}
+
+enum NotificationType {
+  APPROVAL_RESULT
+  REGISTRATION_UPDATE
+  TEAM_UPDATE
+  MATCH_UPDATE
+  TICKET_REPLY
+  ELECTION
+  ANNOUNCEMENT
+  DEADLINE_REMINDER
+  SYSTEM
+}
+
+/** Uygulama içi bildirim (F10). Mail ayrı gönderilir (notification/emails) — ikisi birlikte tetiklenir. */
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  titleTr   String
+  titleEn   String
+  bodyTr    String?
+  bodyEn    String?
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
 }

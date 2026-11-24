@@ -23,6 +23,7 @@ import {
   recordScoreAction,
   removeParticipantAction,
   renameParticipantAction,
+  scheduleMatchAction,
   StandingsTable,
   type TournamentSettings,
 } from "@/modules/tournament";
@@ -46,7 +47,15 @@ async function Content({ params }: PageProps<"/panel/kulup/[slug]/etkinlikler/[i
   const settings = tournament.settings as unknown as TournamentSettings;
   const names = new Map(tournament.participants.map((p) => [p.id, p.displayName]));
 
-  const scoreLabels = { home: t("tournament.match.home"), away: t("tournament.match.away"), submit: t("tournament.match.submit"), saving: t("tournament.match.saving"), cascadeWarning: t("tournament.errors.downstreamPlayed"), cascadeConfirm: t("tournament.match.cascadeConfirm") };
+  const scoreLabels = {
+    home: t("tournament.match.home"),
+    away: t("tournament.match.away"),
+    submit: t("tournament.match.submit"),
+    saving: t("tournament.match.saving"),
+    cascadeWarning: t("tournament.errors.downstreamPlayed"),
+    cascadeConfirm: t("tournament.match.cascadeConfirm"),
+    scheduledAt: t("tournament.match.scheduledAt"),
+  };
   const standingsLabels = {
     rank: t("tournament.standings.rank"),
     participant: t("tournament.standings.participant"),
@@ -127,6 +136,8 @@ async function KnockoutStage({ stageId, names, clubId, t, scoreLabels }: { stage
       clubId={clubId}
       recordScoreAction={recordScoreAction}
       scoreLabels={scoreLabels as never}
+      scheduleMatchAction={scheduleMatchAction}
+      scheduleLabels={scoreLabels as never}
     />
   );
 }
@@ -154,7 +165,7 @@ async function RoundRobinStage({
   return (
     <div className="flex flex-col gap-(--space-4)">
       <StandingsTable rows={rows} names={standingNames} labels={standingsLabels as never} />
-      <FixtureList matches={matches} names={names} canManage clubId={clubId} recordScoreAction={recordScoreAction} labels={{ ...(scoreLabels as object), pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}" } as never} />
+      <FixtureList matches={matches} names={names} canManage clubId={clubId} recordScoreAction={recordScoreAction} scheduleMatchAction={scheduleMatchAction} labels={{ ...(scoreLabels as object), pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}" } as never} />
     </div>
   );
 }
@@ -194,7 +205,7 @@ async function GroupsStage({
           <div key={g.id} className="flex flex-col gap-(--space-3)">
             <h3 className="font-semibold text-fg">{g.name}</h3>
             <StandingsTable rows={rows} names={standingNames} labels={standingsLabels as never} highlightTop={stageSettings.advancePerGroup} />
-            <FixtureList matches={groupMatches} names={names} canManage clubId={clubId} recordScoreAction={recordScoreAction} labels={{ ...(scoreLabels as object), pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}" } as never} />
+            <FixtureList matches={groupMatches} names={names} canManage clubId={clubId} recordScoreAction={recordScoreAction} scheduleMatchAction={scheduleMatchAction} labels={{ ...(scoreLabels as object), pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}" } as never} />
           </div>
         );
       })}

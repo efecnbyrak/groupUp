@@ -18,6 +18,7 @@ export {
   assertCancellable,
   assertPublishable,
   assertUpdatable,
+  completePastEvents,
   contentOf,
   createEventDraft,
   deleteEventDraft,
