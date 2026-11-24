@@ -53,6 +53,10 @@ test("kulüp aç, davetle katıl, görevli talebi → Admin onayı", async ({ br
   await expect(joiner.getByText(`${clubName} kulübüne hoş geldin!`)).toBeVisible();
   await expect(joiner.getByText("Bu kulübün üyesisin")).toBeVisible();
 
+  // 3b) Yetki sınırı: sıradan üye ekip sayfasını göremez / görevli atayamaz (requireClubPermission).
+  await joiner.goto(`${panelUrl}/ekip`);
+  await expect(joiner.getByRole("button", { name: "Görevli ekle" })).toHaveCount(0);
+
   // 4) Başkan: görevli atama talebi (doğrudan uygulanmaz)
   await president.goto(`${panelUrl}/ekip`);
   await president.getByRole("button", { name: "Görevli ekle" }).click();

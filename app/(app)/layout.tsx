@@ -2,7 +2,7 @@ import { Suspense } from "react";
 
 import { clubNav } from "@/app/_lib/club-nav";
 import { displayUser } from "@/app/_lib/page-user";
-import { AppHeader, AppHeaderFallback, BottomTabBar, PublicHeader, type HeaderClub, type HeaderNotification, type PanelLink } from "@/components/shell";
+import { AppHeader, AppHeaderFallback, BottomTabBar, PublicHeader, SkipLink, type HeaderClub, type HeaderNotification, type PanelLink } from "@/components/shell";
 import { ToastProvider } from "@/components/ui";
 import { getLocale, getT } from "@/i18n/server";
 import { getSessionUser } from "@/lib/authz";
@@ -45,6 +45,7 @@ async function AppFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <div data-panel={active?.type === "ALUMNI" ? "alumni" : "student"} data-archetype="productive" data-density="comfortable" className="flex flex-1 flex-col bg-canvas-subtle">
+      <SkipLink />
       {active ? (
         <AppHeader
           user={displayUser(active, t)}

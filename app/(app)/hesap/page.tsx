@@ -1,9 +1,9 @@
-import { Laptop, LogOut, Shield, Trash2, UserRound } from "lucide-react";
+import { Download, Laptop, LogOut, Shield, Trash2, UserRound } from "lucide-react";
 import { Suspense } from "react";
 
 import { titled } from "@/app/_lib/metadata";
 import { displayUser, requirePageUser } from "@/app/_lib/page-user";
-import { Avatar, Badge, Button, ButtonLink, Card } from "@/components/ui";
+import { Avatar, Badge, Button, buttonClasses, ButtonLink, Card } from "@/components/ui";
 import { getT } from "@/i18n/server";
 import { logoutAction, logoutAllAction } from "@/modules/identity";
 
@@ -48,6 +48,14 @@ async function AccountContent() {
             </Button>
           </form>
         </div>
+      </Card>
+      <Card padding="lg" className="flex flex-col gap-(--space-3)">
+        <h2 className="text-(length:--type-heading-sm) font-semibold text-fg">{t("account.export.title")}</h2>
+        <p className="text-(length:--type-body-sm) text-fg-secondary">{t("account.export.body")}</p>
+        <a href="/api/v1/account/export" className={buttonClasses({ variant: "secondary", className: "self-start" })}>
+          <Download aria-hidden="true" className="size-(--icon-size-sm)" />
+          {t("account.export.download")}
+        </a>
       </Card>
       <Card padding="lg" className="flex flex-col gap-(--space-3)">
         <h2 className="text-(length:--type-heading-sm) font-semibold text-fg">{t("account.delete.title")}</h2>

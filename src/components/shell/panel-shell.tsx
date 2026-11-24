@@ -8,6 +8,7 @@ import { getT } from "@/i18n/server";
 import { Logo } from "./logo";
 import { NavLink } from "./nav-link";
 import { PanelMobileNav } from "./panel-mobile-nav";
+import { SkipLink } from "./skip-link";
 
 export type PanelName = "student" | "alumni" | "president" | "staff" | "admin" | "platform";
 /** `badge`: sayaç (onay kuyruğu, açık ticket) — 0 ise gösterilmez; `badgeLabel` ekran okuyucu metni. */
@@ -52,6 +53,7 @@ export async function PanelShell({ panel, title, roleLabel, items, children }: {
 
   return (
     <div data-panel={panel} data-archetype="productive" className="flex min-h-dvh flex-col bg-canvas-subtle">
+      <SkipLink />
       <div aria-hidden="true" className="h-(--panel-stripe-height) bg-brand" />
       <header className="sticky top-0 z-(--z-header) flex h-(--header-height) items-center gap-(--space-2) border-b border-line bg-card px-(--gutter) lg:hidden">
         <PanelMobileNav labels={{ open: t("nav.panelMenu"), title: `${title} · ${roleLabel}`, close: t("common.close") }}>

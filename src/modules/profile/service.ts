@@ -19,6 +19,58 @@ interface Actor {
   id: string;
 }
 
+/**
+ * KVKK veri dışa aktarma (ARCHITECTURE §8): kullanıcının kendi verisinin tamamı, okunabilir JSON.
+ * Oy içeriği (Vote) KASTEN hariç — gizli oy ilkesi (ELECTIONS §2); yalnızca "hangi seçimde oy
+ * kullandın" (BallotReceipt, neye oy verildiğini taşımaz) dahildir. Diğer modüllerin tablolarını
+ * doğrudan okumak CLAUDE.md §4 kural 5 ("okuma serbest") kapsamında.
+ */
+export async function exportOwnData(userId: string) {
+  const data = await db.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      type: true,
+      status: true,
+      locale: true,
+      createdAt: true,
+      lastLoginAt: true,
+      university: { select: { name: true } },
+      profile: {
+        include: {
+          faculty: { select: { nameTr: true } },
+          department: { select: { nameTr: true } },
+        },
+      },
+      alumniVerification: { select: { status: true, submittedAt: true, decidedAt: true } },
+      memberships: {
+        select: { club: { select: { name: true, slug: true } }, status: true, joinedAt: true, leftAt: true },
+      },
+      staffRoles: {
+        select: { club: { select: { name: true, slug: true } }, permissions: true, createdAt: true },
+      },
+      eventRegistrations: {
+        select: { event: { select: { titleTr: true } }, status: true, createdAt: true },
+      },
+      teamsCaptain: { select: { name: true, code: true, event: { select: { titleTr: true } } } },
+      teamMemberships: { select: { team: { select: { name: true } } } },
+      candidacies: {
+        select: { election: { select: { title: true } }, approved: true, createdAt: true },
+      },
+      changeRequests: {
+        select: { type: true, status: true, createdAt: true, decidedAt: true },
+      },
+    },
+  });
+  const ballotReceipts = await db.ballotReceipt.findMany({
+    where: { userId },
+    select: { castAt: true, election: { select: { title: true } } },
+  });
+  await audit({ action: "profile.data.exported", targetType: "User", targetId: userId, actorId: userId });
+  return { exportedAt: new Date().toISOString(), ...data, ballotReceipts };
+}
+
 /** Kendi profili: kullanıcı + profil + üniversite/fakülte/bölüm adları. */
 export function getOwnProfile(userId: string) {
   return db.user.findUnique({

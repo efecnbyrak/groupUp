@@ -126,6 +126,16 @@ test("seçim oluştur → adaylık → oylama → sonuç onayı → başkan değ
   await voter.goto(fresh("/kulupler/kent-spor"));
   await expect(voter.getByText(/Yeni başkan: Can Aydın/).filter({ visible: true })).toBeVisible();
   await expect(voter.getByText("Can Aydın").filter({ visible: true }).first()).toBeVisible();
+
+  // Temizlik: bu test kent-spor'un başkanını kalıcı olarak değiştiriyor; diğer e2e dosyaları
+  // (event/registration/tournament) demo.baskan'ın başkan olduğunu varsayıyor — paylaşılan
+  // demo DB'de dosyalar arası sıralamaya bağımlı kalmasın diye Admin üzerinden eski haline döndür.
+  await admin.goto(fresh("/panel/admin/kulupler"));
+  await admin.getByRole("link", { name: "Kent Spor Kulübü" }).click();
+  await admin.getByRole("button", { name: "Başkanı değiştir" }).click();
+  await admin.getByRole("dialog").getByLabel("Başkanın e-postası").fill("demo.baskan@ogr.kent.edu.tr");
+  await admin.getByRole("dialog").getByRole("button", { name: "Kaydet" }).click();
+  await expect(admin.getByText("demo.baskan@ogr.kent.edu.tr").filter({ visible: true })).toBeVisible();
 });
 
 function cronSecret(): string {

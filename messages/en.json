@@ -710,6 +710,11 @@
       "revokeOthers": "Sign out all other sessions",
       "othersRevoked": "{count, plural, =0 {There were no other sessions.} one {# session signed out.} other {# sessions signed out.}}"
     },
+    "export": {
+      "title": "Export my data",
+      "body": "Download a readable copy of all personal data kept about your account (GDPR/KVKK).",
+      "download": "Download as JSON"
+    },
     "delete": {
       "title": "Delete account",
       "teaser": "You can permanently delete your account and personal data.",
@@ -1704,6 +1709,7 @@
     "empty": "No notifications yet",
     "emptyBody": "New notifications will appear here.",
     "markAllRead": "Mark all as read",
+    "markRead": "Mark as read",
     "viewAll": "View all notifications",
     "unreadBadge": "{count} unread"
   },
@@ -1785,6 +1791,83 @@
       "tie": "There was a tie.",
       "votes": "{count} votes ({pct}%)",
       "totalBallots": "{count} votes total"
+    }
+  },
+  "legal": {
+    "kvkk": {
+      "title": "Data Protection Notice",
+      "updatedAt": "Last updated: 2026-11-24 — draft, pending legal review",
+      "sections": [
+        { "heading": "1. Data controller", "body": ["groupUp is operated by [legal entity name, address and registered contact to be added]. Club-related data is processed by the university's Admin users under applicable data protection law (incl. KVKK Law No. 6698 and, where relevant, GDPR)."] },
+        {
+          "heading": "2. Categories of personal data processed",
+          "body": [
+            "Identity and contact: name, surname, university email, phone, gender and birth date (only when an event organiser marks them as required).",
+            "Student/alumni data: student number, faculty, department, class or graduation year, graduation document (manual verification path).",
+            "Image data: profile photo, club logo/cover image.",
+            "Activity records: club memberships, event registrations, team data, tournament results, ticket/support messages, session and device info (IP, user agent), audit log.",
+            "Election data: which election you voted in is recorded; WHICH candidate you voted for is kept separate and unlinkable by design (secret ballot), never matched to your identity."
+          ]
+        },
+        {
+          "heading": "3. Purpose and legal basis",
+          "body": [
+            "Performance of club membership, event/registration/tournament management and presidential elections.",
+            "Account security and abuse prevention (legitimate interest).",
+            "Explicit consent collected at registration where applicable."
+          ]
+        },
+        {
+          "heading": "4. Sharing",
+          "body": [
+            "Your data is shared only with your own university's Admins and your club's staff, scoped to what their role requires (tenant isolation — no cross-university access).",
+            "Infrastructure processors (e.g. AWS SES for email, Cloudflare R2 for storage, DeepL for translation) may process data on our behalf and may host servers outside the EU/EEA."
+          ]
+        },
+        {
+          "heading": "5. Retention",
+          "body": [
+            "Data is kept while your account is active. On account deletion your personal data is anonymised; private documents belonging to a deleted account (graduation documents, ticket attachments) are permanently deleted within 30 days.",
+            "Audit logs may be kept longer for security and compliance."
+          ]
+        },
+        {
+          "heading": "6. Your rights",
+          "body": [
+            "You may learn whether your data is processed, request information, request correction or deletion, and object to processing.",
+            "Use Profile → Export my data to download a copy, or Account → Delete account to request deletion.",
+            "For other requests, contact [support email to be added]."
+          ]
+        }
+      ]
+    },
+    "gizlilik": {
+      "title": "Privacy Policy",
+      "updatedAt": "Last updated: 2026-11-24 — draft, pending legal review",
+      "sections": [
+        { "heading": "1. Scope", "body": ["This policy explains what data is collected while using the groupUp web app and how it is protected. See the Data Protection Notice for detailed processing purposes."] },
+        { "heading": "2. Cookies", "body": ["Only one strictly necessary cookie is used to maintain your session (gu_session). No advertising or analytics cookies are used."] },
+        { "heading": "3. Security", "body": ["Passwords are hashed with argon2id, session tokens are opaque and stored hashed, sensitive documents are served via signed, time-limited links, and all traffic is served over HTTPS."] },
+        { "heading": "4. Data minimisation", "body": ["Event registrations transfer only the profile fields an organiser actually needs by default; gender and birth date are never exported unless an organiser explicitly marks them as required."] }
+      ]
+    },
+    "kullanimSartlari": {
+      "title": "Terms of Use",
+      "updatedAt": "Last updated: 2026-11-24 — draft, pending legal review",
+      "sections": [
+        { "heading": "1. Account", "body": ["A groupUp account can only be created with your registered university email address. You are responsible for keeping your account secure."] },
+        { "heading": "2. Acceptable use", "body": ["The platform may only be used for university club activities. Unauthorised access to other accounts, harassment, submitting false information, and any attempt to manipulate election results are prohibited."] },
+        { "heading": "3. Content responsibility", "body": ["Club officers are responsible for the accuracy of the event/announcement content they publish. Inappropriate content may be removed by the university Admin."] },
+        { "heading": "4. Termination", "body": ["A university Admin or Super Admin may suspend or permanently close an account found to violate these terms."] }
+      ]
+    },
+    "iletisim": {
+      "title": "Contact",
+      "updatedAt": "Last updated: 2026-11-24 — draft, pending legal review",
+      "sections": [
+        { "heading": "Support", "body": ["You can reach us through the Support/Ticket section in your club or university panel."] },
+        { "heading": "Data protection requests", "body": ["For data protection requests, contact [support email to be added]."] }
+      ]
     }
   }
 }

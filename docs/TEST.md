@@ -190,9 +190,9 @@ seçimle (DB'ye doğrudan yazılarak) art arda `goto` ile açıp banner başlı�
 
 ## Sırada (birlikte ilerlenecek)
 
-- [ ] F12.1'in geri kalanı: diğer kritik akışların e2e kapsamı (zaten var olanlar: auth, club,
-      event, registration, tournament, alumni, platform, home, profile) + erişilebilirlik
-      denetimi + Lighthouse.
+- [x] F12.1'in geri kalanı: e2e kapsamı gözden geçirildi, `club.spec.ts`/`tournament.spec.ts`'e
+      ek senaryo eklendi, tam takım `--workers=1` ile 16/16 yeşil (bkz. ROADMAP "takip turu 7").
+      Erişilebilirlik denetimi (WCAG 2.2 AA) yapıldı. Lighthouse bu sandbox'ta çalıştırılamadı.
 - [ ] F12.2: Güvenlik başlıkları, CSP, rate limit gözden geçirme.
 - [ ] F12.3: KVKK — metin sayfaları, veri dışa aktarma, anonimleştirme.
 - [ ] F12.4: R2 + SES + DeepL canlı provider'ları, Vercel deploy.

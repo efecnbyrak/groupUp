@@ -710,6 +710,11 @@
       "revokeOthers": "Diğer tüm oturumları kapat",
       "othersRevoked": "{count, plural, =0 {Kapatılacak başka oturum yoktu.} one {# oturum kapatıldı.} other {# oturum kapatıldı.}}"
     },
+    "export": {
+      "title": "Verilerimi dışa aktar",
+      "body": "Hesabınla ilgili tutulan tüm kişisel verilerin okunabilir bir kopyasını indir (KVKK).",
+      "download": "JSON olarak indir"
+    },
     "delete": {
       "title": "Hesabı sil",
       "teaser": "Hesabını ve kişisel verilerini kalıcı olarak silebilirsin.",
@@ -1704,6 +1709,7 @@
     "empty": "Henüz bildirimin yok",
     "emptyBody": "Yeni bildirimler burada görünecek.",
     "markAllRead": "Tümünü okundu say",
+    "markRead": "Okundu say",
     "viewAll": "Tüm bildirimleri gör",
     "unreadBadge": "{count} okunmamış"
   },
@@ -1785,6 +1791,86 @@
       "tie": "Eşitlik oluştu.",
       "votes": "{count} oy ({pct}%)",
       "totalBallots": "Toplam {count} oy"
+    }
+  },
+  "legal": {
+    "kvkk": {
+      "title": "KVKK Aydınlatma Metni",
+      "updatedAt": "Son güncelleme: 2026-11-24 — taslak, hukuki inceleme bekliyor",
+      "sections": [
+        {
+          "heading": "1. Veri sorumlusu",
+          "body": ["groupUp platformu, [Veri sorumlusu tüzel/gerçek kişi unvanı, adres ve KEP adresi buraya eklenecek] tarafından işletilir. Kulüp faaliyetlerine ilişkin veriler, ilgili üniversitenin Admin kullanıcıları tarafından 6698 sayılı KVKK kapsamında işlenir."]
+        },
+        {
+          "heading": "2. İşlenen kişisel veri kategorileri",
+          "body": [
+            "Kimlik ve iletişim: ad, soyad, okul e-postası, telefon, cinsiyet ve doğum tarihi (yalnızca etkinlik yöneticisi gerekli işaretlerse).",
+            "Öğrenci/mezun bilgisi: öğrenci numarası, fakülte, bölüm, sınıf veya mezuniyet yılı, mezuniyet belgesi (manuel doğrulama yolunda).",
+            "Görsel veri: profil fotoğrafı, kulüp logosu/kapak görseli.",
+            "İşlem kayıtları: kulüp üyelikleri, etkinlik başvuruları, takım bilgileri, turnuva sonuçları, ticket/talep yazışmaları, oturum ve cihaz bilgisi (IP, user-agent), denetim kaydı (AuditLog).",
+            "Seçim verisi: hangi seçimde oy kullandığınız kaydedilir; HANGİ ADAYA oy verdiğiniz gizli oy ilkesiyle ayrı ve bağlantısız tutulur, kimseyle eşleştirilemez."
+          ]
+        },
+        {
+          "heading": "3. İşlenme amaçları ve hukuki sebep",
+          "body": [
+            "Üniversite kulüp üyeliği, etkinlik/başvuru/turnuva yönetimi ve başkanlık seçimi süreçlerinin yürütülmesi (KVKK m.5/2-c, bir sözleşmenin kurulması/ifası).",
+            "Hesap güvenliği, yetkilendirme ve kötüye kullanımın önlenmesi (KVKK m.5/2-f, meşru menfaat).",
+            "Kayıt sırasında açık rızanız alınan durumlarda (ör. cinsiyet/doğum tarihi gibi hassas olmayan ama hassasiyet gösterilen alanlar) açık rıza (KVKK m.5/1)."
+          ]
+        },
+        {
+          "heading": "4. Verilerin aktarımı",
+          "body": [
+            "Verileriniz yalnızca kayıtlı olduğunuz üniversitenin yetkili Adminleri ve üyesi olduğunuz kulübün görevlileriyle, görevleri gereği gerektiği ölçüde paylaşılır (kiracı/tenant izolasyonu — başka üniversitenin verisi görülemez).",
+            "Alt yüklenici/işleyen olarak e-posta gönderimi, dosya depolama ve çeviri hizmeti sağlayıcıları (ör. AWS SES, Cloudflare R2, DeepL) teknik altyapı amacıyla veriye erişebilir; bu sağlayıcılar AB/AEA dışında sunucu barındırabilir."
+          ]
+        },
+        {
+          "heading": "5. Saklama süresi",
+          "body": [
+            "Hesabınız aktif olduğu sürece veriler saklanır. Hesap silme talebinde kişisel bilgileriniz anonimleştirilir; silinen hesaba ait özel belgeler (mezuniyet belgesi, ticket ekleri) 30 gün içinde kalıcı olarak silinir.",
+            "Denetim kayıtları (AuditLog) güvenlik ve hukuki uyum amacıyla daha uzun süre saklanabilir."
+          ]
+        },
+        {
+          "heading": "6. Haklarınız (KVKK m.11)",
+          "body": [
+            "Verinizin işlenip işlenmediğini öğrenme, işleniyorsa bilgi talep etme, amacına uygun kullanılıp kullanılmadığını öğrenme, aktarıldığı üçüncü kişileri bilme, düzeltilmesini/silinmesini isteme ve bu işlemlerin aktarılan taraflara bildirilmesini isteme haklarına sahipsiniz.",
+            "Profilim → Verilerimi dışa aktar üzerinden kendi verilerinizin bir kopyasını indirebilir, Hesabım → Hesabı sil üzerinden silme talebinde bulunabilirsiniz.",
+            "Diğer talepleriniz için [iletişim e-postası buraya eklenecek] adresinden bize ulaşabilirsiniz."
+          ]
+        }
+      ]
+    },
+    "gizlilik": {
+      "title": "Gizlilik Politikası",
+      "updatedAt": "Son güncelleme: 2026-11-24 — taslak, hukuki inceleme bekliyor",
+      "sections": [
+        { "heading": "1. Kapsam", "body": ["Bu politika groupUp web uygulamasını kullanırken toplanan verileri ve bu verilerin nasıl korunduğunu açıklar. Ayrıntılı işleme amaçları için KVKK Aydınlatma Metni'ne bakın."] },
+        { "heading": "2. Çerezler", "body": ["Yalnızca oturumu sürdürmek için zorunlu bir çerez (gu_session) kullanılır. Reklam veya analiz amaçlı üçüncü taraf çerezi kullanılmaz."] },
+        { "heading": "3. Güvenlik", "body": ["Şifreler argon2id ile hash'lenir, oturum token'ları opak ve hash'li saklanır, hassas belgeler imzalı ve süreli bağlantılarla sunulur, tüm trafik HTTPS üzerinden taşınır."] },
+        { "heading": "4. Veri minimizasyonu", "body": ["Etkinlik başvurularında varsayılan olarak yalnızca gerekli profil alanları aktarılır; cinsiyet ve doğum tarihi yönetici açıkça gerekli işaretlemedikçe hiçbir yere aktarılmaz."] }
+      ]
+    },
+    "kullanimSartlari": {
+      "title": "Kullanım Şartları",
+      "updatedAt": "Son güncelleme: 2026-11-24 — taslak, hukuki inceleme bekliyor",
+      "sections": [
+        { "heading": "1. Hesap", "body": ["groupUp hesabı yalnızca kayıtlı üniversitenizin okul e-posta adresiyle açılabilir. Hesabınızın güvenliğinden siz sorumlusunuz."] },
+        { "heading": "2. Kabul edilebilir kullanım", "body": ["Platform yalnızca üniversite kulüp faaliyetleri için kullanılabilir. Başka kullanıcıların hesaplarına izinsiz erişim, taciz, sahte bilgi girişi ve seçim sonuçlarını manipüle etmeye yönelik her türlü girişim yasaktır."] },
+        { "heading": "3. İçerik sorumluluğu", "body": ["Kulüp yöneticileri paylaştıkları etkinlik/duyuru içeriğinin doğruluğundan sorumludur. Uygunsuz içerik üniversite Admini tarafından kaldırılabilir."] },
+        { "heading": "4. Hesap sonlandırma", "body": ["Kurallara aykırı kullanım tespit edildiğinde üniversite Admini veya Süper Admin hesabı askıya alabilir veya kalıcı olarak kapatabilir."] }
+      ]
+    },
+    "iletisim": {
+      "title": "İletişim",
+      "updatedAt": "Son güncelleme: 2026-11-24 — taslak, hukuki inceleme bekliyor",
+      "sections": [
+        { "heading": "Destek", "body": ["Kulüp veya üniversite panelindeki Destek/Ticket bölümünden bize yazabilirsiniz."] },
+        { "heading": "KVKK talepleri", "body": ["Veri koruma ile ilgili talepleriniz için [iletişim e-postası buraya eklenecek]."] }
+      ]
     }
   }
 }

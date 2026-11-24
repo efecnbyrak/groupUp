@@ -142,7 +142,7 @@ export async function AppHeader({
                     {!n.read && markNotificationReadFormAction ? (
                       <form action={markNotificationReadFormAction}>
                         <input type="hidden" name="id" value={n.id} />
-                        <button type="submit" aria-label={t("notifications.markAllRead")} className="size-2 shrink-0 rounded-full bg-(--color-primary)" />
+                        <button type="submit" aria-label={t("notifications.markRead")} className="size-2 shrink-0 rounded-full bg-(--color-primary)" />
                       </form>
                     ) : null}
                   </div>

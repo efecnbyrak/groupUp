@@ -13,3 +13,4 @@ export { Footer } from "./footer";
 export { Logo, LogoMark } from "./logo";
 export { PageHeader, PanelShell, type PanelName, type PanelNavItem } from "./panel-shell";
 export { PublicHeader, PublicHeaderFallback } from "./public-header";
+export { SkipLink } from "./skip-link";

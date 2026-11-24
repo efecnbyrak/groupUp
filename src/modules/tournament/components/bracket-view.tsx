@@ -60,6 +60,7 @@ export interface BracketLabels {
   bye: string;
   tbd: string;
   thirdPlace: string;
+  close: string;
 }
 
 type Action = (prev: ActionResult | null, fd: FormData) => Promise<ActionResult>;
@@ -153,7 +154,7 @@ export function BracketView({
             <p className="font-semibold text-fg">
               {name(selectedMatch.homeId)} — {name(selectedMatch.awayId)}
             </p>
-            <Button variant="ghost" size="sm" onClick={() => setSelected(null)}>
+            <Button variant="ghost" size="sm" aria-label={labels.close} onClick={() => setSelected(null)}>
               ✕
             </Button>
           </div>

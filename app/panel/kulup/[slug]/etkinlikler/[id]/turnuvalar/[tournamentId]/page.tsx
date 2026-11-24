@@ -131,7 +131,7 @@ async function KnockoutStage({ stageId, names, clubId, t, scoreLabels }: { stage
     <BracketView
       matches={matches}
       names={names}
-      labels={{ bye: t("tournament.bracket.bye"), tbd: t("tournament.bracket.tbd"), thirdPlace: t("tournament.bracket.thirdPlace") }}
+      labels={{ bye: t("tournament.bracket.bye"), tbd: t("tournament.bracket.tbd"), thirdPlace: t("tournament.bracket.thirdPlace"), close: t("common.close") }}
       canManage
       clubId={clubId}
       recordScoreAction={recordScoreAction}

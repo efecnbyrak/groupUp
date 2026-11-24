@@ -92,7 +92,7 @@ async function Content({ params }: PageProps<"/turnuva/[id]">) {
                 return (
                   <Card key={stage.id} className="flex flex-col gap-(--space-4)">
                     <CardHeader title={stage.name} />
-                    <BracketView matches={matches} names={names} labels={{ bye: t("tournament.bracket.bye"), tbd: t("tournament.bracket.tbd"), thirdPlace: t("tournament.bracket.thirdPlace") }} />
+                    <BracketView matches={matches} names={names} labels={{ bye: t("tournament.bracket.bye"), tbd: t("tournament.bracket.tbd"), thirdPlace: t("tournament.bracket.thirdPlace"), close: t("common.close") }} />
                   </Card>
                 );
               }

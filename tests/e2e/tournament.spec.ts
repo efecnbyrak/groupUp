@@ -38,7 +38,13 @@ test("turnuva oluştur → braket üret → skor gir → kazanan ilerler", async
   // 3) Round1 maçına tıkla, skor gir.
   const round1Box = main.getByRole("button").filter({ visible: true, hasNotText: "Belirlenecek" }).first();
   await round1Box.click();
-  const panel = main.locator("div").filter({ has: page.getByRole("button", { name: "Skoru kaydet" }) }).last();
+  // F10'dan sonra skor panelinin altında ayrı bir "Saat seç" formu da "Skoru kaydet" adlı
+  // (devre dışı) bir buton taşıyor; o div'de spinbutton yok, bu yüzden spinbutton varlığı da şart.
+  const panel = main
+    .locator("div")
+    .filter({ has: page.getByRole("button", { name: "Skoru kaydet" }) })
+    .filter({ has: page.getByRole("spinbutton") })
+    .last();
   const inputs = panel.getByRole("spinbutton");
   await inputs.nth(0).fill("3");
   await inputs.nth(1).fill("1");
@@ -47,4 +53,16 @@ test("turnuva oluştur → braket üret → skor gir → kazanan ilerler", async
 
   // 4) Maç tamamlandı olarak işaretlendi — skor "3" braket kutusunda görünür.
   await expect(main.getByText("3", { exact: true }).first()).toBeVisible();
+
+  // 5) Sonraki tur henüz oynanmadı → serbest düzeltme (TOURNAMENTS §7: forceCascade uyarısı yok).
+  await round1Box.click();
+  const editPanel = main
+    .locator("div")
+    .filter({ has: page.getByRole("button", { name: "Skoru kaydet" }) })
+    .filter({ has: page.getByRole("spinbutton") })
+    .last();
+  await editPanel.getByRole("spinbutton").nth(0).fill("5");
+  await editPanel.getByRole("button", { name: "Skoru kaydet" }).click();
+  await expect(main.getByText("Skor kaydedildi.")).toBeVisible({ timeout: 10_000 });
+  await expect(main.getByText("5", { exact: true }).first()).toBeVisible();
 });
