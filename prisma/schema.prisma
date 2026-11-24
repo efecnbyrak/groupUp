@@ -140,6 +140,40 @@ enum RegistrationStatus {
   CANCELLED
 }
 
+enum TournamentFormat {
+  SINGLE_ELIM
+  DOUBLE_ELIM
+  ROUND_ROBIN
+  GROUPS_KNOCKOUT
+  SWISS
+  FREE_FOR_ALL
+}
+
+enum StageType {
+  KNOCKOUT
+  DOUBLE_KNOCKOUT
+  ROUND_ROBIN
+  SWISS
+  FFA
+}
+
+enum TournamentStatus {
+  DRAFT
+  SEEDED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  WALKOVER
+  POSTPONED
+  BYE
+}
+
 enum TicketStatus {
   OPEN
   ANSWERED
@@ -290,6 +324,8 @@ model User {
   eventRegistrations Registration[]
   teamsCaptain       Team[]              @relation("TeamCaptain")
   teamMemberships    TeamMember[]
+  participantAs      Participant[]
+  matchesUpdated     Match[]             @relation("MatchUpdatedBy")
 
   @@index([universityId, type])
 }
@@ -648,6 +684,7 @@ model Event {
   formFields    EventFormField[]
   registrations Registration[]
   teams         Team[]
+  tournaments   Tournament[]
 
   @@unique([clubId, slug])
   @@index([universityId, status, startAt])
@@ -737,6 +774,7 @@ model Team {
   captain       User           @relation("TeamCaptain", fields: [captainId], references: [id])
   registrations Registration[]
   members       TeamMember[]
+  participantAs Participant[]
 
   @@unique([eventId, name])
   @@index([eventId, status])
@@ -754,4 +792,103 @@ model TeamMember {
 
   @@unique([teamId, userId])
   @@index([userId])
+}
+
+// ============================================================
+// Turnuva (F8) — sahip: tournament (Tournament, Stage, TournamentGroup, Participant, Match)
+// ============================================================
+model Tournament {
+  id          String           @id @default(cuid())
+  eventId     String
+  name        String           @db.VarChar(120)
+  format      TournamentFormat
+  status      TournamentStatus @default(DRAFT)
+  settings    Json // puanlar, eşitlik bozma sırası, 3.lük maçı, çift devre, grup ayarları…
+  isPublic    Boolean          @default(false)
+  createdById String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  stages       Stage[]
+  participants Participant[]
+
+  @@index([eventId])
+}
+
+model Stage {
+  id           String    @id @default(cuid())
+  tournamentId String
+  order        Int
+  type         StageType
+  name         String    @db.VarChar(120) // "Grup Aşaması", "Eleme"
+  settings     Json
+
+  tournament Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  groups     TournamentGroup[]
+  matches    Match[]
+
+  @@index([tournamentId, order])
+}
+
+model TournamentGroup {
+  id      String @id @default(cuid())
+  stageId String
+  name    String @db.VarChar(40) // "A Grubu"
+  order   Int    @default(0)
+
+  stage        Stage         @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  participants Participant[]
+  matches      Match[]
+
+  @@index([stageId, order])
+}
+
+model Participant {
+  id           String    @id @default(cuid())
+  tournamentId String
+  teamId       String?
+  userId       String?
+  displayName  String    @db.VarChar(80)
+  seed         Int?
+  groupId      String?
+  withdrawnAt  DateTime?
+
+  tournament Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team       Team?            @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  user       User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  group      TournamentGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([tournamentId])
+  @@index([groupId])
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  stageId     String
+  groupId     String?
+  round       Int
+  position    Int // tur içindeki sıra (braket çiziminde yukarıdan aşağı)
+  groupKey    String? // "THIRD_PLACE" gibi aynı (round,position) alanı dışında özel maçlar için ayraç
+  homeId      String? // Participant
+  awayId      String?
+  homeScore   Int?
+  awayScore   Int?
+  winnerId    String?
+  status      MatchStatus @default(PENDING)
+  nextMatchId String? // kazanan buraya
+  nextSlot    String? // "home" | "away"
+  scheduledAt DateTime?
+  note        String?     @db.VarChar(300) // hükmen/erteleme gerekçesi
+  updatedById String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  stage     Stage            @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  group     TournamentGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  updatedBy User?            @relation("MatchUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([stageId, round])
+  @@index([groupId])
+  @@index([nextMatchId])
 }

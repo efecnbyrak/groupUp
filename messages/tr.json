@@ -24,7 +24,7 @@
     "confirm": "Onayla",
     "delete": "Sil",
     "edit": "Düzenle",
-    "remove": "Kaldır",
+    "remove": "Çıkar",
     "save": "Kaydet",
     "pagination": "Sayfalar",
     "firstPage": "İlk sayfa",
@@ -904,7 +904,8 @@
       "requests": "Talepler",
       "info": "Kulüp bilgileri",
       "events": "Etkinlikler",
-      "announcements": "Duyurular"
+      "announcements": "Duyurular",
+      "tournaments": "Turnuvalar"
     },
     "panel": {
       "title": "Kulüp paneli",
@@ -1507,6 +1508,151 @@
       "team": "Takım",
       "event": "Etkinlik",
       "club": "Kulüp"
+    }
+  },
+  "tournament": {
+    "errors": {
+      "notEditable": "Bu işlem şu anda yapılamaz.",
+      "noParticipants": "Uygun katılımcı bulunamadı.",
+      "tooFewParticipants": "En az 2 katılımcı gerekir.",
+      "alreadySeeded": "Braket zaten oluşturuldu.",
+      "notSeeded": "Önce braket/fikstür oluşturulmalı.",
+      "groupsNotDone": "Grup aşaması henüz tamamlanmadı.",
+      "stageExists": "Eleme aşaması zaten oluşturuldu.",
+      "matchNotEditable": "Bu maç düzenlenemez.",
+      "downstreamPlayed": "Sonraki maç zaten oynandı. Devam edersen sonraki sonuçlar sıfırlanır ve yeniden uygulanır.",
+      "invalidScore": "Geçersiz skor.",
+      "duplicateName": "Bu isim zaten kullanılıyor.",
+      "noDraw": "Elemede beraberlik olmaz; eşitlik varsa penaltı/uzatma sonucunu skora yansıt."
+    },
+    "status": {
+      "DRAFT": "Taslak",
+      "SEEDED": "Fikstür hazır",
+      "IN_PROGRESS": "Devam ediyor",
+      "COMPLETED": "Tamamlandı",
+      "CANCELLED": "İptal edildi"
+    },
+    "format": {
+      "SINGLE_ELIM": "Tek eleme",
+      "ROUND_ROBIN": "Lig (round robin)",
+      "GROUPS_KNOCKOUT": "Grup + eleme"
+    },
+    "panel": {
+      "title": "Turnuvalar",
+      "body": "Etkinlik için turnuva oluştur, braketi üret, skor gir.",
+      "empty": "Henüz turnuva yok",
+      "emptyBody": "Kabul edilmiş başvurulardan veya elle bir liste ile turnuva oluştur."
+    },
+    "create": {
+      "button": "Turnuva oluştur",
+      "title": "Turnuva oluştur",
+      "body": "Katılımcılar kabul edilmiş başvurulardan otomatik gelir; istersen elle liste de girebilirsin.",
+      "nameField": "Turnuva adı",
+      "formatField": "Format",
+      "sourceField": "Katılımcı kaynağı",
+      "source": {
+        "TEAMS": "Kabul edilmiş takımlar",
+        "INDIVIDUALS": "Kabul edilmiş bireyler",
+        "MANUAL": "Elle liste"
+      },
+      "manualNamesField": "İsimler (her satıra bir isim)",
+      "isPublicField": "Herkese açık (girişsiz görüntülenebilir)",
+      "submit": "Oluştur"
+    },
+    "detail": {
+      "participants": "Katılımcılar",
+      "participantsBody": "Braket oluşturulmadan önce tohum sırasını düzenleyebilirsin.",
+      "addParticipant": "Katılımcı ekle",
+      "addParticipantTitle": "Katılımcı ekle",
+      "nameField": "İsim",
+      "seedField": "Tohum",
+      "removeParticipantTitle": "Katılımcı çıkarılsın mı?",
+      "rename": "Yeniden adlandır",
+      "renameTitle": "Katılımcıyı yeniden adlandır",
+      "seed": "Tohum",
+      "generateBracket": "Braketi/fikstürü oluştur",
+      "generateBracketTitle": "Braket/fikstür oluşturulsun mu?",
+      "generateBracketBody": "Katılımcı listesi ve tohumlar kilitlenir; sonradan yalnızca isim değiştirilebilir.",
+      "generateKnockout": "Eleme aşamasını oluştur",
+      "generateKnockoutTitle": "Eleme aşaması oluşturulsun mu?",
+      "generateKnockoutBody": "Tüm grup maçları tamamlanmış olmalı. Çapraz eşleşmeli tek eleme braketi oluşturulur.",
+      "bracket": "Braket",
+      "standings": "Puan tablosu",
+      "fixture": "Fikstür",
+      "groupStage": "Grup Aşaması",
+      "public": "Herkese açık",
+      "publicHint": "Bu turnuva girişsiz görüntülenebilir.",
+      "viewPublic": "Genel sayfayı aç"
+    },
+    "groups": {
+      "title": "Grup ayarları",
+      "body": "Braketi oluşturmadan önce grup sayısını ve gruptan çıkacak kişi sayısını belirle.",
+      "count": "Grup sayısı",
+      "advancePerGroup": "Gruptan çıkacak kişi sayısı",
+      "bestThirds": "En iyi 3.lerden eklenecek kişi sayısı",
+      "save": "Kaydet",
+      "saved": "Grup ayarları kaydedildi."
+    },
+    "bracket": {
+      "generated": "Braket/fikstür oluşturuldu.",
+      "knockoutGenerated": "Eleme aşaması oluşturuldu.",
+      "bye": "BAY",
+      "tbd": "Belirlenecek",
+      "thirdPlace": "3.lük Maçı"
+    },
+    "standings": {
+      "rank": "#",
+      "participant": "Katılımcı",
+      "played": "O",
+      "wins": "G",
+      "draws": "B",
+      "losses": "M",
+      "goalsFor": "A",
+      "goalsAgainst": "Y",
+      "goalDiff": "Av",
+      "points": "P",
+      "form": "Form",
+      "win": "Galibiyet",
+      "draw": "Beraberlik",
+      "loss": "Mağlubiyet"
+    },
+    "match": {
+      "submit": "Skoru kaydet",
+      "saving": "Kaydediliyor…",
+      "scoreSaved": "Skor kaydedildi.",
+      "cascadeConfirm": "Evet, sonraki sonuçları sıfırla ve uygula",
+      "walkover": "Hükmen",
+      "walkoverTitle": "Hükmen galibiyet",
+      "walkoverBody": "Kazanan taraf doğrudan ilerler; gerekçe zorunludur.",
+      "walkoverReason": "Gerekçe",
+      "home": "Ev sahibi",
+      "away": "Deplasman",
+      "winner": "Kazanan",
+      "postpone": "Ertele",
+      "postponed": "Maç ertelendi.",
+      "postponeTitle": "Maç ertelensin mi?",
+      "note": "Not (opsiyonel)",
+      "pending": "Oynanmadı",
+      "scheduledAt": "Tarih"
+    },
+    "myMatches": {
+      "title": "Maçlarım",
+      "body": "Katıldığın turnuvalardaki maçlarını buradan takip edebilirsin.",
+      "empty": "Henüz maçın yok",
+      "emptyBody": "Bir turnuvaya katılımcı olarak eklendiğinde maçların burada görünür."
+    },
+    "public": {
+      "notFound": "Bu turnuva bulunamadı veya herkese açık değil.",
+      "hostedBy": "Düzenleyen"
+    },
+    "settings": {
+      "saved": "Ayarlar kaydedildi."
+    },
+    "seed": {
+      "saved": "Tohumlar kaydedildi."
+    },
+    "participants": {
+      "added": "Katılımcı eklendi."
     }
   }
 }

@@ -15,6 +15,7 @@ import { createClub, storeClubImage, textToDoc } from "../src/modules/club";
 import { createAnnouncement, createEventDraft, saveEventDraft, storeEventImage, type EventContent } from "../src/modules/event";
 import { applyToEvent, completeTeam, createField, createTeam, joinTeam } from "../src/modules/registration";
 import { openAdminTicket, openClubTicket, replyTicket } from "../src/modules/ticket";
+import { createTournament, generateBracket, getStageMatches, recordScore, updateGroupsSettings } from "../src/modules/tournament";
 
 const KENT_SLUG = "istanbul-kent-universitesi";
 const S = "ogr.kent.edu.tr";
@@ -132,6 +133,9 @@ async function main() {
     await db.changeRequest.deleteMany({ where: { type: { in: ["EVENT_PUBLISH", "EVENT_UPDATE", "EVENT_CANCEL"] }, targetId: { notIn: (await db.event.findMany({ select: { id: true } })).map((e) => e.id) } } });
     console.info(`[seed-demo] ${e2eEvents.count} e2e etkinliği (başvuru/takım dahil) temizlendi`);
   }
+
+  const e2eTournaments = await db.tournament.deleteMany({ where: { name: { startsWith: "E2E Turnuva " } } });
+  if (e2eTournaments.count) console.info(`[seed-demo] ${e2eTournaments.count} e2e turnuvası (braket dahil) temizlendi`);
 
   // ------------------------------------------------------------ Hesaplar
   const users = new Map<string, { id: string; email: string; universityId: string | null }>();
@@ -339,6 +343,24 @@ async function main() {
     await joinTeam(u("demo.ogrenci06"), baharFutbol.id, yildizlar.code, {});
   }
 
+  // ------------------------------------------------------------ Turnuvalar (F8)
+  if (masaTenisi && (await db.tournament.count({ where: { eventId: masaTenisi.id } })) === 0) {
+    const singleElim = await createTournament(baskan, spor.id, masaTenisi.id, { name: "Masa Tenisi Elemeleri", format: "SINGLE_ELIM", source: "INDIVIDUALS", manualNames: [], isPublic: true });
+    await generateBracket(baskan, spor.id, singleElim.id);
+    const r1 = (await getStageMatches((await db.stage.findFirstOrThrow({ where: { tournamentId: singleElim.id } })).id)).filter((m) => m.round === 1 && m.status === "PENDING");
+    for (const m of r1) await recordScore(baskan, spor.id, m.id, { homeScore: 3, awayScore: 1 });
+
+    const groups = await createTournament(baskan, spor.id, masaTenisi.id, {
+      name: "Dostluk Ligi (Gruplar)",
+      format: "GROUPS_KNOCKOUT",
+      source: "MANUAL",
+      manualNames: ["Ekip Kaplan", "Ekip Şahin", "Ekip Boran", "Ekip Yıldırım", "Ekip Fırtına", "Ekip Volkan", "Ekip Mahmut", "Ekip Selim"],
+      isPublic: true,
+    });
+    await updateGroupsSettings(baskan, spor.id, groups.id, { groupCount: 2, advancePerGroup: 2, bestThirds: 0 });
+    await generateBracket(baskan, spor.id, groups.id);
+  }
+
   // ------------------------------------------------------------ Duyurular (F6)
   if ((await db.announcement.count({ where: { clubId: spor.id } })) === 0) {
     await createAnnouncement(baskan, spor.id, { titleTr: "Antrenman saatleri değişti", body: "Bu dönem antrenmanlar salı ve perşembe 18.00'de.\n\nYeni üyeler için tanışma antrenmanı bu perşembe!", pinned: true });
@@ -353,9 +375,10 @@ async function main() {
     events: await db.event.count({ where: { universityId: university.id } }),
     registrations: await db.registration.count({ where: { event: { universityId: university.id } } }),
     teams: await db.team.count({ where: { event: { universityId: university.id } } }),
+    tournaments: await db.tournament.count({ where: { event: { universityId: university.id } } }),
     pending: await db.changeRequest.count({ where: { universityId: university.id, status: "PENDING" } }),
   };
-  console.info(`[seed-demo] ${counts.users} hesap, ${counts.clubs} kulüp, ${counts.events} etkinlik, ${counts.registrations} başvuru, ${counts.teams} takım, ${counts.pending} bekleyen talep. Şifre: .env → DEMO_PASSWORD`);
+  console.info(`[seed-demo] ${counts.users} hesap, ${counts.clubs} kulüp, ${counts.events} etkinlik, ${counts.registrations} başvuru, ${counts.teams} takım, ${counts.tournaments} turnuva, ${counts.pending} bekleyen talep. Şifre: .env → DEMO_PASSWORD`);
 }
 
 main()

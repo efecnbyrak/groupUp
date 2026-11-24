@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { eventTitle } from "@/app/_components/events";
 import { titled } from "@/app/_lib/metadata";
 import { requirePageUser } from "@/app/_lib/page-user";
-import { Avatar, Badge, EmptyState, Skeleton, type BadgeTone } from "@/components/ui";
+import { Avatar, Badge, ButtonLink, EmptyState, Skeleton, type BadgeTone } from "@/components/ui";
 import type { MessageKey } from "@/i18n/messages";
 import { getLocale, getT } from "@/i18n/server";
 import { formatEventDateTime } from "@/lib/dates";
@@ -26,9 +26,14 @@ async function Content() {
 
   return (
     <>
-      <div className="flex flex-col gap-(--space-1)">
-        <h1 className="text-(length:--type-heading-xl) font-semibold text-fg">{t("registration.myApplications.title")}</h1>
-        <p className="text-fg-secondary">{t("registration.myApplications.body")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-(--space-4)">
+        <div className="flex flex-col gap-(--space-1)">
+          <h1 className="text-(length:--type-heading-xl) font-semibold text-fg">{t("registration.myApplications.title")}</h1>
+          <p className="text-fg-secondary">{t("registration.myApplications.body")}</p>
+        </div>
+        <ButtonLink href="/maclarim" variant="secondary">
+          {t("tournament.myMatches.title")}
+        </ButtonLink>
       </div>
       {registrations.length === 0 ? (
         <EmptyState icon={<CalendarX2 aria-hidden="true" className="size-(--icon-size-lg)" />} title={t("registration.myApplications.empty")} description={t("registration.myApplications.emptyBody")} />
