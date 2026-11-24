@@ -11,7 +11,7 @@
 - [ ] **Alan adı** (ör. `groupup.app` / `.com.tr`) + DNS (Cloudflare).
 - [x] **İstanbul Kent Üniversitesi mail domainleri** — öğrenci `ogr.kent.edu.tr`, mezun `mezun.kent.edu.tr` (teyit edildi).
 - [x] **GitHub repo** — https://github.com/efecnbyrak/groupUp
-- [ ] **KVKK metinleri** — aydınlatma metni, açık rıza, gizlilik politikası, kullanım şartları (hukuki içerik kullanıcıdan / hukukçudan).
+- [ ] **KVKK metinleri** — taslak hazır (`/yasal/*`, `messages/*.json` `legal.*`, F12.3), ama **hukuki inceleme/onay bekliyor**; veri sorumlusu tüzel kişi unvanı + destek e-postası metinlerde `[...]` olarak işaretli, doldurulmadı.
 - [ ] Sentry (opsiyonel, ücretsiz katman).
 - [ ] **Redis: gerekmiyor.** Rate limit Postgres'te ([ADR-0008](adr/0008-rate-limit-postgres.md)). Ölçülmüş ihtiyaçta Upstash.
 
