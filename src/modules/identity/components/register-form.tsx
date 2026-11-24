@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Button, Checkbox, FormMessage, Input, Select, useFormAction } from "@/components/ui";
@@ -184,7 +185,26 @@ function ProfileStep({ data, labels, back }: { data: FoundData; labels: L; back:
         error={err("passwordConfirm")}
       />
 
-      <Checkbox id="kvkk" required label={labels["auth.fields.kvkk"]} error={err("kvkk")} />
+      <Checkbox
+        id="kvkk"
+        required
+        label={
+          <>
+            {labels["auth.fields.kvkkPrefix"]}
+            <Link
+              href="/yasal/kvkk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {labels["auth.fields.kvkkLinkText"]}
+            </Link>{" "}
+            {labels["auth.fields.kvkkSuffix"]}
+          </>
+        }
+        error={err("kvkk")}
+      />
 
       <Button type="submit" size="lg" block loading={form.pending} loadingLabel={labels["common.loading"]}>
         {labels["auth.register.submit"]}

@@ -93,7 +93,9 @@
       "gender": "Cinsiyet",
       "birthDate": "Doğum tarihi",
       "code": "Doğrulama kodu",
-      "kvkk": "KVKK aydınlatma metnini okudum ve kişisel verilerimin işlenmesini kabul ediyorum.",
+      "kvkkPrefix": "",
+      "kvkkLinkText": "KVKK aydınlatma metnini",
+      "kvkkSuffix": "okudum ve kişisel verilerimin işlenmesini kabul ediyorum.",
       "universityName": "Üniversite adı",
       "note": "Not"
     },
