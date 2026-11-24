@@ -137,6 +137,9 @@ async function main() {
   const e2eTournaments = await db.tournament.deleteMany({ where: { name: { startsWith: "E2E Turnuva " } } });
   if (e2eTournaments.count) console.info(`[seed-demo] ${e2eTournaments.count} e2e turnuvası (braket dahil) temizlendi`);
 
+  const e2eElections = await db.election.deleteMany({ where: { title: { startsWith: "E2E Seçimi " } } });
+  if (e2eElections.count) console.info(`[seed-demo] ${e2eElections.count} e2e seçimi (aday/oy dahil) temizlendi`);
+
   // ------------------------------------------------------------ Hesaplar
   const users = new Map<string, { id: string; email: string; universityId: string | null }>();
   for (const [i, p] of PEOPLE.entries()) {
