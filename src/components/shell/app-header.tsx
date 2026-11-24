@@ -12,6 +12,10 @@ export type AppHeaderUser = { name: string; email: string; roleLabel: string; av
 export type PanelLink = { href: string; label: string };
 /** Header "Kulüpler ▾" — Kulüplerim (DESIGN §4). */
 export type HeaderClub = { href: string; name: string; logoUrl: string | null; roleLabel: string; presidentLabel: string };
+/** Bildirim zili — modül verisi app katmanından prop olarak gelir (shell modül import edemez). */
+export type HeaderNotification = { id: string; title: string; body: string | null; href: string | null; read: boolean; when: string };
+export type NotificationActionResult = { ok: true } | { ok: false; error: string };
+export type NotificationAction = (prev: NotificationActionResult | null, fd: FormData) => Promise<NotificationActionResult>;
 
 const icon = "size-(--icon-size-md)";
 
@@ -20,7 +24,25 @@ const icon = "size-(--icon-size-md)";
  * Kulüpler menüsü app katmanından `clubs` ile dolar; bildirimler F10'da.
  * `logoutAction` app katmanından gelir (shell modül import edemez).
  */
-export async function AppHeader({ user, panels, clubs = [], logoutAction }: { user: AppHeaderUser; panels: PanelLink[]; clubs?: HeaderClub[]; logoutAction: () => Promise<void> }) {
+export async function AppHeader({
+  user,
+  panels,
+  clubs = [],
+  notifications = [],
+  unreadCount = 0,
+  markNotificationReadAction,
+  markAllNotificationsReadAction,
+  logoutAction,
+}: {
+  user: AppHeaderUser;
+  panels: PanelLink[];
+  clubs?: HeaderClub[];
+  notifications?: HeaderNotification[];
+  unreadCount?: number;
+  markNotificationReadAction?: NotificationAction;
+  markAllNotificationsReadAction?: NotificationAction;
+  logoutAction: () => Promise<void>;
+}) {
   const [t, locale] = await Promise.all([getT(), getLocale()]);
 
   const clubsEmpty = (
@@ -87,13 +109,49 @@ export async function AppHeader({ user, panels, clubs = [], logoutAction }: { us
         <div className="ml-auto flex items-center gap-(--space-1)">
           <IconButtonLink href="/kesfet" label={t("nav.search")} icon={<Search aria-hidden="true" className={icon} />} />
           <Dropdown
-            label={t("nav.notifications")}
+            label={unreadCount > 0 ? t("notifications.unreadBadge", { count: unreadCount }) : t("nav.notifications")}
             width="lg"
-            triggerClassName="inline-flex size-(--touch-target-min) justify-center text-fg-secondary hover:bg-muted hover:text-fg"
-            trigger={<Bell aria-hidden="true" className={icon} />}
+            triggerClassName="relative inline-flex size-(--touch-target-min) justify-center text-fg-secondary hover:bg-muted hover:text-fg"
+            trigger={
+              <>
+                <Bell aria-hidden="true" className={icon} />
+                {unreadCount > 0 ? <span aria-hidden="true" className="absolute top-(--space-1-5) right-(--space-1-5) size-2 rounded-full bg-(--color-danger-fill)" /> : null}
+              </>
+            }
           >
-            <DropdownLabel>{t("nav.notifications")}</DropdownLabel>
-            <EmptyState title={t("common.comingSoon")} description={t("common.comingSoonBody")} className="border-none py-(--space-6)" />
+            <div className="flex items-center justify-between gap-(--space-2) px-(--space-3) pt-(--space-2)">
+              <p className="text-(length:--type-caption) font-semibold text-fg-secondary">{t("notifications.title")}</p>
+              {unreadCount > 0 && markAllNotificationsReadAction ? (
+                <form action={async (fd: FormData) => { await markAllNotificationsReadAction(null, fd); }}>
+                  <button type="submit" className="text-(length:--type-caption) font-semibold text-link hover:underline">
+                    {t("notifications.markAllRead")}
+                  </button>
+                </form>
+              ) : null}
+            </div>
+            {notifications.length === 0 ? (
+              <EmptyState title={t("notifications.empty")} description={t("notifications.emptyBody")} className="border-none py-(--space-6)" />
+            ) : (
+              <div className="flex flex-col">
+                {notifications.map((n) => (
+                  <div key={n.id} className={`flex items-start gap-(--space-2) px-(--space-3) py-(--space-2) ${n.read ? "" : "bg-(--color-primary-subtle)"}`}>
+                    <Link href={n.href ?? "/bildirimler"} className="min-w-0 flex-1">
+                      <p className="truncate text-(length:--type-body-sm) font-semibold text-fg">{n.title}</p>
+                      {n.body ? <p className="truncate text-(length:--type-caption) text-fg-secondary">{n.body}</p> : null}
+                      <p className="text-(length:--type-caption) text-fg-tertiary">{n.when}</p>
+                    </Link>
+                    {!n.read && markNotificationReadAction ? (
+                      <form action={async (fd: FormData) => { await markNotificationReadAction(null, fd); }}>
+                        <input type="hidden" name="id" value={n.id} />
+                        <button type="submit" aria-label={t("notifications.markAllRead")} className="size-2 shrink-0 rounded-full bg-(--color-primary)" />
+                      </form>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )}
+            <DropdownSeparator />
+            <DropdownLink href="/bildirimler">{t("notifications.viewAll")}</DropdownLink>
           </Dropdown>
           <div className="hidden lg:block">
             <LocaleSwitcher current={locale} label={t("common.language")} names={{ tr: t("common.languages.tr"), en: t("common.languages.en") }} />

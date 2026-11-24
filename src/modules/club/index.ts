@@ -42,6 +42,7 @@ export {
   isBanActive,
   joinWithInvite,
   leaveClub,
+  listActiveMemberIds,
   listStaffUserIds,
   lockClub,
   previewInvite,

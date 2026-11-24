@@ -247,3 +247,15 @@ export function describeValue(field: string, value: unknown): string | number | 
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
   return JSON.stringify(value);
 }
+
+/** F10 günlük cron: bitiş saati geçmiş yayındaki etkinlikler COMPLETED'e döner. */
+export async function completePastEvents(now = new Date()): Promise<number> {
+  const events = await db.event.findMany({
+    where: { status: "PUBLISHED", OR: [{ endAt: { lt: now } }, { endAt: null, startAt: { lt: now } }] },
+    select: { id: true },
+    take: 200,
+  });
+  if (!events.length) return 0;
+  await db.event.updateMany({ where: { id: { in: events.map((e) => e.id) } }, data: { status: "COMPLETED" } });
+  return events.length;
+}

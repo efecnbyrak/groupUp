@@ -5,7 +5,7 @@ import { db, type Tx } from "@/lib/db";
 import type { Prisma } from "@/lib/db-types";
 import { env } from "@/lib/env";
 import { getMailRecipient } from "@/modules/identity";
-import { sendEmailSafe } from "@/modules/notification";
+import { notify, sendEmailSafe } from "@/modules/notification";
 
 import { toFieldDef } from "./fields";
 import { decideCapacity, validateAnswers } from "./rules";
@@ -159,20 +159,41 @@ export async function cancelRegistration(actor: Actor, eventId: string): Promise
       const promoted = await promoteFromWaitlist(tx, eventId);
       if (promoted) {
         const recipient = await getMailRecipient(tx, promoted.userId);
-        return { event, recipient };
+        return { event, recipient, userId: promoted.userId };
       }
     }
-    return { event, recipient: null };
+    return { event, recipient: null, userId: null };
   });
-  if (result.recipient) {
-    await sendEmailSafe(result.recipient.email, "registration-decided", result.recipient.locale, {
-      name: result.recipient.name,
-      eventTitle: result.event.titleTr,
-      clubName: result.event.club.name,
-      outcome: "accepted",
-      url: `${env.APP_URL}/etkinliklerim`,
-    });
-  }
+  if (result.recipient && result.userId) await notifyRegistrationOutcome(result.userId, result.recipient, result.event, "accepted");
+}
+
+async function notifyRegistrationOutcome(
+  userId: string,
+  recipient: { email: string; locale: string; name: string },
+  event: { titleTr: string; club: { name: string } },
+  outcome: "accepted" | "waitlisted" | "rejected",
+): Promise<void> {
+  await sendEmailSafe(recipient.email, "registration-decided", recipient.locale, {
+    name: recipient.name,
+    eventTitle: event.titleTr,
+    clubName: event.club.name,
+    outcome,
+    url: `${env.APP_URL}/etkinliklerim`,
+  });
+  const titles: Record<typeof outcome, { tr: string; en: string }> = {
+    accepted: { tr: "Başvurun kabul edildi", en: "Your application was accepted" },
+    waitlisted: { tr: "Yedek listedesin", en: "You're on the waitlist" },
+    rejected: { tr: "Başvurun reddedildi", en: "Your application was rejected" },
+  };
+  await notify({
+    userId,
+    type: "REGISTRATION_UPDATE",
+    titleTr: titles[outcome].tr,
+    titleEn: titles[outcome].en,
+    bodyTr: event.titleTr,
+    bodyEn: event.titleTr,
+    href: "/etkinliklerim",
+  });
 }
 
 type Decision = "ACCEPT" | "REJECT";
@@ -188,17 +209,9 @@ export async function decideRegistration(actor: Actor, clubId: string, eventId: 
     await tx.registration.update({ where: { id: reg.id }, data: { status, decidedById: actor.id, decidedAt: new Date(), waitlistPos: null } });
     await audit({ action: "registration.decided", targetType: "Registration", targetId: reg.id, actorId: actor.id, universityId: event.universityId, meta: { eventId, decision } }, tx);
     const recipient = await getMailRecipient(tx, reg.userId);
-    return { event, recipient };
+    return { event, recipient, userId: reg.userId };
   });
-  if (result.recipient) {
-    await sendEmailSafe(result.recipient.email, "registration-decided", result.recipient.locale, {
-      name: result.recipient.name,
-      eventTitle: result.event.titleTr,
-      clubName: result.event.club.name,
-      outcome: decision === "ACCEPT" ? "accepted" : "rejected",
-      url: `${env.APP_URL}/etkinliklerim`,
-    });
-  }
+  if (result.recipient) await notifyRegistrationOutcome(result.userId, result.recipient, result.event, decision === "ACCEPT" ? "accepted" : "rejected");
 }
 
 export async function decideManyRegistrations(actor: Actor, clubId: string, eventId: string, ids: string[], decision: Decision): Promise<number> {

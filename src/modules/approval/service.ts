@@ -7,7 +7,7 @@ import type { ChangeRequestType } from "@/lib/db-types";
 import { env } from "@/lib/env";
 import { getStorage } from "@/lib/storage";
 import { getMailRecipient } from "@/modules/identity";
-import { sendEmailSafe } from "@/modules/notification";
+import { notify, sendEmailSafe } from "@/modules/notification";
 
 import { nextStatus, TransitionError, type RequestDecision } from "./domain/state-machine";
 import { approvalError } from "./handlers/common";
@@ -79,10 +79,18 @@ export async function submitRequest(actor: { id: string }, input: SubmitInput): 
         },
         tx,
       );
-      return { id: request.id, updated: Boolean(existing) };
+      const admins = existing
+        ? []
+        : await tx.universityAdmin.findMany({
+            where: { universityId: input.universityId },
+            select: { user: { select: { id: true, email: true, locale: true, profile: { select: { firstName: true } } } } },
+          });
+      const clubName = input.clubId ? (await tx.club.findUnique({ where: { id: input.clubId }, select: { name: true } }))?.name ?? "" : "";
+      return { id: request.id, updated: Boolean(existing), admins: admins.map((a) => a.user), clubName };
     });
     if (replaced.length) await discardPrivateFiles(replaced);
-    return result;
+    if (!result.updated && result.admins.length) await notifyPendingRequest(result.id, input.type, result.clubName, result.admins);
+    return { id: result.id, updated: result.updated };
   } catch (err) {
     await discardPrivateFiles(stored);
     if (isUniqueViolation(err)) throw approvalError("ALREADY_DECIDED"); // eşzamanlı iki talep: biri kazandı
@@ -139,11 +147,15 @@ export async function decideRequest(actor: { id: string }, universityId: string,
       .afterCommit(decided.req, decided.req.payload)
       .catch((err: unknown) => console.error("[approval] afterCommit", decided.req.type, err));
   }
-  await notifyDecision(decided.req, decided.recipient, decision === "APPROVE", reason?.trim() ?? null);
+  const approved = decision === "APPROVE";
+  const trimmedReason = reason?.trim() ?? null;
+  await notifyDecision(decided.req, decided.recipient, approved, trimmedReason);
+  await cleanupClubImages(decided.req, approved);
+  if (approved && decided.req.type === "STAFF_ASSIGN") await notifyStaffAssigned(decided.req);
 }
 
 async function notifyDecision(
-  req: { type: ChangeRequestType; club: { name: string } | null },
+  req: { id: string; type: ChangeRequestType; club: { name: string } | null; requestedById: string },
   recipient: { email: string; locale: string; name: string } | null,
   approved: boolean,
   reason: string | null,
@@ -151,14 +163,78 @@ async function notifyDecision(
   if (!recipient) return;
   if (req.type === "ALUMNI_VERIFY") {
     await sendEmailSafe(recipient.email, "alumni-result", recipient.locale, { name: recipient.name, approved, reason, url: `${env.APP_URL}${approved ? "/giris" : "/mezun-dogrulama"}` });
+    await notify({
+      userId: req.requestedById,
+      type: "APPROVAL_RESULT",
+      titleTr: approved ? "Mezun hesabın onaylandı" : "Mezun belgen onaylanmadı",
+      titleEn: approved ? "Your alumni account was approved" : "Your alumni document was rejected",
+      href: approved ? "/giris" : "/mezun-dogrulama",
+    });
     return;
   }
   await sendEmailSafe(recipient.email, "request-decided", recipient.locale, { name: recipient.name, type: req.type, clubName: req.club?.name ?? "", approved, reason });
+  await notify({
+    userId: req.requestedById,
+    type: "APPROVAL_RESULT",
+    titleTr: approved ? "Talebin onaylandı" : "Talebin reddedildi",
+    titleEn: approved ? "Your request was approved" : "Your request was rejected",
+    bodyTr: req.club?.name ?? null,
+    bodyEn: req.club?.name ?? null,
+  });
+}
+
+/** STAFF_ASSIGN onaylandığında atanan kullanıcıya (talep sahibinden farklı olabilir) ayrı bildirim. */
+async function notifyStaffAssigned(req: { id: string; type: ChangeRequestType; club: { name: string } | null; targetId: string }): Promise<void> {
+  const full = await db.changeRequest.findUnique({ where: { id: req.id }, select: { payload: true } });
+  const payload = full?.payload as { title?: string } | null;
+  const recipient = await getMailRecipient(db, req.targetId);
+  if (!recipient) return;
+  const clubName = req.club?.name ?? "";
+  const title = payload?.title ?? "";
+  await sendEmailSafe(recipient.email, "club-role", recipient.locale, { name: recipient.name, clubName, title, url: `${env.APP_URL}/akis` });
+  await notify({ userId: req.targetId, type: "SYSTEM", titleTr: `${clubName} kulübünde göreve atandın`, titleEn: `You were assigned a role at ${clubName}`, bodyTr: title, bodyEn: title, href: "/akis" });
+}
+
+/** CLUB_UPDATE ret/onayında artık referanssız kalan görseli depodan siler (ROADMAP F10 temizlik). */
+async function cleanupClubImages(req: { type: ChangeRequestType; payload: unknown }, approved: boolean): Promise<void> {
+  if (req.type !== "CLUB_UPDATE") return;
+  const payload = req.payload as { before?: { logoKey?: string | null; coverKey?: string | null }; after?: { logoKey?: string | null; coverKey?: string | null } };
+  const keys = approved
+    ? [payload.before?.logoKey, payload.before?.coverKey] // onaylandı: eski görseller artık yetim
+    : [payload.after?.logoKey, payload.after?.coverKey]; // reddedildi: yeni yüklenen görseller hiç uygulanmadı
+  for (const key of keys) if (key) await deletePublicFile(key);
+}
+
+async function notifyPendingRequest(
+  requestId: string,
+  type: ChangeRequestType,
+  clubName: string,
+  admins: { id: string; email: string; locale: string; profile: { firstName: string } | null }[],
+): Promise<void> {
+  await Promise.all(
+    admins.map(async (admin) => {
+      await sendEmailSafe(admin.email, "approval-pending", admin.locale, {
+        name: admin.profile?.firstName || admin.email,
+        clubName,
+        type,
+        url: `${env.APP_URL}/panel/admin/onay-kuyrugu/${requestId}`,
+      });
+      await notify({
+        userId: admin.id,
+        type: "SYSTEM",
+        titleTr: "Yeni bekleyen talep",
+        titleEn: "New pending request",
+        bodyTr: clubName,
+        bodyEn: clubName,
+        href: `/panel/admin/onay-kuyrugu/${requestId}`,
+      });
+    }),
+  );
 }
 
 /** Talep sahibi (veya aynı kulübün Başkanı) bekleyen talebi geri çeker. */
 export async function cancelRequest(actor: { id: string }, requestId: string): Promise<void> {
-  await db.$transaction(async (tx) => {
+  const req = await db.$transaction(async (tx) => {
     const req = await tx.changeRequest.findUnique({
       where: { id: requestId },
       select: { id: true, status: true, requestedById: true, universityId: true, clubId: true, targetId: true, payload: true, type: true, club: { select: { presidentId: true } } },
@@ -170,7 +246,9 @@ export async function cancelRequest(actor: { id: string }, requestId: string): P
     if (count === 0) throw approvalError("ALREADY_DECIDED");
     await handlers.get(req.type).onCancel(tx, req, req.payload);
     await audit({ action: "approval.request.cancelled", targetType: "ChangeRequest", targetId: requestId, actorId: actor.id, universityId: req.universityId, meta: { type: req.type } }, tx);
+    return req;
   });
+  await cleanupClubImages(req, false);
 }
 
 // ---------------------------------------------------------------- Ticket ekleri (tablo approval'a ait)

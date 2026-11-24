@@ -84,6 +84,7 @@ export {
   transferCaptain,
 } from "./teams";
 export { registrationFileUrl, storeRegistrationFile } from "./files";
+export { sendDeadlineReminders, sendEventReminders } from "./reminders";
 export { RegistrationManageTable, type ManageRow, type ManageTableLabels } from "./components/manage-table";
 export { DynamicField, type DynamicFieldLabels } from "./components/dynamic-field";
 export { EventRegistrationPanel, type EventPanelLabels, type MyRegistration, type MyTeam } from "./components/event-panel";

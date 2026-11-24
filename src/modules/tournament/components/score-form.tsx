@@ -16,6 +16,61 @@ export interface ScoreFormLabels {
   cascadeConfirm: string;
 }
 
+export interface ScheduleFormLabels {
+  scheduledAt: string;
+  submit: string;
+  saving: string;
+}
+
+/** Maç saati belirleme (F10: match-scheduled bildirimi/maili tetikler). */
+export function ScheduleMatchForm({
+  matchId,
+  clubId,
+  initialValue,
+  action,
+  labels,
+  onDone,
+}: {
+  matchId: string;
+  clubId: string;
+  initialValue?: string;
+  action: Action;
+  labels: ScheduleFormLabels;
+  onDone?: () => void;
+}) {
+  const toast = useOptionalToast();
+  const [value, setValue] = useState(initialValue ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    setBusy(true);
+    setError(null);
+    const fd = new FormData();
+    fd.set("clubId", clubId);
+    fd.set("matchId", matchId);
+    fd.set("scheduledAt", value);
+    const res = await action(null, fd);
+    if (res.ok) {
+      if (res.message) toast?.show(res.message, "success");
+      onDone?.();
+    } else {
+      setError(res.error);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div className="flex flex-wrap items-end gap-(--space-3)">
+      {error ? <Alert tone="warning">{error}</Alert> : null}
+      <Input id={`${matchId}-scheduledAt`} label={labels.scheduledAt} type="datetime-local" value={value} onChange={(e) => setValue(e.target.value)} />
+      <Button size="sm" variant="secondary" loading={busy} loadingLabel={labels.saving} disabled={!value} onClick={() => void submit()}>
+        {labels.submit}
+      </Button>
+    </div>
+  );
+}
+
 /**
  * Skor girişi (TOURNAMENTS §3): sonraki maç henüz oynanmamışsa doğrudan kaydeder; oynandıysa
  * sunucu DOWNSTREAM_PLAYED döner, kullanıcı "zincirleme sıfırla" onayıyla tekrar gönderir.

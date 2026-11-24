@@ -79,7 +79,7 @@ async function Content({ params }: PageProps<"/turnuva/[id]">) {
                           <FixtureList
                             matches={matches.filter((m) => m.groupId === g.id)}
                             names={names}
-                            labels={{ pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}", home: "", away: "", submit: "", saving: "", cascadeWarning: "", cascadeConfirm: "" }}
+                            labels={{ pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}", home: "", away: "", submit: "", saving: "", cascadeWarning: "", cascadeConfirm: "", scheduledAt: "" }}
                           />
                           <StandingsTable rows={rows} names={standingNames} labels={standingsLabels} />
                         </div>
@@ -101,7 +101,7 @@ async function Content({ params }: PageProps<"/turnuva/[id]">) {
                 <Card key={stage.id} className="flex flex-col gap-(--space-4)">
                   <CardHeader title={stage.name} />
                   <StandingsTable rows={rows} names={standingNames} labels={standingsLabels} />
-                  <FixtureList matches={matches} names={names} labels={{ pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}", home: "", away: "", submit: "", saving: "", cascadeWarning: "", cascadeConfirm: "" }} />
+                  <FixtureList matches={matches} names={names} labels={{ pending: t("tournament.match.pending"), roundLabel: t("tournament.detail.fixture") + " {n}", home: "", away: "", submit: "", saving: "", cascadeWarning: "", cascadeConfirm: "", scheduledAt: "" }} />
                 </Card>
               );
             }),

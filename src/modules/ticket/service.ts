@@ -5,8 +5,11 @@ import { audit } from "@/lib/audit";
 import { ForbiddenError, getClubAccess, isUniversityAdmin, type SessionUser } from "@/lib/authz";
 import { hasClubPermission } from "@/lib/club-roles";
 import { db } from "@/lib/db";
+import { env } from "@/lib/env";
 import { ServiceError } from "@/lib/errors";
 import { attachToTicketMessage } from "@/modules/approval";
+import { getMailRecipient } from "@/modules/identity";
+import { notify, sendEmailSafe } from "@/modules/notification";
 
 import { canClose, canReopen, statusAfterMessage, type TicketSide } from "./rules";
 import type { OpenTicketInput } from "./schemas";
@@ -76,11 +79,29 @@ export async function openAdminTicket(actor: { id: string }, universityId: strin
 }
 
 async function loadForUser(user: SessionUser, ticketId: string) {
-  const ticket = await db.ticket.findUnique({ where: { id: ticketId }, select: { id: true, scope: true, universityId: true, clubId: true, status: true, closedAt: true } });
+  const ticket = await db.ticket.findUnique({ where: { id: ticketId }, select: { id: true, scope: true, universityId: true, clubId: true, status: true, closedAt: true, subject: true, openedById: true } });
   if (!ticket) throw fail("NOT_FOUND");
   const side = await ticketSide(user, ticket);
   if (!side) throw new ForbiddenError();
   return { ticket, side };
+}
+
+/** Yanıtı diğer tarafa bildirir: responder → açan kişi, requester → üniversite Admin'leri (Süper Admin dahil değil). */
+async function notifyOtherSide(ticket: { id: string; scope: "CLUB_TO_ADMIN" | "ADMIN_TO_PLATFORM"; universityId: string; subject: string; openedById: string }, side: TicketSide): Promise<void> {
+  const url = `${env.APP_URL}/akis`; // ticket paneli rolüne göre değişir (kulüp/admin/platform) — genel akışa yönlendirilir
+  let recipientIds: string[];
+  if (side === "responder") {
+    recipientIds = [ticket.openedById];
+  } else {
+    const admins = await db.universityAdmin.findMany({ where: { universityId: ticket.universityId }, select: { userId: true } });
+    recipientIds = admins.map((a) => a.userId);
+  }
+  for (const userId of recipientIds) {
+    const recipient = await getMailRecipient(db, userId);
+    if (!recipient) continue;
+    await sendEmailSafe(recipient.email, "ticket-reply", recipient.locale, { name: recipient.name, subject: ticket.subject, url });
+    await notify({ userId, type: "TICKET_REPLY", titleTr: "Destek talebine yanıt geldi", titleEn: "New reply on your support ticket", bodyTr: ticket.subject, bodyEn: ticket.subject, href: url });
+  }
 }
 
 export async function replyTicket(user: SessionUser, ticketId: string, body: string, files: IncomingFile[] = []): Promise<void> {
@@ -95,6 +116,7 @@ export async function replyTicket(user: SessionUser, ticketId: string, body: str
       await attachToTicketMessage(tx, message.id, user.id, stored);
     }),
   );
+  await notifyOtherSide(ticket, side).catch((err: unknown) => console.error("[ticket] notifyOtherSide", err));
 }
 
 export async function closeTicket(user: SessionUser, ticketId: string): Promise<void> {

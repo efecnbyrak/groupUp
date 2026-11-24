@@ -7,7 +7,7 @@ import { Badge, Button, cn } from "@/components/ui";
 import type { ActionResult } from "@/lib/errors";
 
 import type { MatchView } from "../queries";
-import { ScoreForm, type ScoreFormLabels } from "./score-form";
+import { ScheduleMatchForm, ScoreForm, type ScheduleFormLabels, type ScoreFormLabels } from "./score-form";
 
 const BOX_W = 200;
 const BOX_H = 64;
@@ -77,6 +77,8 @@ export function BracketView({
   clubId,
   recordScoreAction,
   scoreLabels,
+  scheduleMatchAction,
+  scheduleLabels,
 }: {
   matches: MatchView[];
   names: Map<string, string>;
@@ -85,6 +87,8 @@ export function BracketView({
   clubId?: string;
   recordScoreAction?: Action;
   scoreLabels?: ScoreFormLabels;
+  scheduleMatchAction?: Action;
+  scheduleLabels?: ScheduleFormLabels;
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<string | null>(null);
@@ -167,6 +171,11 @@ export function BracketView({
               router.refresh();
             }}
           />
+          {scheduleMatchAction && scheduleLabels && selectedMatch.homeId && selectedMatch.awayId ? (
+            <div className="mt-(--space-3) border-t border-line pt-(--space-3)">
+              <ScheduleMatchForm matchId={selectedMatch.id} clubId={clubId} action={scheduleMatchAction} labels={scheduleLabels} onDone={() => router.refresh()} />
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>

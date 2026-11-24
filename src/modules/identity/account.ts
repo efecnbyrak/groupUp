@@ -118,3 +118,34 @@ export async function confirmAccountDeletion(token: string): Promise<void> {
   const storage = getStorage();
   await Promise.all([...files.publicKeys.map((k) => storage.delete(k, "public")), ...files.privateKeys.map((k) => storage.delete(k, "private"))]);
 }
+
+const DELETED_ATTACHMENT_RETENTION_DAYS = 30;
+
+/** F10 günlük cron: süresi geçmiş oturum/token'lar silinir (AUTH-EMAIL §4). */
+export async function cleanupExpiredSessions(now = new Date()): Promise<{ sessions: number; tokens: number }> {
+  const [sessions, tokens] = await Promise.all([
+    db.session.deleteMany({ where: { expiresAt: { lt: now } } }),
+    db.emailToken.deleteMany({ where: { expiresAt: { lt: now } } }),
+  ]);
+  return { sessions: sessions.count, tokens: tokens.count };
+}
+
+/**
+ * F10 günlük cron: hesabı silinmiş kullanıcıların private ekleri (mezun belgesi, ticket ekleri vb.)
+ * `DELETED_ATTACHMENT_RETENTION_DAYS` gün sonra depodan ve DB'den silinir (KVKK — kullanıcı kararı: 30 gün).
+ */
+export async function cleanupDeletedUserAttachments(now = new Date()): Promise<number> {
+  const threshold = new Date(now.getTime() - DELETED_ATTACHMENT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  const deletedUsers = await db.user.findMany({ where: { status: "DELETED", deletedAt: { lt: threshold } }, select: { id: true }, take: 500 });
+  if (!deletedUsers.length) return 0;
+  const rows = await db.attachment.findMany({
+    where: { isPrivate: true, uploadedById: { in: deletedUsers.map((u) => u.id) } },
+    select: { id: true, storageKey: true },
+    take: 200,
+  });
+  if (!rows.length) return 0;
+  const storage = getStorage();
+  await Promise.all(rows.map((r) => storage.delete(r.storageKey, "private").catch(() => undefined)));
+  await db.attachment.deleteMany({ where: { id: { in: rows.map((r) => r.id) } } });
+  return rows.length;
+}
