@@ -1,4 +1,4 @@
-import { ArrowLeft, ClipboardList, ListChecks } from "lucide-react";
+import { ArrowLeft, ClipboardList, ListChecks, Trophy } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
@@ -92,6 +92,9 @@ async function Content({ params }: PageProps<"/panel/kulup/[slug]/etkinlikler/[i
             </ButtonLink>
             <ButtonLink href={`${base}/${event.id}/basvurular`} variant="secondary" size="sm" icon={<ListChecks aria-hidden="true" className="size-(--icon-size-sm)" />}>
               {t("registration.manage.title")}
+            </ButtonLink>
+            <ButtonLink href={`${base}/${event.id}/turnuvalar`} variant="secondary" size="sm" icon={<Trophy aria-hidden="true" className="size-(--icon-size-sm)" />}>
+              {t("tournament.panel.title")}
             </ButtonLink>
             <EventStatusBadge status={event.status} t={t} />
           </div>

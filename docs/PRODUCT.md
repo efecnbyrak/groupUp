@@ -66,6 +66,12 @@ Tek platform: doğrulanmış okul maili ile kayıt → kulübe kod/link ile kat�
 - Dosya tipi form alanı cevapları `Attachment` tablosuna değil doğrudan private depoya yazılır (mezun belgesi/onay motoru akışından ayrı, daha basit).
 - Takımda kaptanın "Başvuruyu tamamla" demesi roster'ı kilitler (yeni üye giremez) ve kontenjan kararını (kabul/yedek) o anda verir; tamamlanmamış (eksik üyeli) takımlar deadline'da otomatik reddedilmez, yönetici ekranında görünür kalır.
 
+**Varsayım (Claude, 2026-11-25, F8):**
+- Turnuva oluşturma/braket/skor işlemleri Admin onayından geçmez — doğrudan `TOURNAMENT_MANAGE` yetkisiyle uygulanır (F7'deki başvuru kararlarıyla aynı mantık: operasyonel iş, ChangeRequest değil).
+- Genel turnuva ayarları (puan sistemi, eşitlik bozma sırası, 3.lük maçı, çift devre) arayüzden değiştirilemez; sabit varsayılanlarla çalışır (`src/modules/tournament/schemas.ts` `DEFAULT_SETTINGS`: 3-1-0 puan, beraberlik serbest, POINTS→HEAD_TO_HEAD→GOAL_DIFF→GOALS_FOR→WINS). Yalnızca grup+eleme formatında grup sayısı/gruptan çıkan sayısı/en iyi 3.ler ayarlanabilir (braket üretimi için zorunlu). Saha/zaman planlama (Venue/TimeSlot), xlsx/.ics çıktısı, yazdırma görünümü F9'a bırakıldı (TOURNAMENTS §5, ROADMAP'te zaten F9 kapsamında).
+- Turnuva/maç silinemez veya iptal edilemez (yalnızca düzeltme ve zincirleme sıfırlama var); yanlışlıkla oluşturulan bir turnuvanın kaldırılması MVP sonrasına kaldı.
+- Eleme maçlarında beraberlik kabul edilmez (skor girerken penaltı/uzatma sonucu doğrudan skora yansıtılır, ayrı bir alan yok); lig/grup maçlarında beraberlik `allowDraws` ayarına bağlı (varsayılan açık).
+
 **Varsayımlar (kullanıcı aksini söyleyene kadar geçerli):**
 - Görevli aynı kulübün üyesi olmak zorundadır.
 - Bir üniversitenin birden fazla Admini olabilir.

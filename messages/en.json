@@ -904,7 +904,8 @@
       "requests": "Requests",
       "info": "Club info",
       "events": "Events",
-      "announcements": "Announcements"
+      "announcements": "Announcements",
+      "tournaments": "Tournaments"
     },
     "panel": {
       "title": "Club panel",
@@ -1507,6 +1508,151 @@
       "team": "Team",
       "event": "Event",
       "club": "Club"
+    }
+  },
+  "tournament": {
+    "errors": {
+      "notEditable": "This action isn't available right now.",
+      "noParticipants": "No eligible participants were found.",
+      "tooFewParticipants": "At least 2 participants are required.",
+      "alreadySeeded": "The bracket has already been generated.",
+      "notSeeded": "The bracket/fixture must be generated first.",
+      "groupsNotDone": "The group stage isn't finished yet.",
+      "stageExists": "The knockout stage already exists.",
+      "matchNotEditable": "This match can't be edited.",
+      "downstreamPlayed": "The next match has already been played. Continuing will reset and reapply the following results.",
+      "invalidScore": "Invalid score.",
+      "duplicateName": "This name is already in use.",
+      "noDraw": "Knockout matches can't end in a draw; reflect a penalty/extra-time result in the score."
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "SEEDED": "Fixture ready",
+      "IN_PROGRESS": "In progress",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
+    "format": {
+      "SINGLE_ELIM": "Single elimination",
+      "ROUND_ROBIN": "League (round robin)",
+      "GROUPS_KNOCKOUT": "Groups + knockout"
+    },
+    "panel": {
+      "title": "Tournaments",
+      "body": "Create a tournament for the event, generate the bracket and enter scores.",
+      "empty": "No tournaments yet",
+      "emptyBody": "Create one from accepted applications or a manual list."
+    },
+    "create": {
+      "button": "Create tournament",
+      "title": "Create tournament",
+      "body": "Participants come automatically from accepted applications; you can also enter a manual list.",
+      "nameField": "Tournament name",
+      "formatField": "Format",
+      "sourceField": "Participant source",
+      "source": {
+        "TEAMS": "Accepted teams",
+        "INDIVIDUALS": "Accepted individuals",
+        "MANUAL": "Manual list"
+      },
+      "manualNamesField": "Names (one per line)",
+      "isPublicField": "Public (viewable without logging in)",
+      "submit": "Create"
+    },
+    "detail": {
+      "participants": "Participants",
+      "participantsBody": "You can adjust seeding before the bracket is generated.",
+      "addParticipant": "Add participant",
+      "addParticipantTitle": "Add participant",
+      "nameField": "Name",
+      "seedField": "Seed",
+      "removeParticipantTitle": "Remove this participant?",
+      "rename": "Rename",
+      "renameTitle": "Rename participant",
+      "seed": "Seed",
+      "generateBracket": "Generate bracket/fixture",
+      "generateBracketTitle": "Generate the bracket/fixture?",
+      "generateBracketBody": "The participant list and seeds get locked; only names can be changed afterward.",
+      "generateKnockout": "Generate knockout stage",
+      "generateKnockoutTitle": "Generate the knockout stage?",
+      "generateKnockoutBody": "All group matches must be finished. A cross-seeded single-elimination bracket will be created.",
+      "bracket": "Bracket",
+      "standings": "Standings",
+      "fixture": "Fixture",
+      "groupStage": "Group stage",
+      "public": "Public",
+      "publicHint": "This tournament can be viewed without logging in.",
+      "viewPublic": "Open public page"
+    },
+    "groups": {
+      "title": "Group settings",
+      "body": "Set the number of groups and how many advance from each before generating the bracket.",
+      "count": "Number of groups",
+      "advancePerGroup": "Advancing per group",
+      "bestThirds": "Best third-place finishers to add",
+      "save": "Save",
+      "saved": "Group settings saved."
+    },
+    "bracket": {
+      "generated": "Bracket/fixture generated.",
+      "knockoutGenerated": "Knockout stage generated.",
+      "bye": "BYE",
+      "tbd": "To be determined",
+      "thirdPlace": "3rd place match"
+    },
+    "standings": {
+      "rank": "#",
+      "participant": "Participant",
+      "played": "P",
+      "wins": "W",
+      "draws": "D",
+      "losses": "L",
+      "goalsFor": "GF",
+      "goalsAgainst": "GA",
+      "goalDiff": "GD",
+      "points": "Pts",
+      "form": "Form",
+      "win": "Win",
+      "draw": "Draw",
+      "loss": "Loss"
+    },
+    "match": {
+      "submit": "Save score",
+      "saving": "Saving…",
+      "scoreSaved": "Score saved.",
+      "cascadeConfirm": "Yes, reset and reapply the following results",
+      "walkover": "Walkover",
+      "walkoverTitle": "Walkover win",
+      "walkoverBody": "The winning side advances directly; a reason is required.",
+      "walkoverReason": "Reason",
+      "home": "Home",
+      "away": "Away",
+      "winner": "Winner",
+      "postpone": "Postpone",
+      "postponed": "Match postponed.",
+      "postponeTitle": "Postpone this match?",
+      "note": "Note (optional)",
+      "pending": "Not played",
+      "scheduledAt": "Date"
+    },
+    "myMatches": {
+      "title": "My matches",
+      "body": "Track your matches across the tournaments you're taking part in.",
+      "empty": "No matches yet",
+      "emptyBody": "Once you're added as a participant in a tournament, your matches will show up here."
+    },
+    "public": {
+      "notFound": "This tournament wasn't found or isn't public.",
+      "hostedBy": "Hosted by"
+    },
+    "settings": {
+      "saved": "Settings saved."
+    },
+    "seed": {
+      "saved": "Seeds saved."
+    },
+    "participants": {
+      "added": "Participant added."
     }
   }
 }

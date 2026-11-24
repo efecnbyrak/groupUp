@@ -1,0 +1,302 @@
+import "server-only";
+
+import { audit } from "@/lib/audit";
+import { db, type Tx } from "@/lib/db";
+import type { Prisma } from "@/lib/db-types";
+
+import { assignGroups, seedKnockoutFromGroups } from "./domain/groups-knockout";
+import { generateRoundRobin } from "./domain/round-robin";
+import { generateSingleElimination } from "./domain/single-elimination";
+import { computeStandings, rankStandings } from "./domain/standings";
+import type { DomainParticipant } from "./domain/types";
+import { DEFAULT_SETTINGS, type TournamentSettings } from "./schemas";
+import { fail } from "./service";
+
+interface Actor {
+  id: string;
+}
+
+export interface CreateTournamentInput {
+  name: string;
+  format: "SINGLE_ELIM" | "ROUND_ROBIN" | "GROUPS_KNOCKOUT";
+  source: "TEAMS" | "INDIVIDUALS" | "MANUAL";
+  manualNames: string[];
+  isPublic: boolean;
+}
+
+async function loadEventInClub(client: Tx | typeof db, clubId: string, eventId: string) {
+  const e = await client.event.findFirst({ where: { id: eventId, clubId, club: { deletedAt: null } }, select: { id: true, universityId: true, mode: true } });
+  if (!e) throw fail("NOT_FOUND");
+  return e;
+}
+
+/** Turnuva oluştur: kaynak kabul edilmiş takımlar / bireyler / elle liste (TOURNAMENTS §7). */
+export async function createTournament(actor: Actor, clubId: string, eventId: string, input: CreateTournamentInput): Promise<{ id: string }> {
+  return db.$transaction(async (tx) => {
+    const event = await loadEventInClub(tx, clubId, eventId);
+    const tournament = await tx.tournament.create({
+      data: {
+        eventId,
+        name: input.name,
+        format: input.format,
+        settings: DEFAULT_SETTINGS as unknown as Prisma.InputJsonValue,
+        isPublic: input.isPublic,
+        createdById: actor.id,
+      },
+      select: { id: true },
+    });
+
+    let participants: { displayName: string; teamId?: string; userId?: string }[] = [];
+    if (input.source === "TEAMS") {
+      const teams = await tx.team.findMany({ where: { eventId, status: "ACCEPTED" }, select: { id: true, name: true } });
+      if (teams.length === 0) throw fail("NO_PARTICIPANTS");
+      participants = teams.map((t) => ({ displayName: t.name, teamId: t.id }));
+    } else if (input.source === "INDIVIDUALS") {
+      const regs = await tx.registration.findMany({
+        where: { eventId, status: "ACCEPTED", teamId: null },
+        select: { userId: true, user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } } },
+      });
+      if (regs.length === 0) throw fail("NO_PARTICIPANTS");
+      participants = regs.map((r) => ({ displayName: [r.user.profile?.firstName, r.user.profile?.lastName].filter(Boolean).join(" ") || r.user.email, userId: r.userId }));
+    } else {
+      if (input.manualNames.length === 0) throw fail("NO_PARTICIPANTS");
+      participants = input.manualNames.map((n) => ({ displayName: n }));
+    }
+
+    await tx.participant.createMany({
+      data: participants.map((p, i) => ({ tournamentId: tournament.id, displayName: p.displayName, teamId: p.teamId, userId: p.userId, seed: i + 1 })),
+    });
+    await audit({ action: "tournament.created", targetType: "Tournament", targetId: tournament.id, actorId: actor.id, universityId: event.universityId, meta: { eventId, format: input.format, count: participants.length } }, tx);
+    return tournament;
+  });
+}
+
+async function loadTournamentInClub(client: Tx | typeof db, clubId: string, tournamentId: string) {
+  const t = await client.tournament.findFirst({
+    where: { id: tournamentId, event: { clubId } },
+    select: { id: true, eventId: true, format: true, status: true, settings: true, event: { select: { universityId: true } } },
+  });
+  if (!t) throw fail("NOT_FOUND");
+  return t;
+}
+
+export async function updateSettings(actor: Actor, clubId: string, tournamentId: string, settings: TournamentSettings): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.status !== "DRAFT" && t.status !== "SEEDED") throw fail("NOT_EDITABLE");
+    await tx.tournament.update({ where: { id: tournamentId }, data: { settings: settings as unknown as Prisma.InputJsonValue } });
+    await audit({ action: "tournament.settingsUpdated", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: {} }, tx);
+  });
+}
+
+export async function updateSeeds(actor: Actor, clubId: string, tournamentId: string, seeds: { participantId: string; seed: number }[]): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.status !== "DRAFT") throw fail("NOT_EDITABLE");
+    for (const s of seeds) {
+      const { count } = await tx.participant.updateMany({ where: { id: s.participantId, tournamentId }, data: { seed: s.seed } });
+      if (count === 0) throw fail("NOT_FOUND");
+    }
+    await audit({ action: "tournament.seeded", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: {} }, tx);
+  });
+}
+
+export async function addParticipant(actor: Actor, clubId: string, tournamentId: string, displayName: string, seed?: number): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.status !== "DRAFT" && t.status !== "SEEDED") throw fail("NOT_EDITABLE");
+    const max = await tx.participant.aggregate({ where: { tournamentId }, _max: { seed: true } });
+    await tx.participant.create({ data: { tournamentId, displayName, seed: seed ?? (max._max.seed ?? 0) + 1 } });
+    await audit({ action: "tournament.participantAdded", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: { displayName } }, tx);
+  });
+}
+
+/** Başladıktan sonra yalnızca isim değişikliği (TOURNAMENTS §7). */
+export async function renameParticipant(actor: Actor, clubId: string, participantId: string, displayName: string): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const p = await tx.participant.findFirst({ where: { id: participantId }, select: { tournamentId: true } });
+    if (!p) throw fail("NOT_FOUND");
+    const t = await loadTournamentInClub(tx, clubId, p.tournamentId);
+    const { count } = await tx.participant.updateMany({ where: { id: participantId }, data: { displayName } });
+    if (count === 0) throw fail("NOT_FOUND");
+    await audit({ action: "tournament.participantRenamed", targetType: "Participant", targetId: participantId, actorId: actor.id, universityId: t.event.universityId, meta: {} }, tx);
+  });
+}
+
+export async function removeParticipant(actor: Actor, clubId: string, tournamentId: string, participantId: string): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.status !== "DRAFT" && t.status !== "SEEDED") throw fail("NOT_EDITABLE");
+    const { count } = await tx.participant.deleteMany({ where: { id: participantId, tournamentId } });
+    if (count === 0) throw fail("NOT_FOUND");
+    await audit({ action: "tournament.participantRemoved", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: { participantId } }, tx);
+  });
+}
+
+const partSelect = { id: true, seed: true } as const satisfies Prisma.ParticipantSelect;
+
+function toDomainParticipants(rows: { id: string; seed: number | null }[]): { byIndex: Map<number, string>; input: DomainParticipant[] } {
+  const byIndex = new Map<number, string>();
+  const input: DomainParticipant[] = rows.map((r, i) => {
+    byIndex.set(i, r.id);
+    return { index: i, seed: r.seed ?? i + 1 };
+  });
+  return { byIndex, input };
+}
+
+/**
+ * Braket/fikstür üretir (DRAFT → SEEDED). SINGLE_ELIM/ROUND_ROBIN: tek aşama, tüm maçlar hemen
+ * yazılır. GROUPS_KNOCKOUT: yalnızca grup aşaması üretilir; eleme aşaması yönetici kararıyla
+ * ayrıca `generateKnockoutStage` ile oluşturulur (TOURNAMENTS §4 — otomatik değil).
+ */
+export async function generateBracket(actor: Actor, clubId: string, tournamentId: string): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.status !== "DRAFT") throw fail("ALREADY_SEEDED");
+    const rows = await tx.participant.findMany({ where: { tournamentId }, select: partSelect, orderBy: { seed: "asc" } });
+    if (rows.length < 2) throw fail("TOO_FEW_PARTICIPANTS");
+    const settings = t.settings as unknown as TournamentSettings;
+    const { byIndex, input } = toDomainParticipants(rows);
+
+    if (t.format === "SINGLE_ELIM") {
+      const plan = generateSingleElimination(input, { thirdPlaceMatch: settings.thirdPlaceMatch });
+      const stage = await tx.stage.create({ data: { tournamentId, order: 0, type: "KNOCKOUT", name: "Eleme", settings: {} }, select: { id: true } });
+      await persistPlan(tx, stage.id, null, plan.matches, byIndex);
+    } else if (t.format === "ROUND_ROBIN") {
+      const plan = generateRoundRobin(input, { doubleRound: settings.doubleRoundRobin });
+      const stage = await tx.stage.create({ data: { tournamentId, order: 0, type: "ROUND_ROBIN", name: "Lig", settings: {} }, select: { id: true } });
+      await persistPlan(tx, stage.id, null, plan.matches, byIndex);
+    } else if (t.format === "GROUPS_KNOCKOUT") {
+      if (!settings.groups) throw fail("NOT_EDITABLE", { groups: "validation.required" });
+      const groups = assignGroups(input, settings.groups.count);
+      const stage = await tx.stage.create({ data: { tournamentId, order: 0, type: "ROUND_ROBIN", name: "Grup Aşaması", settings: { groupCount: settings.groups.count, advancePerGroup: settings.groups.advancePerGroup, bestThirds: settings.groups.bestThirds ?? 0 } }, select: { id: true } });
+      for (const g of groups) {
+        const groupRow = await tx.tournamentGroup.create({ data: { stageId: stage.id, name: `${g.groupKey} Grubu`, order: g.groupKey.charCodeAt(0) }, select: { id: true } });
+        await tx.participant.updateMany({ where: { id: { in: g.participants.map((p) => byIndex.get(p.index)!) } }, data: { groupId: groupRow.id } });
+        const plan = generateRoundRobin(g.participants);
+        await persistPlan(tx, stage.id, groupRow.id, plan.matches, byIndex);
+      }
+    }
+
+    await tx.tournament.update({ where: { id: tournamentId }, data: { status: "SEEDED" } });
+    await audit({ action: "tournament.bracketGenerated", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: { format: t.format } }, tx);
+  });
+}
+
+async function persistPlan(tx: Tx, stageId: string, groupId: string | null, planMatches: ReturnType<typeof generateSingleElimination>["matches"], byIndex: Map<number, string>): Promise<void> {
+  // Önce tüm maçları oluştur (next/loserNext DB id'lerini çözmek için round+position haritası gerekir).
+  const created: { round: number; position: number; groupKey?: string; id: string }[] = [];
+  for (const m of planMatches) {
+    const row = await tx.match.create({
+      data: {
+        stageId,
+        groupId,
+        round: m.round,
+        position: m.position,
+        groupKey: m.groupKey,
+        homeId: m.homeIndex !== null ? byIndex.get(m.homeIndex) : null,
+        awayId: m.awayIndex !== null ? byIndex.get(m.awayIndex) : null,
+        status: m.status,
+        winnerId: m.status === "BYE" && m.byeWinnerIndex !== undefined ? byIndex.get(m.byeWinnerIndex) : null,
+      },
+      select: { id: true },
+    });
+    created.push({ round: m.round, position: m.position, groupKey: m.groupKey, id: row.id });
+  }
+  const findId = (round: number, position: number, groupKey?: string) => created.find((c) => c.round === round && c.position === position && c.groupKey === groupKey)?.id;
+  for (const m of planMatches) {
+    const selfId = findId(m.round, m.position, m.groupKey)!;
+    if (m.next) {
+      const nextId = findId(m.next.round, m.next.position);
+      if (nextId) {
+        await tx.match.update({ where: { id: selfId }, data: { nextMatchId: nextId, nextSlot: m.next.slot } });
+        // BYE maçı ise kazanan hemen bir sonraki maça yerleşir.
+        if (m.status === "BYE" && m.byeWinnerIndex !== undefined) {
+          const winnerId = byIndex.get(m.byeWinnerIndex)!;
+          await tx.match.update({ where: { id: nextId }, data: m.next.slot === "home" ? { homeId: winnerId } : { awayId: winnerId } });
+        }
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------- Grup + eleme: eleme aşaması (manuel)
+
+/**
+ * "Eleme aşamasını oluştur" (TOURNAMENTS §4) — otomatik değil, yönetici grup sonuçları
+ * kesinleşince tetikler. Grup standings'den çapraz tohumlanmış tek eleme braketi üretir.
+ */
+export async function generateKnockoutStage(actor: Actor, clubId: string, tournamentId: string, stageId: string): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.format !== "GROUPS_KNOCKOUT") throw fail("NOT_EDITABLE");
+    const groupStage = await tx.stage.findFirst({ where: { id: stageId, tournamentId }, select: { id: true, settings: true } });
+    if (!groupStage) throw fail("NOT_FOUND");
+    const existingKnockout = await tx.stage.findFirst({ where: { tournamentId, type: "KNOCKOUT" }, select: { id: true } });
+    if (existingKnockout) throw fail("STAGE_EXISTS");
+
+    const stageSettings = groupStage.settings as { groupCount: number; advancePerGroup: number; bestThirds: number };
+    const groups = await tx.tournamentGroup.findMany({ where: { stageId }, orderBy: { order: "asc" }, select: { id: true, name: true, participants: { select: { id: true } } } });
+    const allMatches = await tx.match.findMany({ where: { stageId, status: "COMPLETED" }, select: { groupId: true, homeId: true, awayId: true, homeScore: true, awayScore: true } });
+    if (allMatches.length === 0) throw fail("GROUPS_NOT_DONE");
+    const unfinished = await tx.match.count({ where: { stageId, status: { in: ["PENDING", "IN_PROGRESS"] } } });
+    if (unfinished > 0) throw fail("GROUPS_NOT_DONE");
+
+    const settings = t.settings as unknown as TournamentSettings;
+    const idToIndex = new Map<string, number>();
+    const indexToId: string[] = [];
+    let next = 0;
+    for (const g of groups) for (const p of g.participants) {
+      idToIndex.set(p.id, next);
+      indexToId.push(p.id);
+      next++;
+    }
+    const domainMatches = allMatches.map((m) => ({ homeIndex: idToIndex.get(m.homeId!)!, awayIndex: idToIndex.get(m.awayId!)!, homeScore: m.homeScore!, awayScore: m.awayScore! }));
+
+    const groupQualifiers = groups.map((g) => {
+      const indexes = g.participants.map((p) => idToIndex.get(p.id)!);
+      const rows = computeStandings(indexes, domainMatches.filter((m) => indexes.includes(m.homeIndex)), settings.points, settings.allowDraws);
+      const ranked = rankStandings(rows, domainMatches, settings.points, settings.tiebreakers, settings.allowDraws);
+      return { groupKey: g.name, rankedIndexes: ranked.map((r) => r.index) };
+    });
+
+    let bestThirdsOrder: string[] = [];
+    if (stageSettings.bestThirds > 0) {
+      const thirdCandidates = groupQualifiers
+        .map((g) => ({ groupKey: g.groupKey, index: g.rankedIndexes[stageSettings.advancePerGroup] }))
+        .filter((c): c is { groupKey: string; index: number } => c.index !== undefined);
+      const thirdRows = computeStandings(
+        thirdCandidates.map((c) => c.index),
+        domainMatches,
+        settings.points,
+        settings.allowDraws,
+      );
+      const thirdRanked = rankStandings(thirdRows, domainMatches, settings.points, settings.tiebreakers, settings.allowDraws);
+      bestThirdsOrder = thirdRanked.map((r) => thirdCandidates.find((c) => c.index === r.index)!.groupKey).slice(0, stageSettings.bestThirds);
+    }
+
+    const seeded = seedKnockoutFromGroups(groupQualifiers, stageSettings.advancePerGroup, bestThirdsOrder);
+    if (seeded.length < 2) throw fail("TOO_FEW_PARTICIPANTS");
+    const plan = generateSingleElimination(
+      seeded.map((s) => ({ index: s.index, seed: s.seed })),
+      { thirdPlaceMatch: settings.thirdPlaceMatch },
+    );
+    const byIndex = new Map(seeded.map((s) => [s.index, indexToId[s.index]!]));
+    const stageOrder = await tx.stage.count({ where: { tournamentId } });
+    const koStage = await tx.stage.create({ data: { tournamentId, order: stageOrder, type: "KNOCKOUT", name: "Eleme", settings: {} }, select: { id: true } });
+    await persistPlan(tx, koStage.id, null, plan.matches, byIndex);
+    await audit({ action: "tournament.knockoutGenerated", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: {} }, tx);
+  });
+}
+
+/** Grup ayarlarını kaydeder (yalnızca `settings.groups`, diğer ayarlar korunur). */
+export async function updateGroupsSettings(actor: Actor, clubId: string, tournamentId: string, input: { groupCount: number; advancePerGroup: number; bestThirds: number }): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.status !== "DRAFT") throw fail("NOT_EDITABLE");
+    const current = t.settings as unknown as TournamentSettings;
+    const next: TournamentSettings = { ...current, groups: { count: input.groupCount, advancePerGroup: input.advancePerGroup, bestThirds: input.bestThirds || undefined } };
+    await tx.tournament.update({ where: { id: tournamentId }, data: { settings: next as unknown as Prisma.InputJsonValue } });
+    await audit({ action: "tournament.groupsSettingsUpdated", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: input }, tx);
+  });
+}
