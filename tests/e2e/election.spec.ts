@@ -63,14 +63,22 @@ test("seçim oluştur → adaylık → oylama → sonuç onayı → başkan değ
   await expect(admin.getByText("Onay bekliyor").filter({ visible: true })).toHaveCount(0);
 
   // 4) Oy penceresi açılana kadar bekle, sayfayı yenileyerek zaman tabanlı geçişi tetikle.
-  // BİLİNEN SORUN (bkz. docs/TEST.md): bu adım şu an flaky — DB'de status doğru zamanda VOTING'e
-  // geçiyor, ama bazı `goto` sonrası render'larda eşleşen başlık elementi bulunuyor (count=1) ama
-  // getBoundingClientRect() 0×0 dönüyor (display/visibility/opacity normal). Kök neden netleşmedi.
+  // ÇÖZÜLDÜ (bkz. docs/TEST.md "Bilinen açık sorun"): DB'de status doğru zamanda VOTING'e geçiyor
+  // ve HTML'de banner her zaman doğru render ediliyor — ama `goto` sonrası `load` event'i, Next 16
+  // PPR'ın statik kabuk + dinamik parça sınırını (bir `display:none` sarmalayıcı) client hydration
+  // tamamlanmadan ateşliyor; sarmalayıcı yalnızca hydration bitince (bu ortamda ~1-1.5s) görünür
+  // hale geliyor. Tek seferlik `isVisible()` bu pencereyi yakalayıp false dönebiliyordu.
+  // `toBeVisible()` kendi içinde (poll aralığından bağımsız) retry ettiği için hydration'ı bekler.
   await expect
     .poll(
       async () => {
         await voter.goto(fresh("/kulupler/kent-spor"));
-        return voter.getByText("Başkanlık seçimi: oylama açık").filter({ visible: true }).isVisible();
+        try {
+          await expect(voter.getByText("Başkanlık seçimi: oylama açık").filter({ visible: true })).toBeVisible({ timeout: 10_000 });
+          return true;
+        } catch {
+          return false;
+        }
       },
       { timeout: 180_000, intervals: [5_000] },
     )
@@ -85,11 +93,18 @@ test("seçim oluştur → adaylık → oylama → sonuç onayı → başkan değ
   }
 
   // 6) Oy kapanana kadar bekle (lazy sync CLOSED'a geçirir).
+  // Adım 4'teki hydration-timing hatasıyla aynı sebep (bkz. docs/TEST.md) — `toBeVisible()`
+  // kendi içinde retry ettiği için hydration'ı bekler, tek seferlik `isVisible()` beklemez.
   await expect
     .poll(
       async () => {
         await admin.goto(fresh("/panel/admin/secimler"));
-        return admin.getByText("Oylama bitti").filter({ visible: true }).isVisible();
+        try {
+          await expect(admin.getByText("Oylama bitti").filter({ visible: true })).toBeVisible({ timeout: 10_000 });
+          return true;
+        } catch {
+          return false;
+        }
       },
       { timeout: 300_000, intervals: [5_000] },
     )

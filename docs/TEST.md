@@ -157,35 +157,39 @@ not edilmişti, bu turda tekrar koşturulmadı).
       sorunu ortadan kalktı, test akışın büyük kısmından geçti (seçim oluşturma, adaylık, admin
       onayı hep başarılı).
 
-## Bilinen açık sorun (çözülmedi)
+## Çözüldü (2026-11-24, takip turu 3) — adım 4/6 hydration-timing hatası
 
-Adım 4 (oy penceresinin açılmasını bekleme — `/kulupler/kent-spor` sayfasında
-"Başkanlık seçimi: oylama açık" başlığını bekleme) flaky:
+**Kök neden bulundu ve düzeltildi.** İzole repro: `/kulupler/kent-spor`'u VOTING durumunda bir
+seçimle (DB'ye doğrudan yazılarak) art arda `goto` ile açıp banner başlığının
+`getBoundingClientRect()`'ini ve ebeveyn zincirinin `display` değerini loglayan minik bir script
+(bu oturumda yazılıp çalıştırıldı, repo'da kalıcı değil).
 
-- DB'de `Election.status` doğru anda (`votingOpensAt`'a göre, saniyesinde) `VOTING`'e geçiyor —
-  bu doğrulandı, `src/modules/election/service.ts` `syncElectionTimeStatus` çalışıyor.
-- Ama test tarayıcısında bazı `goto` sonrası render'larda: başlık elementi DOM'da VAR (`count: 1`),
-  `display: block`, `visibility: visible`, `opacity: 1` — ama `getBoundingClientRect()` **0×0**
-  dönüyor. Yani element "görünür" sayılıyor CSS'e göre ama ekranda yer kaplamıyor.
-- `.filter({ visible: true })` (projede başka yerde — F4 notu, cacheComponents/`<Activity>` gizli
-  önceki rota sorunu için kullanılan desen) bu durumu çözmedi, çünkü element zaten
-  `visibility:visible` raporluyor; Playwright'ın "visible" tanımı muhtemelen bu durumda yanlış
-  pozitif/negatif karışık davranıyor.
-- Kök neden netleşmedi. Olası adaylar (test edilmedi):
-  1. Next 16 View Transitions / çıkış-giriş animasyonu — yeni sayfa önce 0 boyutla başlayıp CSS
-     transition'la büyüyor, test tam o anı yakalıyor olabilir.
-  2. `cacheComponents`/PPR'ın bu route için ürettiği statik kabuk + dinamik parça birleşimi, tam
-     navigasyonda bile bir ara/duplicate DOM durumu yaratıyor olabilir.
-  3. Grid/flex layout'ta (`lg:grid-cols-3` içindeki `lg:col-span-2`) bir satır/sütun resize
-     gecikmesi.
+- Element DOM'da her zaman doğru render ediliyordu (count:1, text doğru) — ama `goto`'nun `load`
+  event'i çözüldüğü anda, h2'nin **beş seviye üst ebeveyni `display:none` sınıfsız bir `<div>`**
+  (Next 16 PPR/`cacheComponents`'ın bu route için ürettiği statik kabuk + dinamik parça sınırı —
+  React'ın hidden `<Activity>` boundary'si) idi. Bu sarmalayıcı yalnızca **client-side hydration
+  tamamlandıktan sonra** (bu ortamda ~1.0–1.5s) görünür hale geliyordu — `page.waitForTimeout(1500)`
+  sonrası rect her zaman doğru boyuta (`499×21`) dönüyordu, **tutarlı/deterministik bir hydration
+  yarışıydı, rastgele flaky değildi.**
+- Eski kod `load` event'i döndüğü anda **tek seferlik** `isVisible()` çağırıyordu — hydration'ı
+  beklemeden "false" dönüyordu. 5s'lik poll aralığı genelde bunu bir sonraki turda yakalıyordu, ama
+  bazı turlarda (yavaş render/ağır yük) hydration gecikmesi 5s'yi aşınca test 180s/300s'lik üst
+  limitte tıkanıyordu.
+- **Fix:** `tests/e2e/election.spec.ts` adım 4 ve adım 6 — `expect.poll` içindeki tek seferlik
+  `.isVisible()` çağrısı, kendi içinde (poll aralığından bağımsız, 10s) retry eden
+  `await expect(locator).toBeVisible({ timeout: 10_000 })` + try/catch'e çevrildi. Bu, hydration'ı
+  bekler ve gerçek "VOTING/CLOSED henüz değil" durumuyla "hydration henüz bitmedi" durumunu
+  birbirinden ayırır. **Uygulama kodunda değişiklik yok** — sorun yalnızca testin ölçüm anındaydı.
+- Doğrulama: `next build && next start -p 3100`'e karşı tam akış (`npx playwright test
+  tests/e2e/election.spec.ts --workers=1`) **1 geçti** (ilk denemede adım 4'ü aştı ama adım 6'da
+  aynı desenle tıkandı — oraya da aynı fix uygulandı; ikinci denemede tamamı geçti, 5.9dk).
+- **Genel ders (F12.1'in kalan kısmı için de geçerli):** bu uygulamada `page.goto()` sonrası
+  `load` event'i hydration'ın bittiği anlamına gelmiyor (PPR nedeniyle); yeni e2e adımlarında
+  `goto`'dan hemen sonra tek seferlik `isVisible()`/`isHidden()` KULLANILMAMALI, her zaman kendi
+  içinde retry eden `expect(locator).toBeVisible()`/`toBeHidden()` kullanılmalı.
 
 ## Sırada (birlikte ilerlenecek)
 
-- [ ] Adım 4'teki 0×0 rect sorununu küçük, izole bir repro ile araştır (örn. tek başına
-      `/kulupler/kent-spor`'u birkaç kez art arda `goto` ile açıp banner'ın rect'ini loglayan
-      minik bir script — tam e2e akışını baştan çalıştırmadan).
-- [ ] Kalıcı çözüm bulununca `tests/e2e/election.spec.ts` adım 4'ü güncelle, testi **bir kez**
-      prod sunucuya (`next build && next start -p 3100`) karşı çalıştırıp doğrula.
 - [ ] F12.1'in geri kalanı: diğer kritik akışların e2e kapsamı (zaten var olanlar: auth, club,
       event, registration, tournament, alumni, platform, home, profile) + erişilebilirlik
       denetimi + Lighthouse.
