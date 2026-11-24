@@ -3,9 +3,9 @@ import { z } from "zod";
 const id = z.string().trim().min(1).max(40);
 const text = (max: number) => z.string().trim().min(1, { error: "validation.required" }).max(max, { error: "validation.tooLong" });
 
-export const TOURNAMENT_FORMATS = ["SINGLE_ELIM", "ROUND_ROBIN", "GROUPS_KNOCKOUT"] as const;
+export const TOURNAMENT_FORMATS = ["SINGLE_ELIM", "DOUBLE_ELIM", "ROUND_ROBIN", "GROUPS_KNOCKOUT", "SWISS", "FREE_FOR_ALL"] as const;
 export const PARTICIPANT_SOURCES = ["TEAMS", "INDIVIDUALS", "MANUAL"] as const;
-export const TIEBREAKERS = ["POINTS", "HEAD_TO_HEAD", "GOAL_DIFF", "GOALS_FOR", "WINS", "LOT"] as const;
+export const TIEBREAKERS = ["POINTS", "HEAD_TO_HEAD", "GOAL_DIFF", "GOALS_FOR", "WINS", "LOT", "BUCHHOLZ", "SONNEBORN_BERGER"] as const;
 
 const jsonField = <S extends z.ZodType>(schema: S) =>
   z
@@ -29,6 +29,17 @@ export const settingsSchema = z.object({
   doubleRoundRobin: z.boolean(),
   groups: z.object({ count: z.number().int().min(2).max(16), advancePerGroup: z.number().int().min(1).max(8), bestThirds: z.number().int().min(0).max(8).optional() }).nullish(),
   scoreLabel: z.string().max(20).default("Skor"),
+  doubleElim: z.object({ grandFinalReset: z.boolean() }).nullish(),
+  swiss: z.object({ rounds: z.number().int().min(1).max(12).optional() }).nullish(),
+  ffa: z
+    .object({
+      heatSize: z.number().int().min(2).max(64),
+      pointsTable: z.array(z.number().int().min(0).max(100)).max(32),
+      advancePerHeat: z.number().int().min(1).max(32).optional(),
+    })
+    .nullish(),
+  twoLegged: z.boolean().optional(),
+  twoLeggedFinal: z.boolean().optional(),
 });
 export type TournamentSettings = z.infer<typeof settingsSchema>;
 
@@ -76,9 +87,34 @@ export const recordScoreSchema = z.object({
 });
 export const walkoverSchema = z.object({ matchId: id, winner: z.enum(["home", "away"]), reason: text(300) });
 export const postponeSchema = z.object({ matchId: id, note: z.string().trim().max(300).optional() });
-export const scheduleSchema = z.object({ matchId: id, scheduledAt: z.string().trim().min(1) });
+export const scheduleSchema = z.object({
+  matchId: id,
+  scheduledAt: z.string().trim().min(1),
+  venueId: id.optional(),
+  forceConflict: z
+    .string()
+    .optional()
+    .transform((v) => v === "on" || v === "true"),
+});
 export const matchIdSchema = z.object({ matchId: id });
 
 export const participantNameSchema = z.object({ participantId: id, displayName: text(80) });
 export const removeParticipantSchema = z.object({ tournamentId: id, participantId: id });
 export const addParticipantSchema = z.object({ tournamentId: id, displayName: text(80), seed: z.coerce.number().int().min(1).max(1000).optional() });
+
+export const generateSwissRoundSchema = z.object({ tournamentId: id, stageId: id });
+
+export const ffaResultSchema = z.object({ participantId: id, rank: z.number().int().min(1).max(64), points: z.number().optional(), time: z.number().optional(), score: z.number().optional() });
+export const recordFfaResultSchema = z.object({ matchId: id, results: jsonField(z.array(ffaResultSchema)) });
+
+export const venueSchema = z.object({ tournamentId: id, name: text(80) });
+export const venueIdSchema = z.object({ venueId: id });
+export const timeSlotSchema = z.object({
+  venueId: id,
+  weekday: z.coerce.number().int().min(0).max(6),
+  startMinute: z.coerce.number().int().min(0).max(1439),
+  endMinute: z.coerce.number().int().min(0).max(1439),
+  matchMinutes: z.coerce.number().int().min(5).max(480),
+});
+export const timeSlotIdSchema = z.object({ timeSlotId: id });
+export const autoScheduleSchema = z.object({ tournamentId: id });

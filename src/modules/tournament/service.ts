@@ -15,6 +15,9 @@ export type TournamentErrorCode =
   | "MATCH_NOT_EDITABLE"
   | "DOWNSTREAM_PLAYED"
   | "INVALID_SCORE"
-  | "DUPLICATE_NAME";
+  | "DUPLICATE_NAME"
+  | "ROUND_NOT_DONE"
+  | "TOURNAMENT_COMPLETE"
+  | "SCHEDULE_CONFLICT";
 
 export const fail = (code: TournamentErrorCode, fields?: Record<string, string>) => new ServiceError(code, fields);

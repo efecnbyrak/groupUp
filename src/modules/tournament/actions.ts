@@ -10,22 +10,45 @@ import { enforceRateLimits } from "@/lib/rate-limit";
 
 import { fromIstanbulLocalInput } from "@/lib/dates";
 
-import { addParticipant, createTournament, generateBracket, generateKnockoutStage, removeParticipant, renameParticipant, updateGroupsSettings, updateSeeds, updateSettings } from "./tournaments";
-import { postponeMatch, recordScore, recordWalkover, scheduleMatch } from "./matches";
+import {
+  addParticipant,
+  createTimeSlot,
+  createTournament,
+  createVenue,
+  generateBracket,
+  generateKnockoutStage,
+  generateNextSwissRound,
+  removeParticipant,
+  removeTimeSlot,
+  removeVenue,
+  renameParticipant,
+  updateGroupsSettings,
+  updateSeeds,
+  updateSettings,
+} from "./tournaments";
+import { postponeMatch, recordFfaHeatResult, recordScore, recordWalkover, scheduleMatch } from "./matches";
+import { autoScheduleTournament } from "./scheduling";
 import { TOURNAMENT_ERROR_KEYS as errors } from "./errors";
 import {
   addParticipantSchema,
+  autoScheduleSchema,
   createTournamentSchema,
   generateBracketSchema,
   generateKnockoutSchema,
+  generateSwissRoundSchema,
   groupsSchema,
   participantNameSchema,
   postponeSchema,
+  recordFfaResultSchema,
   recordScoreSchema,
   removeParticipantSchema,
   scheduleSchema,
   seedSchema,
+  timeSlotIdSchema,
+  timeSlotSchema,
   updateSettingsSchema,
+  venueIdSchema,
+  venueSchema,
   walkoverSchema,
 } from "./schemas";
 
@@ -216,9 +239,105 @@ export async function scheduleMatchAction(_prev: Prev, formData: FormData) {
     run: async (user, data, t) => {
       const parsed = fromIstanbulLocalInput(data.scheduledAt);
       if (!parsed) return { ok: false, error: t("errors.invalidForm"), fieldErrors: { scheduledAt: t("validation.required") } };
-      await scheduleMatch(user, clubId, data.matchId, parsed);
+      await scheduleMatch(user, clubId, data.matchId, { scheduledAt: parsed, venueId: data.venueId, forceConflict: data.forceConflict });
       refresh();
       return { ok: true, message: t("tournament.match.scheduled") };
+    },
+  });
+}
+
+export async function generateNextSwissRoundAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: generateSwissRoundSchema,
+    errors,
+    run: async (user, data, t) => {
+      await generateNextSwissRound(user, clubId, data.tournamentId, data.stageId);
+      refresh();
+      return { ok: true, message: t("tournament.bracket.generated") };
+    },
+  });
+}
+
+export async function recordFfaResultAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: recordFfaResultSchema,
+    errors,
+    run: async (user, data, t) => {
+      await recordFfaHeatResult(user, clubId, data.matchId, data.results);
+      refresh();
+      return { ok: true, message: t("tournament.match.scoreSaved") };
+    },
+  });
+}
+
+export async function createVenueAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: venueSchema,
+    errors,
+    run: async (user, data, t) => {
+      await createVenue(user, clubId, data.tournamentId, data.name);
+      refresh();
+      return { ok: true, message: t("tournament.venue.saved") };
+    },
+  });
+}
+
+export async function removeVenueAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: venueIdSchema,
+    errors,
+    run: async (user, data) => {
+      await removeVenue(user, clubId, data.venueId);
+      refresh();
+    },
+  });
+}
+
+export async function createTimeSlotAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: timeSlotSchema,
+    errors,
+    run: async (user, data, t) => {
+      await createTimeSlot(user, clubId, data.venueId, data);
+      refresh();
+      return { ok: true, message: t("tournament.venue.saved") };
+    },
+  });
+}
+
+export async function removeTimeSlotAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: timeSlotIdSchema,
+    errors,
+    run: async (user, data) => {
+      await removeTimeSlot(user, clubId, data.timeSlotId);
+      refresh();
+    },
+  });
+}
+
+export async function autoScheduleAction(_prev: Prev, formData: FormData) {
+  const clubId = clubIdOf(formData);
+  return runAction(formData, {
+    authorize: manage(clubId),
+    schema: autoScheduleSchema,
+    errors,
+    run: async (user, data, t) => {
+      const result = await autoScheduleTournament(user, clubId, data.tournamentId);
+      refresh();
+      return { ok: true, message: t("tournament.schedule.autoScheduled", { placed: result.placed, unplaced: result.unplaced.length }) };
     },
   });
 }

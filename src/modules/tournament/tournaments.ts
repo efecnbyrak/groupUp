@@ -4,10 +4,13 @@ import { audit } from "@/lib/audit";
 import { db, type Tx } from "@/lib/db";
 import type { Prisma } from "@/lib/db-types";
 
+import { generateDoubleElimination } from "./domain/double-elimination";
+import { generateFfaHeats } from "./domain/ffa";
 import { assignGroups, seedKnockoutFromGroups } from "./domain/groups-knockout";
 import { generateRoundRobin } from "./domain/round-robin";
 import { generateSingleElimination } from "./domain/single-elimination";
 import { computeStandings, rankStandings } from "./domain/standings";
+import { defaultSwissRounds, generateSwissRound, type SwissPlayerState } from "./domain/swiss";
 import type { DomainParticipant } from "./domain/types";
 import { DEFAULT_SETTINGS, type TournamentSettings } from "./schemas";
 import { fail } from "./service";
@@ -18,7 +21,7 @@ interface Actor {
 
 export interface CreateTournamentInput {
   name: string;
-  format: "SINGLE_ELIM" | "ROUND_ROBIN" | "GROUPS_KNOCKOUT";
+  format: "SINGLE_ELIM" | "DOUBLE_ELIM" | "ROUND_ROBIN" | "GROUPS_KNOCKOUT" | "SWISS" | "FREE_FOR_ALL";
   source: "TEAMS" | "INDIVIDUALS" | "MANUAL";
   manualNames: string[];
   isPublic: boolean;
@@ -176,6 +179,24 @@ export async function generateBracket(actor: Actor, clubId: string, tournamentId
         const plan = generateRoundRobin(g.participants);
         await persistPlan(tx, stage.id, groupRow.id, plan.matches, byIndex);
       }
+    } else if (t.format === "DOUBLE_ELIM") {
+      const plan = generateDoubleElimination(input, { grandFinalReset: settings.doubleElim?.grandFinalReset ?? false });
+      const stage = await tx.stage.create({ data: { tournamentId, order: 0, type: "DOUBLE_KNOCKOUT", name: "Çift Eleme", settings: {} }, select: { id: true } });
+      await persistPlan(tx, stage.id, null, plan.matches, byIndex);
+    } else if (t.format === "SWISS") {
+      const totalRounds = settings.swiss?.rounds ?? defaultSwissRounds(input.length);
+      const stage = await tx.stage.create({ data: { tournamentId, order: 0, type: "SWISS", name: "İsviçre", settings: { totalRounds } }, select: { id: true } });
+      const states: SwissPlayerState[] = input.map((p) => ({ index: p.index, points: 0, opponents: [], hadBye: false }));
+      const round1 = generateSwissRound(states, { roundNumber: 1 });
+      await persistPlan(tx, stage.id, null, round1, byIndex);
+    } else if (t.format === "FREE_FOR_ALL") {
+      const heatSize = settings.ffa?.heatSize ?? 8;
+      const stage = await tx.stage.create({
+        data: { tournamentId, order: 0, type: "FFA", name: "FFA", settings: { heatSize, pointsTable: settings.ffa?.pointsTable ?? [10, 8, 6, 5, 4, 3, 2, 1], advancePerHeat: settings.ffa?.advancePerHeat } },
+        select: { id: true },
+      });
+      const heats = generateFfaHeats(input, { heatSize, advancePerHeat: settings.ffa?.advancePerHeat });
+      await persistFfaHeats(tx, stage.id, heats, byIndex);
     }
 
     await tx.tournament.update({ where: { id: tournamentId }, data: { status: "SEEDED" } });
@@ -184,8 +205,8 @@ export async function generateBracket(actor: Actor, clubId: string, tournamentId
 }
 
 async function persistPlan(tx: Tx, stageId: string, groupId: string | null, planMatches: ReturnType<typeof generateSingleElimination>["matches"], byIndex: Map<number, string>): Promise<void> {
-  // Önce tüm maçları oluştur (next/loserNext DB id'lerini çözmek için round+position haritası gerekir).
-  const created: { round: number; position: number; groupKey?: string; id: string }[] = [];
+  // Önce tüm maçları oluştur (next/loserNext DB id'lerini çözmek için round+position+side haritası gerekir).
+  const created: { round: number; position: number; groupKey?: string; side?: string; id: string }[] = [];
   for (const m of planMatches) {
     const row = await tx.match.create({
       data: {
@@ -194,6 +215,7 @@ async function persistPlan(tx: Tx, stageId: string, groupId: string | null, plan
         round: m.round,
         position: m.position,
         groupKey: m.groupKey,
+        side: m.side,
         homeId: m.homeIndex !== null ? byIndex.get(m.homeIndex) : null,
         awayId: m.awayIndex !== null ? byIndex.get(m.awayIndex) : null,
         status: m.status,
@@ -201,22 +223,49 @@ async function persistPlan(tx: Tx, stageId: string, groupId: string | null, plan
       },
       select: { id: true },
     });
-    created.push({ round: m.round, position: m.position, groupKey: m.groupKey, id: row.id });
+    created.push({ round: m.round, position: m.position, groupKey: m.groupKey, side: m.side, id: row.id });
   }
-  const findId = (round: number, position: number, groupKey?: string) => created.find((c) => c.round === round && c.position === position && c.groupKey === groupKey)?.id;
+  // round+position tek başına çift elemede WINNERS/LOSERS arasında çakışabilir, side de eşleşmeli
+  // (groupKey'li maçlar — GRAND_FINAL, THIRD_PLACE, HEAT_n — side'dan bağımsız tekildir).
+  const findId = (round: number, position: number, groupKey?: string, side?: string) =>
+    created.find((c) => c.round === round && c.position === position && c.groupKey === groupKey && (groupKey ? true : c.side === side))?.id;
   for (const m of planMatches) {
-    const selfId = findId(m.round, m.position, m.groupKey)!;
+    const selfId = findId(m.round, m.position, m.groupKey, m.side)!;
     if (m.next) {
-      const nextId = findId(m.next.round, m.next.position);
+      // Hedef maç farklı side'da olabilir (WINNERS finali → FINAL); groupKey yoksa aynı side'da ara, sonra diğerlerinde dene.
+      const nextId = findId(m.next.round, m.next.position, undefined, m.side) ?? created.find((c) => c.round === m.next!.round && c.position === m.next!.position)?.id;
       if (nextId) {
         await tx.match.update({ where: { id: selfId }, data: { nextMatchId: nextId, nextSlot: m.next.slot } });
-        // BYE maçı ise kazanan hemen bir sonraki maça yerleşir.
         if (m.status === "BYE" && m.byeWinnerIndex !== undefined) {
           const winnerId = byIndex.get(m.byeWinnerIndex)!;
           await tx.match.update({ where: { id: nextId }, data: m.next.slot === "home" ? { homeId: winnerId } : { awayId: winnerId } });
         }
       }
     }
+    // 3.lük maçı (tek eleme) loserNext'i kasıtlı olarak persist edilmez — matches.ts'teki
+    // thirdPlaceTarget() round/position üzerinden dinamik hesaplar (F8 deseni). Burada yalnızca
+    // çift elemenin WB→LB düşüşü (side dolu) için loserMatchId/loserSlot yazılır.
+    if (m.loserNext && m.side) {
+      // Normalde LOSERS brakete düşer; n=2 özel durumunda (LB yok) doğrudan FINAL'e düşer.
+      const loserId = findId(m.loserNext.round, m.loserNext.position, undefined, "LOSERS") ?? findId(m.loserNext.round, m.loserNext.position, "GRAND_FINAL", "FINAL");
+      if (loserId) await tx.match.update({ where: { id: selfId }, data: { loserMatchId: loserId, loserSlot: m.loserNext.slot } });
+    }
+  }
+}
+
+/** FFA heat'leri — homeId/awayId kullanılmaz, roster `ffaResults` içinde stub olarak saklanır. */
+async function persistFfaHeats(tx: Tx, stageId: string, heats: ReturnType<typeof generateFfaHeats>, byIndex: Map<number, string>): Promise<void> {
+  for (const h of heats) {
+    await tx.match.create({
+      data: {
+        stageId,
+        round: h.round,
+        position: h.position,
+        groupKey: h.groupKey,
+        status: "PENDING",
+        ffaResults: h.participantIndexes!.map((i) => ({ participantId: byIndex.get(i), rank: null, points: null })) as unknown as Prisma.InputJsonValue,
+      },
+    });
   }
 }
 
@@ -287,6 +336,104 @@ export async function generateKnockoutStage(actor: Actor, clubId: string, tourna
     await persistPlan(tx, koStage.id, null, plan.matches, byIndex);
     await audit({ action: "tournament.knockoutGenerated", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: {} }, tx);
   });
+}
+
+// ---------------------------------------------------------------- İsviçre: sonraki turu üret (manuel)
+
+/**
+ * "Sonraki turu üret" (TOURNAMENTS §2.5) — önceki turun TAMAMEN bitmiş olmasını zorlar
+ * (generateKnockoutStage'in "manuel tetikleme" deseniyle aynı). Puan/rakip geçmişi her
+ * çağrıda ham maçlardan yeniden hesaplanır (cache yok, codebase konvansiyonu).
+ */
+export async function generateNextSwissRound(actor: Actor, clubId: string, tournamentId: string, stageId: string): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const t = await loadTournamentInClub(tx, clubId, tournamentId);
+    if (t.format !== "SWISS") throw fail("NOT_EDITABLE");
+    const stage = await tx.stage.findFirst({ where: { id: stageId, tournamentId }, select: { id: true, settings: true } });
+    if (!stage) throw fail("NOT_FOUND");
+    const stageSettings = stage.settings as { totalRounds: number };
+
+    const unfinished = await tx.match.count({ where: { stageId, status: { in: ["PENDING", "IN_PROGRESS"] } } });
+    if (unfinished > 0) throw fail("ROUND_NOT_DONE");
+
+    const allMatches = await tx.match.findMany({ where: { stageId }, select: { round: true, homeId: true, awayId: true, homeScore: true, awayScore: true, winnerId: true, status: true } });
+    const currentRound = allMatches.reduce((max, m) => Math.max(max, m.round), 0);
+    if (currentRound >= stageSettings.totalRounds) throw fail("TOURNAMENT_COMPLETE");
+
+    const rows = await tx.participant.findMany({ where: { tournamentId }, select: partSelect, orderBy: { seed: "asc" } });
+    const { byIndex, input } = toDomainParticipants(rows);
+    const idToIndex = new Map([...byIndex.entries()].map(([i, id]) => [id, i]));
+
+    const states: SwissPlayerState[] = input.map((p) => ({ index: p.index, points: 0, opponents: [], hadBye: false }));
+    const byStateIndex = new Map(states.map((s) => [s.index, s]));
+    for (const m of allMatches) {
+      if (m.status === "BYE" && m.winnerId) {
+        const s = byStateIndex.get(idToIndex.get(m.winnerId)!);
+        if (s) {
+          s.points += 1;
+          s.hadBye = true;
+        }
+        continue;
+      }
+      if (!m.homeId || !m.awayId || m.homeScore === null || m.awayScore === null) continue;
+      const home = byStateIndex.get(idToIndex.get(m.homeId)!);
+      const away = byStateIndex.get(idToIndex.get(m.awayId)!);
+      if (!home || !away) continue;
+      home.opponents.push(away.index);
+      away.opponents.push(home.index);
+      if (m.homeScore > m.awayScore) home.points += 1;
+      else if (m.awayScore > m.homeScore) away.points += 1;
+      else {
+        home.points += 0.5;
+        away.points += 0.5;
+      }
+    }
+
+    const nextRoundMatches = generateSwissRound([...byStateIndex.values()], { roundNumber: currentRound + 1 });
+    await persistPlan(tx, stageId, null, nextRoundMatches, byIndex);
+    await audit({ action: "tournament.swissRoundGenerated", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: { round: currentRound + 1 } }, tx);
+  });
+}
+
+// ---------------------------------------------------------------- Venue + TimeSlot (planlama)
+
+export async function createVenue(actor: Actor, clubId: string, tournamentId: string, name: string): Promise<{ id: string }> {
+  const t = await loadTournamentInClub(db, clubId, tournamentId);
+  const venue = await db.venue.create({ data: { tournamentId, name }, select: { id: true } });
+  await audit({ action: "tournament.venueCreated", targetType: "Tournament", targetId: tournamentId, actorId: actor.id, universityId: t.event.universityId, meta: { name } });
+  return venue;
+}
+
+export async function removeVenue(actor: Actor, clubId: string, venueId: string): Promise<void> {
+  const venue = await db.venue.findUnique({ where: { id: venueId }, select: { tournamentId: true } });
+  if (!venue) throw fail("NOT_FOUND");
+  const t = await loadTournamentInClub(db, clubId, venue.tournamentId);
+  await db.venue.delete({ where: { id: venueId } });
+  await audit({ action: "tournament.venueRemoved", targetType: "Tournament", targetId: t.id, actorId: actor.id, universityId: t.event.universityId, meta: { venueId } });
+}
+
+export interface CreateTimeSlotInput {
+  weekday: number;
+  startMinute: number;
+  endMinute: number;
+  matchMinutes: number;
+}
+
+export async function createTimeSlot(actor: Actor, clubId: string, venueId: string, input: CreateTimeSlotInput): Promise<{ id: string }> {
+  const venue = await db.venue.findUnique({ where: { id: venueId }, select: { tournamentId: true } });
+  if (!venue) throw fail("NOT_FOUND");
+  const t = await loadTournamentInClub(db, clubId, venue.tournamentId);
+  const slot = await db.timeSlot.create({ data: { venueId, ...input }, select: { id: true } });
+  await audit({ action: "tournament.timeSlotCreated", targetType: "Tournament", targetId: t.id, actorId: actor.id, universityId: t.event.universityId, meta: { venueId, ...input } });
+  return slot;
+}
+
+export async function removeTimeSlot(actor: Actor, clubId: string, timeSlotId: string): Promise<void> {
+  const slot = await db.timeSlot.findUnique({ where: { id: timeSlotId }, select: { venue: { select: { tournamentId: true } } } });
+  if (!slot) throw fail("NOT_FOUND");
+  const t = await loadTournamentInClub(db, clubId, slot.venue.tournamentId);
+  await db.timeSlot.delete({ where: { id: timeSlotId } });
+  await audit({ action: "tournament.timeSlotRemoved", targetType: "Tournament", targetId: t.id, actorId: actor.id, universityId: t.event.universityId, meta: { timeSlotId } });
 }
 
 /** Grup ayarlarını kaydeder (yalnızca `settings.groups`, diğer ayarlar korunur). */

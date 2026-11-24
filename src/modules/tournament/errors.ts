@@ -16,4 +16,7 @@ export const TOURNAMENT_ERROR_KEYS: Partial<Record<TournamentErrorCode, MessageK
   DOWNSTREAM_PLAYED: "tournament.errors.downstreamPlayed",
   INVALID_SCORE: "tournament.errors.invalidScore",
   DUPLICATE_NAME: "tournament.errors.duplicateName",
+  ROUND_NOT_DONE: "tournament.errors.roundNotDone",
+  TOURNAMENT_COMPLETE: "tournament.errors.tournamentComplete",
+  SCHEDULE_CONFLICT: "tournament.errors.scheduleConflict",
 };

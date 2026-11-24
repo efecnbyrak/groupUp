@@ -157,6 +157,12 @@ enum StageType {
   FFA
 }
 
+enum BracketSide {
+  WINNERS
+  LOSERS
+  FINAL
+}
+
 enum TournamentStatus {
   DRAFT
   SEEDED
@@ -891,8 +897,34 @@ model Tournament {
   event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   stages       Stage[]
   participants Participant[]
+  venues       Venue[]
 
   @@index([eventId])
+}
+
+model Venue {
+  id           String @id @default(cuid())
+  tournamentId String
+  name         String @db.VarChar(80)
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  slots      TimeSlot[]
+  matches    Match[]
+
+  @@index([tournamentId])
+}
+
+model TimeSlot {
+  id           String @id @default(cuid())
+  venueId      String
+  weekday      Int // 0-6 (Pzt=0..Paz=6) — tekrarlayan müsaitlik penceresi
+  startMinute  Int // gün içi dakika, 0-1439
+  endMinute    Int
+  matchMinutes Int // maç süresi
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
 }
 
 model Stage {
@@ -943,33 +975,43 @@ model Participant {
 }
 
 model Match {
-  id          String      @id @default(cuid())
-  stageId     String
-  groupId     String?
-  round       Int
-  position    Int // tur içindeki sıra (braket çiziminde yukarıdan aşağı)
-  groupKey    String? // "THIRD_PLACE" gibi aynı (round,position) alanı dışında özel maçlar için ayraç
-  homeId      String? // Participant
-  awayId      String?
-  homeScore   Int?
-  awayScore   Int?
-  winnerId    String?
-  status      MatchStatus @default(PENDING)
-  nextMatchId String? // kazanan buraya
-  nextSlot    String? // "home" | "away"
-  scheduledAt DateTime?
-  note        String?     @db.VarChar(300) // hükmen/erteleme gerekçesi
-  updatedById String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String       @id @default(cuid())
+  stageId      String
+  groupId      String?
+  round        Int
+  position     Int // tur içindeki sıra (braket çiziminde yukarıdan aşağı)
+  groupKey     String? // "THIRD_PLACE" gibi aynı (round,position) alanı dışında özel maçlar için ayraç
+  homeId       String? // Participant
+  awayId       String?
+  homeScore    Int?
+  awayScore    Int?
+  winnerId     String?
+  status       MatchStatus  @default(PENDING)
+  nextMatchId  String? // kazanan buraya
+  nextSlot     String? // "home" | "away"
+  side         BracketSide? // çift elemede WINNERS/LOSERS/FINAL (diğer formatlarda null)
+  loserMatchId String? // çift elemede kaybedenin ilerlediği maç
+  loserSlot    String? // "home" | "away"
+  venueId      String?
+  homeAgg      Int? // iki maçlı toplam skor (home)
+  awayAgg      Int? // iki maçlı toplam skor (away)
+  ffaResults   Json? // FFA heat: [{participantId, rank, points|time|score}]
+  scheduledAt  DateTime?
+  note         String?      @db.VarChar(300) // hükmen/erteleme gerekçesi
+  updatedById  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   stage     Stage            @relation(fields: [stageId], references: [id], onDelete: Cascade)
   group     TournamentGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  venue     Venue?           @relation(fields: [venueId], references: [id], onDelete: SetNull)
   updatedBy User?            @relation("MatchUpdatedBy", fields: [updatedById], references: [id])
 
   @@index([stageId, round])
   @@index([groupId])
   @@index([nextMatchId])
+  @@index([loserMatchId])
+  @@index([venueId])
 }
 
 enum NotificationType {

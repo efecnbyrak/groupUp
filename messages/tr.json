@@ -1573,7 +1573,10 @@
       "downstreamPlayed": "Sonraki maç zaten oynandı. Devam edersen sonraki sonuçlar sıfırlanır ve yeniden uygulanır.",
       "invalidScore": "Geçersiz skor.",
       "duplicateName": "Bu isim zaten kullanılıyor.",
-      "noDraw": "Elemede beraberlik olmaz; eşitlik varsa penaltı/uzatma sonucunu skora yansıt."
+      "noDraw": "Elemede beraberlik olmaz; eşitlik varsa penaltı/uzatma sonucunu skora yansıt.",
+      "roundNotDone": "Önceki tur tamamlanmadan yeni tur üretilemez.",
+      "tournamentComplete": "Turnuva tüm turları tamamladı.",
+      "scheduleConflict": "Bu saat/sahada çakışma var. Devam edersen çakışmaya rağmen kaydedilir."
     },
     "status": {
       "DRAFT": "Taslak",
@@ -1584,8 +1587,11 @@
     },
     "format": {
       "SINGLE_ELIM": "Tek eleme",
+      "DOUBLE_ELIM": "Çift eleme",
       "ROUND_ROBIN": "Lig (round robin)",
-      "GROUPS_KNOCKOUT": "Grup + eleme"
+      "GROUPS_KNOCKOUT": "Grup + eleme",
+      "SWISS": "İsviçre sistemi",
+      "FREE_FOR_ALL": "FFA / Sıralama"
     },
     "panel": {
       "title": "Turnuvalar",
@@ -1685,6 +1691,12 @@
       "pending": "Oynanmadı",
       "scheduledAt": "Tarih",
       "scheduled": "Maç saati güncellendi."
+    },
+    "venue": {
+      "saved": "Saha/zaman kaydedildi."
+    },
+    "schedule": {
+      "autoScheduled": "{placed} maç yerleşti, {unplaced} maç planlanamadı."
     },
     "myMatches": {
       "title": "Maçlarım",

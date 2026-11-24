@@ -1573,7 +1573,10 @@
       "downstreamPlayed": "The next match has already been played. Continuing will reset and reapply the following results.",
       "invalidScore": "Invalid score.",
       "duplicateName": "This name is already in use.",
-      "noDraw": "Knockout matches can't end in a draw; reflect a penalty/extra-time result in the score."
+      "noDraw": "Knockout matches can't end in a draw; reflect a penalty/extra-time result in the score.",
+      "roundNotDone": "The next round can't be generated until the previous round is complete.",
+      "tournamentComplete": "The tournament has completed all its rounds.",
+      "scheduleConflict": "There's a conflict at this venue/time. Continuing will save it despite the conflict."
     },
     "status": {
       "DRAFT": "Draft",
@@ -1584,8 +1587,11 @@
     },
     "format": {
       "SINGLE_ELIM": "Single elimination",
+      "DOUBLE_ELIM": "Double elimination",
       "ROUND_ROBIN": "League (round robin)",
-      "GROUPS_KNOCKOUT": "Groups + knockout"
+      "GROUPS_KNOCKOUT": "Groups + knockout",
+      "SWISS": "Swiss system",
+      "FREE_FOR_ALL": "FFA / Ranking"
     },
     "panel": {
       "title": "Tournaments",
@@ -1685,6 +1691,12 @@
       "pending": "Not played",
       "scheduledAt": "Date",
       "scheduled": "Match time updated."
+    },
+    "venue": {
+      "saved": "Venue/time slot saved."
+    },
+    "schedule": {
+      "autoScheduled": "{placed} matches scheduled, {unplaced} could not be placed."
     },
     "myMatches": {
       "title": "My matches",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { computeStandings, rankStandings, type StandingsMatch } from "./standings";
+import { computeBuchholz, computeSonnebornBerger, computeStandings, computeSwissStandings, rankStandings, type StandingsMatch, type SwissOutcome } from "./standings";
 
 const POINTS = { win: 3, draw: 1, loss: 0 };
 
@@ -77,5 +77,52 @@ describe("rankStandings", () => {
     const ranked = rankStandings(rows, all, POINTS, ["POINTS", "HEAD_TO_HEAD", "LOT"]);
     // Üçü de 1W1L=3p, averaj 0 — ikili averaj da ayıramaz (simetrik döngü) → LOT: girdi sırası korunur.
     expect(ranked.map((r) => r.index)).toEqual([0, 1, 2]);
+  });
+});
+
+describe("Swiss: computeSwissStandings / computeBuchholz / computeSonnebornBerger", () => {
+  // 4 oyunculu 3 turlu el hesabı: 0 her maçını kazanır (3p); 1 ve 2 birer galibiyetle 1p; 3 hep kaybeder (0p).
+  const outcomes: SwissOutcome[] = [
+    { homeIndex: 0, awayIndex: 1, result: "HOME_WIN" },
+    { homeIndex: 2, awayIndex: 3, result: "HOME_WIN" },
+    { homeIndex: 0, awayIndex: 2, result: "HOME_WIN" },
+    { homeIndex: 1, awayIndex: 3, result: "HOME_WIN" },
+    { homeIndex: 0, awayIndex: 3, result: "HOME_WIN" },
+    { homeIndex: 1, awayIndex: 2, result: "AWAY_WIN" },
+  ];
+  const indexes = [0, 1, 2, 3];
+  const rows = computeSwissStandings(indexes, outcomes);
+
+  it("puanlar: galibiyet=1, mağlubiyet=0", () => {
+    expect(rows.find((r) => r.index === 0)!.points).toBe(3);
+    expect(rows.find((r) => r.index === 1)!.points).toBe(1);
+    expect(rows.find((r) => r.index === 2)!.points).toBe(2);
+    expect(rows.find((r) => r.index === 3)!.points).toBe(0);
+  });
+
+  it("Buchholz: rakiplerin toplam puanı (el hesabıyla doğrulanmış)", () => {
+    const buchholz = computeBuchholz(indexes, outcomes, rows);
+    expect(buchholz.get(0)).toBe(3);
+    expect(buchholz.get(1)).toBe(5);
+    expect(buchholz.get(2)).toBe(4);
+    expect(buchholz.get(3)).toBe(6);
+  });
+
+  it("Sonneborn-Berger: yenilen/berabere kalınan rakiplerin puanı (el hesabıyla doğrulanmış)", () => {
+    const sb = computeSonnebornBerger(indexes, outcomes, rows);
+    expect(sb.get(0)).toBe(3);
+    expect(sb.get(1)).toBe(0);
+    expect(sb.get(2)).toBe(1);
+    expect(sb.get(3)).toBe(0);
+  });
+
+  it("POINTS eşitliğinde BUCHHOLZ sıralamayı doğru bozar (sentetik fixture)", () => {
+    const tiedRows = [
+      { index: 10, played: 2, wins: 1, draws: 0, losses: 1, goalsFor: 0, goalsAgainst: 0, goalDiff: 0, points: 1, form: [] as ("W" | "D" | "L")[] },
+      { index: 20, played: 2, wins: 1, draws: 0, losses: 1, goalsFor: 0, goalsAgainst: 0, goalDiff: 0, points: 1, form: [] as ("W" | "D" | "L")[] },
+    ];
+    const extraScores = new Map([["BUCHHOLZ", new Map([[10, 3], [20, 5]])]] as const);
+    const ranked = rankStandings(tiedRows, [], POINTS, ["POINTS", "BUCHHOLZ"], true, extraScores);
+    expect(ranked.map((r) => r.index)).toEqual([20, 10]);
   });
 });

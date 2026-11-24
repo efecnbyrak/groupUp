@@ -28,6 +28,10 @@ export function seedPositions(size: number): number[] {
 export interface SingleEliminationOptions {
   /** 3.lük maçı oynanacak mı (yarı final kaybedenleri). */
   thirdPlaceMatch?: boolean;
+  /** İki maçlı eşleşme (toplam skor) — final hariç tüm turlar. */
+  twoLegged?: boolean;
+  /** İki maçlı final — `twoLegged` kapalıyken de tek başına final için geçerli olabilir. */
+  twoLeggedFinal?: boolean;
 }
 
 /**
@@ -81,6 +85,14 @@ export function generateSingleElimination(participants: DomainParticipant[], opt
     }
     prevCount = count;
     prevKnown = known;
+  }
+
+  if (opts.twoLegged || opts.twoLeggedFinal) {
+    for (const m of matches) {
+      if (m.status === "BYE" || m.groupKey) continue;
+      const isFinal = m.round === rounds;
+      if ((isFinal && opts.twoLeggedFinal) || (!isFinal && opts.twoLegged) || (isFinal && opts.twoLegged)) m.legs = 2;
+    }
   }
 
   if (opts.thirdPlaceMatch && rounds >= 2) {
