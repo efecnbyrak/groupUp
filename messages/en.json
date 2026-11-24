@@ -293,6 +293,14 @@
       "subject": "Event coming up: {event}",
       "intro": "\"{event}\" starts at {time}. Your application was accepted.",
       "button": "View event"
+    },
+    "electionResult": {
+      "subject": "{club} election result",
+      "intro": {
+        "decided": "The \"{club}\" presidential election is decided. New president: {winner}.",
+        "tie": "The \"{club}\" presidential election ended in a tie; an Admin will decide."
+      },
+      "button": "View result"
     }
   },
   "meta": {
@@ -1698,5 +1706,85 @@
     "markAllRead": "Mark all as read",
     "viewAll": "View all notifications",
     "unreadBadge": "{count} unread"
+  },
+  "election": {
+    "errors": {
+      "invalidDates": "Dates must be in order: candidacy start < end ≤ voting start < end.",
+      "activeExists": "This club already has an ongoing election.",
+      "notCandidacyWindow": "The candidacy window is not open.",
+      "notVotingWindow": "The voting window is not open.",
+      "notEligible": "You don't meet the voter/candidate requirements (active student member, not president of another club).",
+      "alreadyCandidate": "You're already a candidate in this election.",
+      "candidateNotApproved": "This candidate hasn't been approved yet.",
+      "alreadyVoted": "You already voted; votes can't be changed.",
+      "invalidCandidate": "Invalid candidate selection."
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "CANDIDACY": "Candidacy",
+      "VOTING": "Voting",
+      "CLOSED": "Voting closed",
+      "RESULT_PENDING": "Awaiting result approval",
+      "FINALIZED": "Finalized",
+      "CANCELLED": "Cancelled"
+    },
+    "fields": {
+      "club": "Club",
+      "title": "Election title",
+      "candidacyOpensAt": "Candidacy opens",
+      "candidacyClosesAt": "Candidacy closes",
+      "votingOpensAt": "Voting opens",
+      "votingClosesAt": "Voting closes"
+    },
+    "admin": {
+      "body": "Club presidential elections — create, approve candidates, decide the result from the approval queue.",
+      "create": "Create election",
+      "createBody": "Candidacy and voting windows open in sequence; the result lands in the approval queue once voting closes.",
+      "createSubmit": "Create",
+      "created": "Election created.",
+      "cancelled": "Election cancelled.",
+      "cancelButton": "Cancel",
+      "cancelTitle": "Cancel election",
+      "cancelBody": "This election will be cancelled; this can't be undone.",
+      "candidateApproved": "Candidate approved.",
+      "candidateRejected": "Candidate rejected.",
+      "empty": "No elections yet",
+      "emptyBody": "New elections will appear here.",
+      "candidatesTitle": "Candidates",
+      "noCandidates": "No candidates yet.",
+      "participation": "{voted} / {eligible} voted",
+      "pendingCandidate": "Pending approval"
+    },
+    "banner": {
+      "candidacyTitle": "Presidential election: candidacy open",
+      "candidacyBody": "You can declare your candidacy for \"{title}\".",
+      "applyButton": "Run for president",
+      "statementLabel": "Candidacy statement",
+      "statementHint": "Up to 2000 characters.",
+      "alreadyCandidate": "Your candidacy was submitted and is awaiting Admin approval.",
+      "votingTitle": "Presidential election: voting open",
+      "votingBody": "Cast your vote for \"{title}\". Votes can't be changed once cast.",
+      "voteButton": "Vote",
+      "voteConfirmTitle": "Confirm your vote",
+      "voteConfirmBody": "Your vote will be recorded and can't be changed.",
+      "alreadyVoted": "You've already voted. Results appear once voting closes.",
+      "yesOption": "Yes",
+      "noOption": "No",
+      "resultTitle": "The election is decided",
+      "resultWinner": "New president: {name}",
+      "resultTie": "There was a tie; awaiting Admin's decision.",
+      "viewResult": "View result"
+    },
+    "member": {
+      "candidacySubmitted": "Your candidacy was submitted and is awaiting Admin approval.",
+      "voteCast": "Your vote was recorded."
+    },
+    "result": {
+      "title": "Election result",
+      "winner": "New president: {name}",
+      "tie": "There was a tie.",
+      "votes": "{count} votes ({pct}%)",
+      "totalBallots": "{count} votes total"
+    }
   }
 }

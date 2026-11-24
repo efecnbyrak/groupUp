@@ -22,6 +22,7 @@ export {
   createClub,
   getClubInfo,
   isClubPresident,
+  setPresidentFromElection,
   storeClubImage,
   updateClubDirect,
   type ClubInfo,

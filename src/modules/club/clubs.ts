@@ -89,6 +89,25 @@ export async function assignPresident(actor: Actor, universityId: string, clubId
   );
 }
 
+/**
+ * F11: ELECTION_RESULT onaylanınca başkan değişir (ELECTIONS §2). `assignPresident`'ın admin/email
+ * yoluyla aynısı ama kullanıcı zaten doğrulanmış (seçim adayı) — e-posta çözümlemesi yok.
+ * Eski başkanın görevli ekibi kapsam dışı: korunur (ROADMAP F11 notu — Admin'in "sıfırla" isteği
+ * mevcut ekip ekranından elle yapılır, decideRequest'te ek bir seçenek alanı yok).
+ */
+export async function setPresidentFromElection(tx: Tx, clubId: string, newPresidentId: string): Promise<void> {
+  const club = await tx.club.findFirst({ where: { id: clubId, deletedAt: null }, select: { presidentId: true } });
+  if (!club) throw fail("NOT_FOUND");
+  if (club.presidentId === newPresidentId) return;
+  await tx.club.update({ where: { id: clubId }, data: { presidentId: newPresidentId } });
+  await tx.staffAssignment.deleteMany({ where: { clubId, userId: newPresidentId } });
+  await tx.membership.upsert({
+    where: { clubId_userId: { clubId, userId: newPresidentId } },
+    update: { status: "ACTIVE", leftAt: null, bannedUntil: null },
+    create: { clubId, userId: newPresidentId, joinedVia: "election" },
+  });
+}
+
 /** Kulübün CLUB_UPDATE kapsamındaki mevcut değerleri (fark görünümü için "before"). */
 export async function getClubInfo(clubId: string, client: Tx | typeof db = db): Promise<ClubInfo & { universityId: string; name: string }> {
   const club = await client.club.findFirst({

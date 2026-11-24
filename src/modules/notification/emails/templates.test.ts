@@ -72,5 +72,11 @@ describe("mail şablonları", () => {
 
     const reminder = renderTemplate("event-reminder", "en", { name: "A", eventTitle: "Hackathon", startAt: "Nov 25, 14:00", url: "http://x/e" });
     expect(reminder.html).toContain('href="http://x/e"');
+
+    const decided = renderTemplate("election-result", "tr", { name: "A", clubName: "Robotik", winnerName: "Ayşe Yılmaz", url: "http://x/kulupler/robotik" });
+    expect(decided.text).toContain("Ayşe Yılmaz");
+
+    const tie = renderTemplate("election-result", "en", { name: "A", clubName: "Robotik", winnerName: null, url: "http://x/kulupler/robotik" });
+    expect(tie.text).toMatch(/tie/i);
   });
 });

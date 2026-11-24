@@ -15,6 +15,7 @@ import { formatDateTime } from "@/lib/dates";
 import { renderRichText } from "@/lib/rich-text/sanitize";
 import { publicFileUrl } from "@/lib/storage";
 import { docParagraphs, getClubPublic, getMembership, isBanActive, joinClubAction, leaveClubAction, listMembers } from "@/modules/club";
+import { ElectionBanner, getClubElectionBanner, getElectionResult } from "@/modules/election";
 import { listClubAnnouncements, listClubPublicEvents, pick } from "@/modules/event";
 
 export async function generateMetadata({ params }: PageProps<"/kulupler/[slug]">): Promise<Metadata> {
@@ -41,7 +42,12 @@ async function Content({ params, searchParams }: PageProps<"/kulupler/[slug]">) 
   ]);
   const isMember = membership?.status === "ACTIVE";
   const now = new Date();
-  const [events, announcements] = await Promise.all([listClubPublicEvents(club.id, now), isMember || (access && canOpenClubPanel(access)) ? listClubAnnouncements(club.id, 5) : []]);
+  const [events, announcements, electionBanner] = await Promise.all([
+    listClubPublicEvents(club.id, now),
+    isMember || (access && canOpenClubPanel(access)) ? listClubAnnouncements(club.id, 5) : [],
+    isMember ? getClubElectionBanner(club.id, user!.id) : null,
+  ]);
+  const electionResult = electionBanner?.status === "FINALIZED" ? await getElectionResult(electionBanner.id) : null;
   const banned = membership ? isBanActive(membership, new Date()) : false;
   const description = docParagraphs((locale === "en" && club.descriptionEn) || club.descriptionTr);
   const presidentName = club.president?.profile ? `${club.president.profile.firstName} ${club.president.profile.lastName}` : t("club.noPresident");
@@ -83,6 +89,7 @@ async function Content({ params, searchParams }: PageProps<"/kulupler/[slug]">) 
 
       <div className="grid gap-(--space-6) lg:grid-cols-3">
         <div className="flex flex-col gap-(--space-6) lg:col-span-2">
+          {electionBanner ? <ElectionBanner clubId={club.id} election={electionBanner} result={electionResult} t={t} /> : null}
           <Card className="flex flex-col gap-(--space-3)">
             <h2 className="text-(length:--type-heading-sm) font-semibold text-fg">{t("club.page.about")}</h2>
             {description.length ? (

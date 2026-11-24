@@ -194,6 +194,16 @@ enum TicketCategory {
   OTHER
 }
 
+enum ElectionStatus {
+  DRAFT
+  CANDIDACY
+  VOTING
+  CLOSED
+  RESULT_PENDING
+  FINALIZED
+  CANCELLED
+}
+
 // ============================================================
 // Kimlik ve üniversite (F2) — sahip: university, identity, profile modülleri
 // ============================================================
@@ -327,6 +337,7 @@ model User {
   participantAs      Participant[]
   matchesUpdated     Match[]             @relation("MatchUpdatedBy")
   notifications      Notification[]
+  candidacies        Candidate[]
 
   @@index([universityId, type])
 }
@@ -476,6 +487,7 @@ model Club {
   changeRequests ChangeRequest[]
   tickets        Ticket[]
   events         Event[]
+  elections      Election[]
 
   @@index([universityId, categoryId])
   @@index([universityId, status, name])
@@ -531,6 +543,70 @@ model StaffAssignment {
 
   @@unique([clubId, userId])
   @@index([userId])
+}
+
+// ============================================================
+// Seçim (F11) — sahip: election
+// ============================================================
+model Election {
+  id                 String         @id @default(cuid())
+  universityId       String
+  clubId             String
+  title              String         @db.VarChar(120)
+  status             ElectionStatus @default(DRAFT)
+  candidacyOpensAt   DateTime
+  candidacyClosesAt  DateTime
+  votingOpensAt      DateTime
+  votingClosesAt     DateTime
+  eligibleSnapshotAt DateTime? // seçmen listesi bu anda dondurulur
+  winnerUserId       String?
+  createdById        String
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  club       Club            @relation(fields: [clubId], references: [id])
+  candidates Candidate[]
+  ballots    BallotReceipt[]
+  votes      Vote[]
+
+  @@index([clubId, status])
+  @@index([universityId, status])
+}
+
+model Candidate {
+  id          String   @id @default(cuid())
+  electionId  String
+  userId      String
+  statementTr String?  @db.Text
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([electionId, userId])
+}
+
+// KİM oy verdi (ne verdiği yok) — Vote ile aynı transaction'da, aralarında bağlantı yok (ELECTIONS §2).
+model BallotReceipt {
+  electionId String
+  userId     String
+  castAt     DateTime @default(now())
+
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  @@id([electionId, userId])
+}
+
+// NE oy verildi (kim verdiği yok) — zaman damgası veya sıralı id YOK (zaman sızdırmasın diye rastgele uuid v4).
+model Vote {
+  id          String @id @default(uuid())
+  electionId  String
+  candidateId String
+
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  @@index([electionId, candidateId])
 }
 
 model Announcement {
@@ -908,7 +984,9 @@ enum NotificationType {
   SYSTEM
 }
 
-/** Uygulama içi bildirim (F10). Mail ayrı gönderilir (notification/emails) — ikisi birlikte tetiklenir. */
+/**
+ * Uygulama içi bildirim (F10). Mail ayrı gönderilir (notification/emails) — ikisi birlikte tetiklenir.
+ */
 model Notification {
   id        String           @id @default(cuid())
   userId    String

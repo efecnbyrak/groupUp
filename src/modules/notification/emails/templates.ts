@@ -19,6 +19,7 @@ export interface EmailTemplates {
   "match-scheduled": { name: string; eventTitle: string; opponent: string; scheduledAt: string; url: string };
   "deadline-reminder": { name: string; eventTitle: string; clubName: string; url: string };
   "event-reminder": { name: string; eventTitle: string; startAt: string; url: string };
+  "election-result": { name: string; clubName: string; winnerName: string | null; url: string };
 }
 
 export type EmailTemplate = keyof EmailTemplates;
@@ -169,6 +170,16 @@ const eventReminder: Renderer<"event-reminder"> = (locale, { name, eventTitle, s
   ]);
 };
 
+const electionResult: Renderer<"election-result"> = (locale, { name, clubName, winnerName, url }) => {
+  const t = translatorFor(locale);
+  const outcome = winnerName ? "decided" : "tie";
+  return renderEmail(locale, t("email.electionResult.subject", { club: clubName }), [
+    { kind: "p", text: t("email.greeting", { name }) },
+    { kind: "p", text: t(`email.electionResult.intro.${outcome}`, { club: clubName, winner: winnerName ?? "" }) },
+    { kind: "button", text: t("email.electionResult.button"), href: url },
+  ]);
+};
+
 const renderers: { [K in EmailTemplate]: Renderer<K> } = {
   "verify-email": verifyEmail,
   "password-reset": passwordReset,
@@ -185,6 +196,7 @@ const renderers: { [K in EmailTemplate]: Renderer<K> } = {
   "match-scheduled": matchScheduled,
   "deadline-reminder": deadlineReminder,
   "event-reminder": eventReminder,
+  "election-result": electionResult,
 };
 
 export function renderTemplate<K extends EmailTemplate>(template: K, locale: Locale, data: EmailTemplates[K]): RenderedEmail {

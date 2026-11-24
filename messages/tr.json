@@ -293,6 +293,14 @@
       "subject": "Etkinlik yaklaşıyor: {event}",
       "intro": "\"{event}\" etkinliği {time} tarihinde başlıyor. Başvurun kabul edildi.",
       "button": "Etkinliği gör"
+    },
+    "electionResult": {
+      "subject": "{club} seçim sonucu",
+      "intro": {
+        "decided": "\"{club}\" kulübü başkanlık seçimi sonuçlandı. Yeni başkan: {winner}.",
+        "tie": "\"{club}\" kulübü başkanlık seçiminde eşitlik oluştu; Admin karar verecek."
+      },
+      "button": "Sonucu gör"
     }
   },
   "meta": {
@@ -1698,5 +1706,85 @@
     "markAllRead": "Tümünü okundu say",
     "viewAll": "Tüm bildirimleri gör",
     "unreadBadge": "{count} okunmamış"
+  },
+  "election": {
+    "errors": {
+      "invalidDates": "Tarihler sırayla olmalı: adaylık başlangıcı < bitişi ≤ oy başlangıcı < bitişi.",
+      "activeExists": "Bu kulüpte devam eden bir seçim var.",
+      "notCandidacyWindow": "Adaylık penceresi açık değil.",
+      "notVotingWindow": "Oy penceresi açık değil.",
+      "notEligible": "Seçmen/aday şartlarını sağlamıyorsun (aktif öğrenci üye, başka kulübün başkanı olmamalı).",
+      "alreadyCandidate": "Zaten bu seçime adaysın.",
+      "candidateNotApproved": "Bu aday henüz onaylanmadı.",
+      "alreadyVoted": "Zaten oy verdin; oy değiştirilemez.",
+      "invalidCandidate": "Geçersiz aday seçimi."
+    },
+    "status": {
+      "DRAFT": "Taslak",
+      "CANDIDACY": "Adaylık",
+      "VOTING": "Oylama",
+      "CLOSED": "Oylama bitti",
+      "RESULT_PENDING": "Sonuç onayı bekliyor",
+      "FINALIZED": "Sonuçlandı",
+      "CANCELLED": "İptal edildi"
+    },
+    "fields": {
+      "club": "Kulüp",
+      "title": "Seçim başlığı",
+      "candidacyOpensAt": "Adaylık başlangıcı",
+      "candidacyClosesAt": "Adaylık bitişi",
+      "votingOpensAt": "Oy başlangıcı",
+      "votingClosesAt": "Oy bitişi"
+    },
+    "admin": {
+      "body": "Kulüp başkanlık seçimleri — oluştur, adayları onayla, sonucu onay kuyruğundan karara bağla.",
+      "create": "Seçim oluştur",
+      "createBody": "Adaylık ve oylama pencereleri sırayla açılır; sonuç oy kapanınca onay kuyruğuna düşer.",
+      "createSubmit": "Oluştur",
+      "created": "Seçim oluşturuldu.",
+      "cancelled": "Seçim iptal edildi.",
+      "cancelButton": "İptal et",
+      "cancelTitle": "Seçimi iptal et",
+      "cancelBody": "Bu seçim iptal edilecek, geri alınamaz.",
+      "candidateApproved": "Aday onaylandı.",
+      "candidateRejected": "Aday reddedildi.",
+      "empty": "Henüz seçim yok",
+      "emptyBody": "Yeni seçim oluşturduğunda burada görünür.",
+      "candidatesTitle": "Adaylar",
+      "noCandidates": "Henüz aday yok.",
+      "participation": "{voted} / {eligible} oy kullandı",
+      "pendingCandidate": "Onay bekliyor"
+    },
+    "banner": {
+      "candidacyTitle": "Başkanlık seçimi: adaylık açık",
+      "candidacyBody": "\"{title}\" için adaylığını bildirebilirsin.",
+      "applyButton": "Aday ol",
+      "statementLabel": "Adaylık metni",
+      "statementHint": "En fazla 2000 karakter.",
+      "alreadyCandidate": "Adaylığın gönderildi, Admin onayını bekliyor.",
+      "votingTitle": "Başkanlık seçimi: oylama açık",
+      "votingBody": "\"{title}\" için oyunu kullan. Oy verdikten sonra değiştirilemez.",
+      "voteButton": "Oy ver",
+      "voteConfirmTitle": "Oyunu onayla",
+      "voteConfirmBody": "Oyun kaydedilecek ve değiştirilemez.",
+      "alreadyVoted": "Oyunu kullandın. Sonuçlar oy kapandıktan sonra görünür.",
+      "yesOption": "Evet",
+      "noOption": "Hayır",
+      "resultTitle": "Seçim sonuçlandı",
+      "resultWinner": "Yeni başkan: {name}",
+      "resultTie": "Eşitlik oluştu; Admin kararı bekleniyor.",
+      "viewResult": "Sonucu gör"
+    },
+    "member": {
+      "candidacySubmitted": "Adaylığın gönderildi, Admin onayını bekliyor.",
+      "voteCast": "Oyun kaydedildi."
+    },
+    "result": {
+      "title": "Seçim sonucu",
+      "winner": "Yeni başkan: {name}",
+      "tie": "Eşitlik oluştu.",
+      "votes": "{count} oy ({pct}%)",
+      "totalBallots": "Toplam {count} oy"
+    }
   }
 }
