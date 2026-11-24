@@ -8,7 +8,7 @@ import { getLocale, getT } from "@/i18n/server";
 import { getSessionUser } from "@/lib/authz";
 import { formatDateTime } from "@/lib/dates";
 import { logoutAction } from "@/modules/identity";
-import { markAllNotificationsReadAction, markNotificationReadAction, recentNotifications } from "@/modules/notification";
+import { markAllNotificationsReadFormAction, markNotificationReadFormAction, recentNotifications } from "@/modules/notification";
 import { isUniversityAdmin } from "@/modules/university";
 
 /**
@@ -52,8 +52,8 @@ async function AppFrame({ children }: { children: React.ReactNode }) {
           clubs={clubs}
           notifications={notifications}
           unreadCount={unreadCount}
-          markNotificationReadAction={markNotificationReadAction}
-          markAllNotificationsReadAction={markAllNotificationsReadAction}
+          markNotificationReadFormAction={markNotificationReadFormAction}
+          markAllNotificationsReadFormAction={markAllNotificationsReadFormAction}
           logoutAction={logoutAction}
         />
       ) : (

@@ -124,7 +124,7 @@ test.describe("başvuru akışı", () => {
     await captain.getByRole("button", { name: "Takım kur" }).click();
     await captain.getByLabel("Takım adı").fill("E2E Takımı");
     await captain.getByRole("button", { name: "Takımı oluştur" }).click();
-    await expect(captain.getByText("E2E Takımı")).toBeVisible({ timeout: 10_000 });
+    await expect(captain.locator("#icerik").getByText("E2E Takımı")).toBeVisible({ timeout: 10_000 });
     const code = (await captain.locator("code").first().textContent())!.trim();
     expect(code).toHaveLength(6);
 

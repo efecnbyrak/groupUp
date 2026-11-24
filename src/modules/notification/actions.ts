@@ -33,3 +33,11 @@ export async function markAllNotificationsReadAction(_prev: Prev, formData: Form
     },
   });
 }
+
+export async function markNotificationReadFormAction(formData: FormData) {
+  await markNotificationReadAction(null, formData);
+}
+
+export async function markAllNotificationsReadFormAction(formData: FormData) {
+  await markAllNotificationsReadAction(null, formData);
+}

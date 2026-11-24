@@ -6,7 +6,7 @@ export {
   type AppHeaderUser,
   type HeaderClub,
   type HeaderNotification,
-  type NotificationAction,
+  type NotificationFormAction,
   type PanelLink,
 } from "./app-header";
 export { Footer } from "./footer";

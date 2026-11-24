@@ -14,8 +14,7 @@ export type PanelLink = { href: string; label: string };
 export type HeaderClub = { href: string; name: string; logoUrl: string | null; roleLabel: string; presidentLabel: string };
 /** Bildirim zili — modül verisi app katmanından prop olarak gelir (shell modül import edemez). */
 export type HeaderNotification = { id: string; title: string; body: string | null; href: string | null; read: boolean; when: string };
-export type NotificationActionResult = { ok: true } | { ok: false; error: string };
-export type NotificationAction = (prev: NotificationActionResult | null, fd: FormData) => Promise<NotificationActionResult>;
+export type NotificationFormAction = (formData: FormData) => Promise<void>;
 
 const icon = "size-(--icon-size-md)";
 
@@ -30,8 +29,8 @@ export async function AppHeader({
   clubs = [],
   notifications = [],
   unreadCount = 0,
-  markNotificationReadAction,
-  markAllNotificationsReadAction,
+  markNotificationReadFormAction,
+  markAllNotificationsReadFormAction,
   logoutAction,
 }: {
   user: AppHeaderUser;
@@ -39,8 +38,8 @@ export async function AppHeader({
   clubs?: HeaderClub[];
   notifications?: HeaderNotification[];
   unreadCount?: number;
-  markNotificationReadAction?: NotificationAction;
-  markAllNotificationsReadAction?: NotificationAction;
+  markNotificationReadFormAction?: NotificationFormAction;
+  markAllNotificationsReadFormAction?: NotificationFormAction;
   logoutAction: () => Promise<void>;
 }) {
   const [t, locale] = await Promise.all([getT(), getLocale()]);
@@ -121,8 +120,8 @@ export async function AppHeader({
           >
             <div className="flex items-center justify-between gap-(--space-2) px-(--space-3) pt-(--space-2)">
               <p className="text-(length:--type-caption) font-semibold text-fg-secondary">{t("notifications.title")}</p>
-              {unreadCount > 0 && markAllNotificationsReadAction ? (
-                <form action={async (fd: FormData) => { await markAllNotificationsReadAction(null, fd); }}>
+              {unreadCount > 0 && markAllNotificationsReadFormAction ? (
+                <form action={markAllNotificationsReadFormAction}>
                   <button type="submit" className="text-(length:--type-caption) font-semibold text-link hover:underline">
                     {t("notifications.markAllRead")}
                   </button>
@@ -140,8 +139,8 @@ export async function AppHeader({
                       {n.body ? <p className="truncate text-(length:--type-caption) text-fg-secondary">{n.body}</p> : null}
                       <p className="text-(length:--type-caption) text-fg-tertiary">{n.when}</p>
                     </Link>
-                    {!n.read && markNotificationReadAction ? (
-                      <form action={async (fd: FormData) => { await markNotificationReadAction(null, fd); }}>
+                    {!n.read && markNotificationReadFormAction ? (
+                      <form action={markNotificationReadFormAction}>
                         <input type="hidden" name="id" value={n.id} />
                         <button type="submit" aria-label={t("notifications.markAllRead")} className="size-2 shrink-0 rounded-full bg-(--color-primary)" />
                       </form>
